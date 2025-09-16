@@ -57,6 +57,16 @@ class MCPClient {
     this.transport = new StdioClientTransport({
       command,
       args: [serverScriptPath],
+      env: {
+         ...process.env, // Pass all environment variables from parent
+        // Explicitly ensure DB variables are passed
+        DB_HOST: process.env.DB_HOST || 'mysql',
+        DB_PORT: process.env.DB_PORT || '3306',
+        DB_USER: process.env.DB_USER!,
+        DB_PASSWORD: process.env.DB_PASSWORD!,
+        DB_NAME: process.env.DB_NAME || 'extrato_db',
+        NODE_ENV: process.env.NODE_ENV || 'production'
+      }
     });
     await this.mcp.connect(this.transport);
 
