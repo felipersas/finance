@@ -130,15 +130,10 @@ services:
       timeout: 10s
       retries: 5
       interval: 30s
-    # Security improvements - removidas temporariamente
-    # read_only: true
     tmpfs:
       - /tmp
     cap_drop:
       - ALL
-    # user: "1000:1000" # removido temporariamente
-    # Adicionar o comando correto
-    command: ["node", "build/index.js", "/app/mcp-server-extrato/build/main.js"]
 
   # Nginx Reverse Proxy (recommended for production)
   nginx:

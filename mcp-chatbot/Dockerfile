@@ -17,5 +17,5 @@ RUN npm run build
 # Expose port
 EXPOSE 3001
 
-# Start command
-CMD ["npm", "run", "dev"]
+# Start command with the correct path
+CMD ["sh", "-c", "node build/index.js /app/mcp-server-extrato/build/main.js"]
