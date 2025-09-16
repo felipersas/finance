@@ -115,8 +115,8 @@ export const validateDockerNetwork = (
 ) => {
   const clientIP = req.ip || req.connection.remoteAddress;
 
-  // Permite apenas IPs da rede Docker (172.20.0.0/16)
-  const isDockerNetwork = clientIP?.startsWith('172.20.') ||
+  // Permite apenas IPs da rede Docker (172.21.0.0/16)
+  const isDockerNetwork = clientIP?.startsWith('172.21.') ||
                           clientIP?.startsWith('127.0.') ||
                           clientIP === '::1';
 
