@@ -4,12 +4,6 @@ set -e
 
 echo "🚀 Starting production deployment..."
 
-# Check if .env.prod exists
-if [ ! -f .env.prod ]; then
-    echo "❌ Error: .env.prod file not found!"
-    echo "Please create .env.prod with your production environment variables."
-    exit 1
-fi
 
 # Check if SSL certificates exist
 if [ ! -d "nginx/ssl" ]; then
