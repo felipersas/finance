@@ -137,6 +137,8 @@ services:
     cap_drop:
       - ALL
     # user: "1000:1000" # removido temporariamente
+    # Adicionar o comando correto
+    command: ["node", "build/index.js", "/app/mcp-server-extrato/build/main.js"]
 
   # Nginx Reverse Proxy (recommended for production)
   nginx:
