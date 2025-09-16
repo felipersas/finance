@@ -15,7 +15,8 @@ services:
       - mysql_data_prod:/var/lib/mysql
       - ./mysql-init:/docker-entrypoint-initdb.d
     networks:
-      - mcp-network-prod
+      mcp-network-prod:
+        ipv4_address: 172.21.0.2
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       timeout: 10s
@@ -47,7 +48,8 @@ services:
       mysql:
         condition: service_healthy
     networks:
-      - mcp-network-prod
+      mcp-network-prod:
+        ipv4_address: 172.21.0.3
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/health || exit 1"]
       timeout: 10s
@@ -88,7 +90,8 @@ services:
       mysql:
         condition: service_healthy
     networks:
-      - mcp-network-prod
+      mcp-network-prod:
+        ipv4_address: 172.21.0.4
     healthcheck:
       test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/health', (res) => process.exit(res.statusCode === 200 ? 0 : 1))"]
       timeout: 10s
@@ -118,7 +121,7 @@ services:
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - MCP_SERVER_PATH=/app/mcp-server-extrato/build/main.js
       - INTERNAL_API_TOKEN=${INTERNAL_API_TOKEN}
-      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS}
+      - ALLOWED_ORIGINS=mcp-api-prod,mcp-api,172.21.0.3
       # Adicionar as variáveis de banco para o mcp-server-extrato que roda dentro do chatbot
       - DB_HOST=mysql
       - DB_PORT=3306
@@ -131,7 +134,8 @@ services:
     depends_on:
       - mcp-server-extrato
     networks:
-      - mcp-network-prod
+      mcp-network-prod:
+        ipv4_address: 172.21.0.5
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3001/health || exit 1"]
       timeout: 10s
@@ -168,7 +172,8 @@ services:
     depends_on:
       - mcp-api
     networks:
-      - mcp-network-prod
+      mcp-network-prod:
+        ipv4_address: 172.21.0.6
     healthcheck:
       test: ["CMD", "nginx", "-t"]
       timeout: 5s
