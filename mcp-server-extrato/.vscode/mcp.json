@@ -1,0 +1,13 @@
+{
+  "servers": {
+    "Weather": {
+      "command": "node",
+      "args": ["/home/felipe/Documents/mcp-test/mcp-server-sample/build/main.js"]
+    },
+    "my-mcp-server-9f211b8a": {
+      "type": "stdio",
+      "command": "node",
+      "args": []
+    }
+  }
+}

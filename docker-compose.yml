@@ -1,0 +1,126 @@
+services:
+  # MySQL Database for both mcp-api and mcp-server-extrato
+  mysql:
+    image: mysql:8.0
+    container_name: mcp-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: extrato_db
+      MYSQL_USER: mcpuser
+      MYSQL_PASSWORD: mcppassword
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./mysql-init:/docker-entrypoint-initdb.d
+    networks:
+      - mcp-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 13s
+      retries: 10
+
+  # NestJS API Service
+  mcp-api:
+    build:
+      context: ./mcp-api
+      dockerfile: Dockerfile
+      target: development
+    container_name: mcp-api
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - DATABASE_URL=mysql://root:rootpassword@mysql:3306/extrato_db
+      - JWT_SECRET=slkdfklçsadkf0892i81uj2iojflkdsajfçlkasjfoiu78
+      - JWT_EXPIRES_IN=7d
+      - CHATBOT_URL=http://mcp-chatbot:3001
+      - INTERNAL_API_TOKEN=${INTERNAL_API_TOKEN}
+    volumes:
+      - ./mcp-api:/app
+      - /app/node_modules
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - mcp-network
+    command: >
+      sh -c "
+        npx prisma generate &&
+        npm run start:dev
+      "
+
+  # MCP Server Extrato
+  mcp-server-extrato:
+    build:
+      context: ./mcp-server-extrato
+      dockerfile: Dockerfile
+    container_name: mcp-server-extrato
+    restart: unless-stopped
+    ports:
+      - "3002:3000"
+      - "3003:3001"
+    environment:
+      - NODE_ENV=development
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_USER=root
+      - DB_PASSWORD=rootpassword
+      - DB_NAME=extrato_db
+    volumes:
+      - ./mcp-server-extrato:/app
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - mcp-network
+    command: npm run start
+
+  # MCP Chatbot Service
+  mcp-chatbot:
+    build:
+      context: ./mcp-chatbot
+      dockerfile: Dockerfile
+    container_name: mcp-chatbot
+    restart: unless-stopped
+    # Porta removida - serviço acessível apenas internamente
+    # ports:
+    #   - "3001:3001"
+    expose:
+      - "3001"  # Expõe apenas para containers na mesma rede
+    environment:
+      - NODE_ENV=development
+      - PORT=3001
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - MCP_SERVER_PATH=/app/mcp-server-extrato/build/main.js
+      - INTERNAL_API_TOKEN=${INTERNAL_API_TOKEN}
+      - ALLOWED_ORIGINS=mcp-api
+    volumes:
+      - ./mcp-chatbot:/app
+      - ./mcp-server-extrato:/app/mcp-server-extrato
+    depends_on:
+      - mcp-server-extrato
+    networks:
+      - mcp-network
+    command: >
+      sh -c "
+        npm run build &&
+        node build/index.js /app/mcp-server-extrato/build/main.js
+      "
+
+  # React Native Development Server (Expo)
+
+volumes:
+  mysql_data:
+
+networks:
+  mcp-network:
+    driver: bridge
+    internal: false  # Permite acesso à internet (necessário para OpenAI)
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+          gateway: 172.20.0.1

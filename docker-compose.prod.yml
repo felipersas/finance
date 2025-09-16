@@ -1,0 +1,181 @@
+services:
+  # MySQL Database for both mcp-api and mcp-server-extrato
+  mysql:
+    image: mysql:8.0
+    container_name: mcp-mysql-prod
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-extrato_db}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data_prod:/var/lib/mysql
+      - ./mysql-init:/docker-entrypoint-initdb.d
+    networks:
+      - mcp-network-prod
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 10s
+      retries: 5
+      interval: 30s
+      start_period: 30s
+    # Security improvements
+    command: --default-authentication-plugin=mysql_native_password --skip-log-bin
+
+  # NestJS API Service - Production
+  mcp-api:
+    build:
+      context: ./mcp-api
+      dockerfile: Dockerfile
+      target: production
+    container_name: mcp-api-prod
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - DATABASE_URL=mysql://${MYSQL_USER}:${MYSQL_PASSWORD}@mysql:3306/${MYSQL_DATABASE:-extrato_db}
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRES_IN=${JWT_EXPIRES_IN:-7d}
+      - CHATBOT_URL=http://mcp-chatbot:3001
+      - INTERNAL_API_TOKEN=${INTERNAL_API_TOKEN}
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - mcp-network-prod
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health || exit 1"]
+      timeout: 10s
+      retries: 5
+      interval: 30s
+      start_period: 30s
+    # Security improvements
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETGID
+      - SETUID
+    user: "1000:1000"
+
+  # MCP Server Extrato - Production
+  mcp-server-extrato:
+    build:
+      context: ./mcp-server-extrato
+      dockerfile: Dockerfile
+    container_name: mcp-server-extrato-prod
+    restart: always
+    # Não expor portas para external access
+    expose:
+      - "3000"
+      - "3001"
+    environment:
+      - NODE_ENV=production
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_USER=${MYSQL_USER}
+      - DB_PASSWORD=${MYSQL_PASSWORD}
+      - DB_NAME=${MYSQL_DATABASE:-extrato_db}
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - mcp-network-prod
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/health', (res) => process.exit(res.statusCode === 200 ? 0 : 1))"]
+      timeout: 10s
+      retries: 5
+      interval: 30s
+    # Security improvements
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    user: "1000:1000"
+
+  # MCP Chatbot Service - Production
+  mcp-chatbot:
+    build:
+      context: ./mcp-chatbot
+      dockerfile: Dockerfile
+    container_name: mcp-chatbot-prod
+    restart: always
+    # Serviço interno apenas
+    expose:
+      - "3001"
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - MCP_SERVER_PATH=/app/mcp-server-extrato/build/main.js
+      - INTERNAL_API_TOKEN=${INTERNAL_API_TOKEN}
+      - ALLOWED_ORIGINS=mcp-api-prod
+    volumes:
+      - ./mcp-server-extrato/build:/app/mcp-server-extrato/build:ro
+    depends_on:
+      - mcp-server-extrato
+    networks:
+      - mcp-network-prod
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health || exit 1"]
+      timeout: 10s
+      retries: 5
+      interval: 30s
+    # Security improvements
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    user: "1000:1000"
+
+  # Nginx Reverse Proxy (recommended for production)
+  nginx:
+    image: nginx:alpine
+    container_name: mcp-nginx-prod
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - nginx_cache:/var/cache/nginx
+      - nginx_logs:/var/log/nginx
+    depends_on:
+      - mcp-api
+    networks:
+      - mcp-network-prod
+    healthcheck:
+      test: ["CMD", "nginx", "-t"]
+      timeout: 5s
+      retries: 3
+      interval: 30s
+
+volumes:
+  mysql_data_prod:
+    driver: local
+  nginx_cache:
+    driver: local
+  nginx_logs:
+    driver: local
+
+networks:
+  mcp-network-prod:
+    driver: bridge
+    internal: false
+    ipam:
+      config:
+        - subnet: 172.21.0.0/16
+          gateway: 172.21.0.1
+    driver_opts:
+      com.docker.network.bridge.name: mcp-prod-bridge
