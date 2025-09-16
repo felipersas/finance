@@ -118,7 +118,7 @@ services:
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - MCP_SERVER_PATH=/app/mcp-server-extrato/build/main.js
       - INTERNAL_API_TOKEN=${INTERNAL_API_TOKEN}
-      - ALLOWED_ORIGINS=mcp-api-prod
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS}
       # Adicionar as variáveis de banco para o mcp-server-extrato que roda dentro do chatbot
       - DB_HOST=mysql
       - DB_PORT=3306

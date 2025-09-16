@@ -54,6 +54,8 @@ export const validateInternalCall = (
   const expectedToken = process.env.INTERNAL_API_TOKEN;
   const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [];
 
+  console.log("expected", expectedToken);
+  console.log("received", internalToken);
   // Verifica o token interno
   if (!internalToken || internalToken !== expectedToken) {
     return res.status(403).json({
