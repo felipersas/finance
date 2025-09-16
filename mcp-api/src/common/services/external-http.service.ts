@@ -66,7 +66,7 @@ export class ExternalHttpService {
     options: ExternalRequestOptions = {},
   ): Promise<T> {
     const {
-      timeout = 30000,
+      timeout = 60000,
       serviceName = 'external-service',
       additionalHeaders = {},
     } = options;
