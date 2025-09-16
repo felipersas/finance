@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "A chatbot using Model Context Protocol (MCP) with OpenAI integration",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc && chmod 755 build/index.js",
