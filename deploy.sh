@@ -6,14 +6,14 @@ echo "🚀 Starting production deployment..."
 
 
 # Check if SSL certificates exist
-if [ ! -d "nginx/ssl" ]; then
+if [ ! -d ".nginx/ssl" ]; then
     echo "⚠️  Warning: SSL certificates not found in nginx/ssl/"
     echo "Please add your SSL certificates or the deployment will use HTTP only."
     mkdir -p nginx/ssl
 fi
 
 # Create nginx directory if it doesn't exist
-mkdir -p nginx
+mkdir -p .nginx
 
 # Load environment variables
 export $(cat .env.prod | grep -v '#' | xargs)
