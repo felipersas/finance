@@ -17,5 +17,5 @@ RUN npm run build
 # Expose port
 EXPOSE 3001
 
-# Start command using node --experimental-loader for ES modules
-CMD ["sh", "-c", "node --input-type=module /app/mcp-server-extrato/build/main.js &  sleep 2 && node build/index.js /app/mcp-server-extrato/build/main.js"]
+# Start command with the correct path
+CMD ["sh", "-c", "node build/index.js /app/mcp-server-extrato/build/main.js"]

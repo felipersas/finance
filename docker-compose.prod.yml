@@ -134,6 +134,12 @@ services:
       - /tmp
     cap_drop:
       - ALL
+    # Usar um comando que funcione com ES modules
+    command: >
+      sh -c "
+        npm run build &&
+        node build/index.js /app/mcp-server-extrato/build/main.js
+      "
 
   # Nginx Reverse Proxy (recommended for production)
   nginx:
