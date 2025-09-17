@@ -32,7 +32,7 @@ export class ExtractsRepository {
         descricao: true,
       },
     });
-    const total = await this.prisma.extratoRecord.count();
+    const total = await this.prisma.extratoRecord.count({ where: { userId } });
     return paginatedResponse(perPage, total, extracts);
   }
 }

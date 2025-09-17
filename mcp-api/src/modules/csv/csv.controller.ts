@@ -9,6 +9,8 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CsvService } from './csv.service';
+import type { JwtUser } from '../auth/strategies/jwt.strategy';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
 
 @Controller('csv')
 export class CsvController {
@@ -16,7 +18,10 @@ export class CsvController {
 
   @Post('upload')
   @UseInterceptors(FileInterceptor('file'))
-  async uploadCsv(@UploadedFile() file: Express.Multer.File) {
+  async uploadCsv(
+    @UploadedFile() file: Express.Multer.File,
+    @CurrentUser() user: JwtUser,
+  ) {
     if (!file) {
       throw new BadRequestException('No file uploaded');
     }
@@ -26,7 +31,10 @@ export class CsvController {
     }
 
     try {
-      const result = await this.csvService.processCsvFile(file.buffer);
+      const result = await this.csvService.processCsvFile(
+        file.buffer,
+        user.userId,
+      );
 
       return {
         message: 'CSV processed successfully',

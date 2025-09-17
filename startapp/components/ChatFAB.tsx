@@ -16,7 +16,6 @@ export const ChatFAB: React.FC<ChatFABProps> = ({
   const [isChatVisible, setIsChatVisible] = useState(false);
 
   const tintColor = useThemeColor({}, 'tint');
-  const shadowColor = useThemeColor({ light: '#000000', dark: '#FFFFFF' }, 'text');
 
   const openChat = () => {
     setIsChatVisible(true);
@@ -35,7 +34,6 @@ export const ChatFAB: React.FC<ChatFABProps> = ({
             bottom,
             right,
             backgroundColor: tintColor,
-            shadowColor,
           }
         ]}
         onPress={openChat}

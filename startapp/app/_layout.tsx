@@ -5,6 +5,7 @@ import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, View, ActivityIndicator, Platform } from 'react-native';
 import * as SystemUI from 'expo-system-ui';
 
+
 import { SessionProvider, useSession } from '@/providers/SessionProvider';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { QueryProvider } from '@/providers/QueryProvider';

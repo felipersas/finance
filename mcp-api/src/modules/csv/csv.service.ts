@@ -28,9 +28,12 @@ export class CsvService {
 
   constructor(private prisma: PrismaService) {}
 
-  async processCsvFile(buffer: Buffer): Promise<ProcessingResult> {
+  async processCsvFile(
+    buffer: Buffer,
+    userId: string,
+  ): Promise<ProcessingResult> {
     const records = await this.parseCsvBuffer(buffer);
-    return this.processRecords(records);
+    return this.processRecords(records, userId);
   }
 
   async getAllRecords() {
@@ -72,7 +75,10 @@ export class CsvService {
     });
   }
 
-  private async processRecords(records: any[]): Promise<ProcessingResult> {
+  private async processRecords(
+    records: any[],
+    userId: string,
+  ): Promise<ProcessingResult> {
     const result: ProcessingResult = {
       processed: 0,
       duplicates: 0,
@@ -83,7 +89,11 @@ export class CsvService {
       const rowNumber = index + 2;
 
       try {
-        const processedRecord = await this.processRecord(record, rowNumber);
+        const processedRecord = await this.processRecord(
+          record,
+          rowNumber,
+          userId,
+        );
 
         if (processedRecord.error) {
           result.errors.push(processedRecord.error);
@@ -113,6 +123,7 @@ export class CsvService {
   private async processRecord(
     record: any,
     rowNumber: number,
+    userId: string,
   ): Promise<{
     error?: string;
     isDuplicate?: boolean;
@@ -145,7 +156,7 @@ export class CsvService {
     }
 
     // Create record
-    await this.createRecord(dto, parsedDate);
+    await this.createRecord(dto, parsedDate, userId);
     return {};
   }
 
@@ -159,11 +170,13 @@ export class CsvService {
   private async createRecord(
     dto: CreateExtratoRecordDto,
     parsedDate: Date,
+    userId: string,
   ): Promise<void> {
     const parsedData = this.parseDescription(dto.descricao);
 
     await this.prisma.extratoRecord.create({
       data: {
+        userId,
         data: parsedDate,
         valor: dto.valor,
         identificador: dto.identificador,
