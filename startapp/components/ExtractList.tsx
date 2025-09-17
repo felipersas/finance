@@ -1,7 +1,9 @@
 import { ListExtractItem, useListExtract } from "@/hooks/useListExtract";
 import { ThemedView } from "./ThemedView";
 import React from "react";
-import { ScrollView, Text, TouchableOpacity, View, ActivityIndicator, StyleSheet, TextInput } from "react-native";
+import { FlatList, Text, TouchableOpacity, View, StyleSheet } from "react-native";
+import Swipeable from 'react-native-gesture-handler/Swipeable';
+import { SwipeAction } from './SwipeAction';
 import { capitalizeEachWord } from "@/utils/formatters/capitalize-each-word";
 import UploadCsvButton from "./UploadCsvButton";
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
@@ -17,8 +19,7 @@ export const ExtractList = () => {
   const [currentPage, setCurrentPage] = React.useState(1);
   const [orderDirection, setOrderDirection] = React.useState<OrderDirection>('desc');
 
-  const [pageInput, setPageInput] = React.useState('1');
-  const scrollViewRef = React.useRef<ScrollView>(null);
+  // scrollViewRef removed: not needed with FlatList
 
   const { response, isLoading, error } = useListExtract({
     perPage: 4,
@@ -31,48 +32,67 @@ export const ExtractList = () => {
 
   const toggleOrder = () => setOrderDirection(prev => prev === 'asc' ? 'desc' : 'asc');
 
-  // Smooth scroll to top on page change
-  React.useEffect(() => {
-    if (scrollViewRef.current) {
-      scrollViewRef.current.scrollTo({ y: 0, animated: true });
-    }
-    setPageInput(currentPage.toString());
-  }, [currentPage]);
+
+  // Callbacks for swipe actions
+  const handleDelete = (item: ListExtractItem) => {
+    // TODO: Implement delete logic (e.g., show confirm, call API, refresh list)
+    alert(`Excluir lançamento: ${item.remetenteDestinatario || item.id}`);
+  };
+  const handleEdit = (item: ListExtractItem) => {
+    // TODO: Implement edit logic (e.g., open modal, navigate to edit screen)
+    alert(`Editar lançamento: ${item.remetenteDestinatario || item.id}`);
+  };
+
+  const renderLeftActions = (item: ListExtractItem) => (
+    <SwipeAction type="edit" onPress={() => handleEdit(item)} />
+  );
+  const renderRightActions = (item: ListExtractItem) => (
+    <SwipeAction type="delete" onPress={() => handleDelete(item)} />
+  );
 
   const renderItem = ({ item }: { item: ListExtractItem }) => (
-    <View style={styles.itemContainer} key={item.id?.toString() || Math.random().toString()}>
-      <View style={styles.itemContent}>
-        <Text style={styles.itemTitle}>
-          {capitalizeEachWord(item.remetenteDestinatario ?? "")}
-        </Text>
-        <Text style={styles.itemSubtitle}>
-          {item.data ? new Date(item.data).toLocaleDateString("pt-BR") : ""}
-        </Text>
+    <Swipeable
+      renderLeftActions={() => renderLeftActions(item)}
+      renderRightActions={() => renderRightActions(item)}
+      overshootLeft={false}
+      containerStyle={styles.swipeableContainer}
+      overshootRight={false}
+    >
+      <View style={styles.modernItemContainer}>
+        <View style={styles.modernItemLeft}>
+          <Text style={styles.modernItemTitle} numberOfLines={1}>
+            {capitalizeEachWord(item.remetenteDestinatario ?? "")}
+          </Text>
+          <Text style={styles.modernItemSubtitle} numberOfLines={1}>
+            {item.data ? new Date(item.data).toLocaleDateString("pt-BR") : ""}
+          </Text>
+        </View>
+        <View style={styles.modernItemRight}>
+          <Text style={styles.modernItemValue} numberOfLines={1}>
+            R${Math.abs(item.valor).toFixed(2).replace(".", ",")}
+          </Text>
+          <View style={styles.modernArrowCircle}>
+            <Feather
+              name={item.valor >= 0 ? "arrow-down-left" : "arrow-up-right"}
+              size={18}
+              color={item.valor >= 0 ? Colors.success : Colors.error}
+            />
+          </View>
+        </View>
       </View>
-      <View style={styles.itemValueContainer}>
-        <Text style={styles.itemValue}>
-          R${Math.abs(item.valor).toFixed(2).replace(".", ",")}
-        </Text>
-        <Feather
-          name={item.valor >= 0 ? "arrow-down-left" : "arrow-up-right"}
-          size={22}
-          color={item.valor >= 0 ? Colors.success : Colors.error}
-          style={styles.valueIcon}
-        />
-      </View>
-    </View>
+    </Swipeable>
   );
 
   // Skeleton loader for list items (fixed size)
   const SKELETON_COUNT = 4;
   const renderSkeleton = () =>
     Array.from({ length: SKELETON_COUNT }).map((_, idx) => (
-      <View style={[styles.itemContainer, styles.skeletonItem]} key={idx}>
-        <View style={styles.itemContent}>
+      <View style={[styles.modernItemContainer, styles.skeletonItem]} key={idx}>
+        <View style={styles.modernItemLeft}>
           <View style={styles.skeletonTitle} />
           <View style={styles.skeletonSubtitle} />
         </View>
-        <View style={styles.itemValueContainer}>
+        <View style={styles.modernItemRight}>
           <View style={styles.skeletonValue} />
           <View style={styles.skeletonIcon} />
         </View>
@@ -130,21 +150,21 @@ export const ExtractList = () => {
           </Text>
         )}
       </View>
-        <ScrollView
-          ref={scrollViewRef}
-          style={styles.scrollView}
-          contentContainerStyle={styles.scrollContent}
-          scrollEventThrottle={16}
-        >
-          {isLoading
-            ? renderSkeleton()
-            : error
-            ? <Text style={styles.emptyText}>Erro ao carregar dados.</Text>
-            : response?.data?.data?.length
-              ? response.data.data.map((item, idx) => renderItem({ item }))
-              : <Text style={styles.emptyText}>Nenhum lançamento encontrado.</Text>
-          }
-        </ScrollView>
+        {isLoading ? (
+          renderSkeleton()
+        ) : error ? (
+          <Text style={styles.emptyText}>Erro ao carregar dados.</Text>
+        ) : response?.data?.data?.length ? (
+          <FlatList
+            data={response.data.data}
+            renderItem={renderItem}
+            keyExtractor={item => item.id?.toString() || Math.random().toString()}
+            contentContainerStyle={styles.scrollContent}
+            style={styles.scrollView}
+          />
+        ) : (
+          <Text style={styles.emptyText}>Nenhum lançamento encontrado.</Text>
+        )}
       </View>
 
     </ThemedView>
@@ -160,7 +180,6 @@ const createStyles = (theme: "light" | "dark") =>
       borderTopRightRadius: 32,
       paddingTop: 8,
       paddingHorizontal: 12,
-      paddingBottom: 8,
       // Remove marginTop so card starts at the top of its flex space
       // Shadow for iOS
       shadowColor: '#000',
@@ -174,6 +193,9 @@ const createStyles = (theme: "light" | "dark") =>
     scrollView: {
       flex: 1,
     },
+  swipeableContainer: {
+    marginBottom: 14,
+  },
   container: { flex: 1, backgroundColor: Colors[theme].background },
     header: {
       flexDirection: "row",
@@ -200,36 +222,60 @@ const createStyles = (theme: "light" | "dark") =>
     fixedListHeight: {},
     scrollContent: { flexGrow: 1 },
     loader: { marginTop: 32 },
-    itemContainer: {
-      marginBottom: 12,
+    // Modern item styles
+    modernItemContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      backgroundColor: Colors[theme].card,
       borderRadius: 16,
-      padding: 18,
-      flexDirection: "row",
-      justifyContent: "space-between",
-      backgroundColor: Colors[theme].muted,
+      paddingVertical: 18,
+      paddingHorizontal: 20,
     },
-    itemContent: { flex: 1 },
-    itemTitle: {
-      fontWeight: "600",
+    modernItemLeft: {
+      flex: 1,
+      minWidth: 0,
+    },
+    modernItemTitle: {
+      fontWeight: '600',
       fontSize: 16,
-      marginBottom: 2,
       color: Colors[theme].text,
+      marginBottom: 2,
+      letterSpacing: 0.1,
     },
-    itemSubtitle: {
-      opacity: 0.5,
+    modernItemSubtitle: {
       fontSize: 13,
       color: Colors[theme].text,
+      opacity: 0.5,
+      letterSpacing: 0.2,
     },
-    itemValueContainer: {
-      flexDirection: "row",
+    modernItemRight: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginLeft: 16,
+      gap: 8,
     },
-    itemValue: {
-      fontWeight: "700",
-      alignItems: "flex-start",
+    modernItemValue: {
+      fontWeight: '700',
       fontSize: 16,
       color: Colors[theme].text,
+      marginRight: 8,
+      minWidth: 80,
+      textAlign: 'right',
     },
-    valueIcon: { marginHorizontal: 2 },
+    modernArrowCircle: {
+      width: 32,
+      height: 32,
+      borderRadius: 16,
+      backgroundColor: Colors[theme].background,
+      alignItems: 'center',
+      justifyContent: 'center',
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.06,
+      shadowRadius: 2,
+      elevation: 1,
+    },
     emptyText: {
       textAlign: "center",
       marginTop: 32,

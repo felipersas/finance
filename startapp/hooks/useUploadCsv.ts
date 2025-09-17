@@ -1,6 +1,7 @@
 import { api } from '@/services/api';
 import { ApiResponse } from '@/types/api-response';
 import { requestHandler } from '@/utils/functions/request-handler';
+import { showToast } from '@/utils/toast';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 const uploadCsv = async (formData: FormData): Promise<ApiResponse<null>> => {
@@ -12,6 +13,17 @@ const uploadCsv = async (formData: FormData): Promise<ApiResponse<null>> => {
       },
     },
   );
+
+  try {
+    const response = await request;
+    if (response && response.data && response?.data) {
+      showToast('success', 'Sucesso!', response.data.message);
+    } else {
+      showToast('error', 'Sign Up Failed', response?.data.message || 'erro desconhecido');
+    }
+  } catch (error: any) {
+    showToast('error', 'Sign Up Failed', error?.response?.data?.message || 'erro desconhecido');
+  }
 
   return requestHandler(request);
 };

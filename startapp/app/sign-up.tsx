@@ -9,8 +9,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Controller, FormProvider, useForm } from 'react-hook-form';
 import { useSession } from '@/providers/SessionProvider';
 import { useRouter } from 'expo-router';
-import Toast from 'react-native-toast-message';
-import toastConfig from '@/config/ToastConfig';
 import { SignUpData, SignUpSchema } from '@/validators/auth/sign-up';
 import { useTheme } from '@/hooks/useTheme';
 import { Colors } from '@/constants/Colors';
@@ -125,7 +123,6 @@ export default function SignUpScreen() {
               />
             </FormProvider>
           </ThemedView>
-          <Toast config={toastConfig} />
         </ThemedView>
       </ThemedView>
     </KeyboardAvoidingView>

@@ -1,7 +1,7 @@
 import { SignInData } from '@/validators/auth/sign-in';
 import { useStorageState } from '@/hooks/useStorageState';
 import { api } from '@/services/api';
-import { apiResponse } from '@/types/api-response';
+import { ApiResponse } from '@/types/api-response';
 import * as SecureStore from 'expo-secure-store';
 import {
   createContext,
@@ -33,7 +33,7 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
 
   const signIn = async (signInData: SignInData) => {
     try {
-      const response = await api.post<apiResponse<SessionData>>('/auth/signin', {
+      const response = await api.post<ApiResponse<SessionData>>('/auth/signin', {
         email: signInData.email,
         password: signInData.password
       });
@@ -56,7 +56,7 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
 
   const signUp = async (signUpData: SignUpData) => {
     try {
-      const response = await api.post<apiResponse<SessionData>>('/auth/signup', {
+      const response = await api.post<ApiResponse<SessionData>>('/auth/signup', {
         name: signUpData.name,
         email: signUpData.email,
         password: signUpData.password

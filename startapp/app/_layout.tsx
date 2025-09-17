@@ -4,6 +4,7 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, View, ActivityIndicator, Platform } from 'react-native';
 import * as SystemUI from 'expo-system-ui';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 
 import { SessionProvider, useSession } from '@/providers/SessionProvider';
@@ -14,6 +15,8 @@ import { SplashScreenController } from './splash';
 import { ThemedView } from '@/components/ThemedView';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { useEffect } from 'react';
+import { Toast } from 'react-native-toast-message/lib/src/Toast';
+import toastConfig from '@/config/ToastConfig';
 
 function RootNavigator() {
   const { session, isLoading } = useSession();
@@ -85,7 +88,10 @@ export default function RootLayout() {
         <SafeAreaProvider>
           <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
             <SplashScreenController />
-            <RootNavigator />
+            <GestureHandlerRootView>
+              <RootNavigator />
+              <Toast config={toastConfig} />
+            </GestureHandlerRootView>
           </ThemeProvider>
         </SafeAreaProvider>
       </SessionProvider>

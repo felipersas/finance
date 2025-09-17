@@ -2,6 +2,7 @@ import { api } from "@/services/api"
 import { ApiResponse } from "@/types/api-response"
 import { PaginatedParams } from "@/types/paginated-params"
 import { PaginatedResponse } from "@/types/paginated-response"
+import { showToast } from "@/utils/toast"
 import { useQuery } from "@tanstack/react-query"
 
 export interface ListExtractItem {
@@ -15,13 +16,10 @@ export interface ListExtractItem {
 
 export const useListExtract = (params: PaginatedParams) => {
   const { data: response, isLoading, error } = useQuery<ApiResponse<PaginatedResponse<ListExtractItem>>>({
-    gcTime: 3,
-    staleTime: 3,
+    staleTime: 1000 * 60 * 5, // 5 minutes
     queryKey: ["list-extracts", params.page, params.perPage, params.orderDirection],
     queryFn: () => getListExtract(params)
   })
-
-  console.log(response?.data?.data[0])
 
   return { response, isLoading, error }
 }

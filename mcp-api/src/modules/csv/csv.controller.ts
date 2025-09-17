@@ -37,8 +37,8 @@ export class CsvController {
       );
 
       return {
-        message: 'CSV processed successfully',
-        result: {
+        message: 'Extrato processado com sucesso',
+        data: {
           totalProcessed: result.processed,
           duplicatesSkipped: result.duplicates,
           errorsCount: result.errors.length,

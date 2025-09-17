@@ -5,6 +5,7 @@ import { useUploadCsvMutation } from "@/hooks/useUploadCsv";
 import { useThemeColor } from '@/hooks/useThemeColor';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
+
 export default function UploadCsvButton() {
   const [selectedFile, setSelectedFile] = useState<DocumentPicker.DocumentPickerAsset | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
@@ -39,7 +40,6 @@ export default function UploadCsvButton() {
       Alert.alert('Selecione um arquivo', 'Escolha um arquivo CSV antes de enviar.');
       return;
     }
-    try {
       const formData = new FormData();
       formData.append('file', {
         uri: selectedFile.uri,
@@ -47,12 +47,8 @@ export default function UploadCsvButton() {
         type: selectedFile.mimeType || 'text/csv',
       } as any);
       await csvMutation.mutateAsync(formData);
-      Alert.alert('Sucesso', 'CSV enviado com sucesso!');
       setSelectedFile(null);
       setModalVisible(false);
-    } catch (error) {
-      Alert.alert('Erro', 'Falha ao enviar o arquivo.');
-    }
   };
 
   return (
@@ -124,13 +120,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     margin: 8,
-    // sem sombra, sem borda, minimalista
   },
   modalOverlay: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#0006', // overlay escuro translúcido
   },
   modalContent: {
     borderRadius: 16,
