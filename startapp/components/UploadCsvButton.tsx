@@ -30,7 +30,7 @@ export default function UploadCsvButton() {
       }
       setSelectedFile(file);
       setModalVisible(true);
-    } catch (error) {
+    } catch {
       Alert.alert('Erro', 'Falha ao selecionar arquivo.');
     }
   };

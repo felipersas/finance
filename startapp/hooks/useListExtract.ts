@@ -2,7 +2,7 @@ import { api } from "@/services/api"
 import { ApiResponse } from "@/types/api-response"
 import { PaginatedParams } from "@/types/paginated-params"
 import { PaginatedResponse } from "@/types/paginated-response"
-import { showToast } from "@/utils/toast"
+
 import { useQuery } from "@tanstack/react-query"
 
 export interface ListExtractItem {
