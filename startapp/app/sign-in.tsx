@@ -13,13 +13,14 @@ import { useRouter } from 'expo-router';
 import Toast from 'react-native-toast-message';
 import toastConfig from '@/config/ToastConfig';
 import { Colors } from '@/constants/Colors';
-import { useThemeColor } from '@/hooks/useThemeColor';
+import { useTheme } from '@/hooks/useTheme';
 import { AuthGuard } from '@/components/AuthGuard';
 
 export default function SignInScreen() {
   const { signIn } = useSession();
   const router = useRouter();
-  const tint = useThemeColor({}, 'tint');
+  const theme = useTheme();
+  const styles = createStyles(theme);
 
 
   const methods = useForm<SignInData>({
@@ -91,10 +92,10 @@ export default function SignInScreen() {
             <AppButton
               title={strings.auth.signIn}
               onPress={handleSubmit(onSubmit)}
-              style={[styles.signInButton, { backgroundColor: tint }]}
+              style={styles.signInButton}
             />
-            <ThemedText style={{ textAlign: 'center', marginTop: 16 }}>
-              Não tem uma conta? <ThemedText onPress={() => router.push('/sign-up')} style={{ fontWeight: '600', color: Colors.tint }}>Criar Conta</ThemedText>
+            <ThemedText style={styles.signUpText}>
+              Não tem uma conta? <ThemedText onPress={() => router.push('/sign-up')} style={styles.signUpLink}>Criar Conta</ThemedText>
             </ThemedText>
           </FormProvider>
         </ThemedView>
@@ -106,9 +107,10 @@ export default function SignInScreen() {
   )
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme: 'light' | 'dark') => StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: Colors[theme].background,
   },
   content: {
     flex: 1,
@@ -126,10 +128,12 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: '700',
     marginBottom: 8,
+    color: Colors[theme].text,
   },
   subtitle: {
     fontSize: 16,
     fontWeight: '400',
+    color: Colors[theme].text,
   },
   form: {
     gap: 12,
@@ -138,5 +142,16 @@ const styles = StyleSheet.create({
     marginTop: 16,
     paddingVertical: 16,
     borderRadius: 12,
+    backgroundColor: Colors[theme].tint,
+    color: Colors[theme].background,
+  },
+  signUpText: {
+    textAlign: 'center',
+    marginTop: 16,
+    color: Colors[theme].text,
+  },
+  signUpLink: {
+    fontWeight: '600',
+    color: Colors[theme].tint,
   },
 });

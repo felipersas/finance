@@ -21,7 +21,6 @@ export const AppButton: React.FC<ButtonProps> = ({ title, onPress, style, textSt
 
 const styles = StyleSheet.create({
   button: {
-    backgroundColor: '#2196F3',
     paddingVertical: 14,
     paddingHorizontal: 24,
     borderRadius: 8,
@@ -29,7 +28,6 @@ const styles = StyleSheet.create({
     marginVertical: 8,
   },
   buttonText: {
-    color: '#fff',
     fontWeight: 'bold',
     fontSize: 16,
   },

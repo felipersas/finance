@@ -12,12 +12,14 @@ import { useRouter } from 'expo-router';
 import Toast from 'react-native-toast-message';
 import toastConfig from '@/config/ToastConfig';
 import { SignUpData, SignUpSchema } from '@/validators/auth/sign-up';
-import { useThemeColor } from '@/hooks/useThemeColor';
+import { useTheme } from '@/hooks/useTheme';
+import { Colors } from '@/constants/Colors';
 
 export default function SignUpScreen() {
   const { signUp } = useSession();
   const router = useRouter();
-  const tint = useThemeColor({}, 'tint');
+  const theme = useTheme()
+  const styles = createStyles(theme);
 
   const methods = useForm<SignUpData>({
     reValidateMode: 'onChange',
@@ -30,7 +32,7 @@ export default function SignUpScreen() {
 
   const onSubmit = async (data: SignUpData) => {
     await signUp(data);
-    router.replace('/(private)/(tabs)/new');
+    router.replace('/(private)/(tabs)');
   };
 
   return (
@@ -119,7 +121,7 @@ export default function SignUpScreen() {
               <AppButton
                 title={"Criar Conta"}
                 onPress={handleSubmit(onSubmit)}
-                style={[styles.signUpButton, { backgroundColor: tint }]}
+                style={[styles.signUpButton]}
               />
             </FormProvider>
           </ThemedView>
@@ -130,7 +132,8 @@ export default function SignUpScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme: 'light' | 'dark') =>
+  StyleSheet.create({
   container: {
     flex: 1,
   },
@@ -162,5 +165,6 @@ const styles = StyleSheet.create({
     marginTop: 16,
     paddingVertical: 16,
     borderRadius: 12,
+    backgroundColor: Colors[theme].tint,
   },
 });

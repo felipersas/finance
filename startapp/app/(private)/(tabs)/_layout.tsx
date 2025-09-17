@@ -14,7 +14,6 @@ import { AuthGuard } from '@/components/AuthGuard';
 import { ThemedText } from '@/components/ThemedText';
 import { useSession } from '@/providers/SessionProvider';
 import { ThemedView } from '@/components/ThemedView';
-import { AppButton } from '@/components/AppButton';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
@@ -22,7 +21,7 @@ export default function TabLayout() {
   const colorScheme = useColorScheme();
   const insets = useSafeAreaInsets();
   const {session, signOut} = useSession();
-  const error = useThemeColor({}, "error")
+  const text = useThemeColor({}, "text")
 
   return (
     <AuthGuard requireAuth={true}>
@@ -36,8 +35,8 @@ export default function TabLayout() {
       }
     ]}>
       <ThemedView style={styles.header}>
-        <ThemedText type="title" style={styles.title}>Olá, {session?.name}!</ThemedText>
-        <MaterialIcons color={error} size={32} name="logout" onPress={signOut} />;
+        <ThemedText type="subtitle" style={styles.title}>Olá, {session?.name}!</ThemedText>
+        <MaterialIcons color={text} size={32} name="logout" onPress={signOut} />;
 
 
       </ThemedView>
@@ -104,6 +103,7 @@ const styles = StyleSheet.create({
   },
   title: {
     textAlign: 'left',
+    fontSize: 28,
   },
   header: {
     display: 'flex',

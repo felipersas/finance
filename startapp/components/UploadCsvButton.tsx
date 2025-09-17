@@ -123,7 +123,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 8,
+    margin: 8,
     // sem sombra, sem borda, minimalista
   },
   modalOverlay: {

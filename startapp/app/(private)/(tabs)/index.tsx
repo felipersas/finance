@@ -7,9 +7,7 @@ export default function Home() {
 
   return (
     <ThemedView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <ExtractList />
-      </ScrollView>
     </ThemedView>
   );
 }
@@ -17,23 +15,11 @@ export default function Home() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: 'transparent',
   },
   scrollContent: {
-    padding: 20,
-    paddingBottom: 40,
-  },
-  title: {
-    textAlign: 'left',
-    marginBottom: 30,
-  },
-  section: {
-    marginBottom: 30,
-  },
-  sectionTitle: {
-    marginBottom: 16,
-    fontWeight: '600',
-  },
-  icon: {
-    fontSize: 16,
+    paddingVertical: 24,
+    paddingHorizontal: 12,
+    gap: 16,
   },
 });

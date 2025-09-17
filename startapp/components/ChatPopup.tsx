@@ -205,7 +205,7 @@ export const ChatPopup: React.FC<ChatPopupProps> = ({ visible, onClose }) => {
             >
               <IconSymbol
                 name="paperplane.fill"
-                size={16}
+                size={20}
                 color="white"
               />
             </TouchableOpacity>

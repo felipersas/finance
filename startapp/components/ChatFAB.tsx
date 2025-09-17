@@ -43,7 +43,7 @@ export const ChatFAB: React.FC<ChatFABProps> = ({
           <IconSymbol
             name="lightbulb"
             size={24}
-            color="white"
+            color="black"
           />
         </View>
       </TouchableOpacity>
