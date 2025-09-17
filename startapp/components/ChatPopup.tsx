@@ -18,6 +18,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface Message {
   id: string;
@@ -52,6 +53,7 @@ export const ChatPopup: React.FC<ChatPopupProps> = ({ visible, onClose }) => {
   const borderColor = useThemeColor({ light: '#E5E5EA', dark: '#38383A' }, 'tabIconDefault');
   const inputBgColor = useThemeColor({ light: '#F2F2F7', dark: '#1C1C1E' }, 'background');
   const tintColor = useThemeColor({}, 'tint');
+  const insets = useSafeAreaInsets();
 
   // Scroll to bottom when new messages are added
   useEffect(() => {
@@ -133,7 +135,7 @@ export const ChatPopup: React.FC<ChatPopupProps> = ({ visible, onClose }) => {
       onRequestClose={handleClose}
     >
       <KeyboardAvoidingView
-        style={[styles.container, { backgroundColor }]}
+        style={[styles.container, { backgroundColor }, {paddingBottom: insets.bottom}, {paddingTop: insets.top}]}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         {/* Header */}

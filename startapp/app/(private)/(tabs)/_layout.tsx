@@ -11,14 +11,22 @@ import { strings } from '@/constants/Strings';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { ChatFAB } from '@/components/ChatFAB';
 import { AuthGuard } from '@/components/AuthGuard';
+import { ThemedText } from '@/components/ThemedText';
+import { useSession } from '@/providers/SessionProvider';
+import { ThemedView } from '@/components/ThemedView';
+import { AppButton } from '@/components/AppButton';
+import { useThemeColor } from '@/hooks/useThemeColor';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
   const insets = useSafeAreaInsets();
+  const {session, signOut} = useSession();
+  const background = useThemeColor({}, "background");
+  const error = useThemeColor({}, "error")
 
   return (
     <AuthGuard requireAuth={true}>
-    <View style={[
+    <ThemedView style={[
       styles.container,
       {
         backgroundColor: Colors[colorScheme ?? 'light'].background,
@@ -27,6 +35,17 @@ export default function TabLayout() {
         paddingRight: insets.right,
       }
     ]}>
+      <ThemedView style={styles.header}>
+        <ThemedText type="title" style={styles.title}>Olá, {session?.name}!</ThemedText>
+        <AppButton title='Sair' onPress={() => signOut()}
+        style={{
+          backgroundColor: background,
+          borderColor: error,
+          borderWidth: 2,
+          borderRadius: 8,
+        }}
+        />
+      </ThemedView>
       <Tabs
         screenOptions={{
           tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
@@ -79,7 +98,7 @@ export default function TabLayout() {
         bottom={Platform.OS === 'ios' ? insets.bottom + 100 : 110}
         right={20}
       />
-    </View>
+    </ThemedView>
     </AuthGuard>
   );
 }
@@ -87,5 +106,15 @@ export default function TabLayout() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  title: {
+    textAlign: 'left',
+  },
+  header: {
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 16,
   },
 });

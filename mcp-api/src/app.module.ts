@@ -7,6 +7,7 @@ import { ChatbotModule } from './modules/chatbot/chatbot.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 import { UserModule } from './modules/user/user.module';
+import { ExtractsModule } from './modules/extracts/extracts.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { UserModule } from './modules/user/user.module';
     ChatbotModule,
     AuthModule,
     UserModule,
+    ExtractsModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],

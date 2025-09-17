@@ -1,31 +1,34 @@
 import { api } from "@/services/api"
-import { apiResponse } from "@/types/api-response"
+import { ApiResponse } from "@/types/api-response"
+import { PaginatedParams } from "@/types/paginated-params"
+import { PaginatedResponse } from "@/types/paginated-response"
 import { useQuery } from "@tanstack/react-query"
 
-interface ListExtractItem {
+export interface ListExtractItem {
   id: string
-  valor: string
+  valor: number
   descricao: string
-  remetenteDestinario: string
-  createdAt: string
+  remetenteDestinatario: string
+  data: string
 }
 
 
-export const useListExtract = (page: number, perPage: number) => {
-  const { data: response, isLoading, error } = useQuery<apiResponse<ListExtractItem[]>>({
-    queryKey: ["list-extracts", page, perPage],
-    queryFn: () => getListExtract(page, perPage)
+export const useListExtract = (params: PaginatedParams) => {
+  const { data: response, isLoading, error } = useQuery<ApiResponse<PaginatedResponse<ListExtractItem>>>({
+    gcTime: 3,
+    staleTime: 3,
+    queryKey: ["list-extracts", params.page, params.perPage, params.orderDirection],
+    queryFn: () => getListExtract(params)
   })
+
+  console.log(response?.data?.data[0])
 
   return { response, isLoading, error }
 }
 
-async function getListExtract(page: number, perPage: number): Promise<apiResponse<ListExtractItem[]>> {
-  const res = await api.get(`/api/extracts`, {
-    params: {
-      page,
-      perPage
-    }
+async function getListExtract(params: PaginatedParams): Promise<ApiResponse<PaginatedResponse<ListExtractItem>>> {
+  const res = await api.get<ApiResponse<PaginatedResponse<ListExtractItem>>>("/extracts", {
+    params
   })
 
   return res.data

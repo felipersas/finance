@@ -1,4 +1,5 @@
 import { AppButton } from '@/components/AppButton';
+import { ExtractList } from '@/components/ExtractList';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { useSession } from '@/providers/SessionProvider';
@@ -11,7 +12,7 @@ export default function Home() {
   return (
     <ThemedView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        <ThemedText type="title" style={styles.title}>Olá, {session?.name}!</ThemedText>
+        <ExtractList />
       <AppButton title={"teste"} onPress={() => signOut()} style={{ margin: 20, backgroundColor: '#f0f0f0' }}/>
       </ScrollView>
     </ThemedView>
