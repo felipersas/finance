@@ -16,12 +16,12 @@ import { useSession } from '@/providers/SessionProvider';
 import { ThemedView } from '@/components/ThemedView';
 import { AppButton } from '@/components/AppButton';
 import { useThemeColor } from '@/hooks/useThemeColor';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
   const insets = useSafeAreaInsets();
   const {session, signOut} = useSession();
-  const background = useThemeColor({}, "background");
   const error = useThemeColor({}, "error")
 
   return (
@@ -37,14 +37,9 @@ export default function TabLayout() {
     ]}>
       <ThemedView style={styles.header}>
         <ThemedText type="title" style={styles.title}>Olá, {session?.name}!</ThemedText>
-        <AppButton title='Sair' onPress={() => signOut()}
-        style={{
-          backgroundColor: background,
-          borderColor: error,
-          borderWidth: 2,
-          borderRadius: 8,
-        }}
-        />
+        <MaterialIcons color={error} size={32} name="logout" onPress={signOut} />;
+
+
       </ThemedView>
       <Tabs
         screenOptions={{

@@ -1,19 +1,14 @@
-import { AppButton } from '@/components/AppButton';
 import { ExtractList } from '@/components/ExtractList';
-import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
-import { useSession } from '@/providers/SessionProvider';
 import React from 'react';
 import { ScrollView, StyleSheet } from 'react-native';
 
 export default function Home() {
-  const { signOut, session } = useSession();
 
   return (
     <ThemedView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <ExtractList />
-      <AppButton title={"teste"} onPress={() => signOut()} style={{ margin: 20, backgroundColor: '#f0f0f0' }}/>
       </ScrollView>
     </ThemedView>
   );
