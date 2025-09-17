@@ -10,11 +10,15 @@ export class ExtractsRepository {
     page: number | undefined,
     perPage: number | undefined,
     orderDirection: 'asc' | 'desc' = 'desc',
+    userId: string,
   ) {
     const skip = page && perPage ? (page - 1) * perPage : undefined;
     const take = perPage ? perPage : undefined;
 
     const extracts = await this.prisma.extratoRecord.findMany({
+      where: {
+        userId,
+      },
       skip,
       take,
       orderBy: {

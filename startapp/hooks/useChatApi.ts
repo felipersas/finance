@@ -1,8 +1,7 @@
 import { api } from '@/services/api';
-import { apiResponse } from '@/types/api-response';
+import { ApiResponse } from '@/types/api-response';
 import { requestHandler } from '@/utils/functions/request-handler';
 import { useMutation } from '@tanstack/react-query';
-import axios from 'axios';
 
 interface ChatRequest {
   query: string;
@@ -13,15 +12,10 @@ interface ChatResponse {
   conversationId: string;
 }
 
-const sendChatMessage = async (message: ChatRequest): Promise<apiResponse<ChatResponse>> => {
-  const request = api.post<apiResponse<ChatResponse>>(
+const sendChatMessage = async (message: ChatRequest): Promise<ApiResponse<ChatResponse>> => {
+  const request = api.post<ApiResponse<ChatResponse>>(
     '/chatbot/chat',
     message,
-    {
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    }
   );
 
   return requestHandler(request);

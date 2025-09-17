@@ -1,11 +1,11 @@
 import { isAxiosError } from "axios";
-import { apiResponse } from "../../types/api-response";
+import { ApiResponse } from "../../types/api-response";
 import Toast from 'react-native-toast-message';
 
 
 export async function requestHandler<T>(
-  request: Promise<{ data: apiResponse<T> }>,
-): Promise<apiResponse<T>> {
+  request: Promise<{ data: ApiResponse<T> }>,
+): Promise<ApiResponse<T>> {
   try {
     const response = await request;
 
@@ -17,7 +17,7 @@ export async function requestHandler<T>(
       message = error.response?.data.message ?? message;
     }
 
-    return { success: false, message } as apiResponse<T>;
+    return { success: false, message } as ApiResponse<T>;
   }
 }
 

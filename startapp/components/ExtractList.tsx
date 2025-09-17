@@ -4,6 +4,7 @@ import React from "react";
 import { ScrollView, Text, TouchableOpacity, View, ActivityIndicator, StyleSheet } from "react-native";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { capitalizeEachWord } from "@/utils/formatters/capitalize-each-word";
+import UploadCsvButton from "./UploadCsvButton";
 
 type OrderDirection = 'asc' | 'desc';
 
@@ -45,6 +46,7 @@ export const ExtractList = () => {
     <ThemedView style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={toggleOrder} style={styles.orderButton} accessibilityLabel="Toggle order direction">
+          <UploadCsvButton />
           <Text style={[styles.orderText, { color: primaryColor }]}>
             {orderDirection === "asc" ? "↑" : "↓"} Ordem
           </Text>
