@@ -19,10 +19,10 @@ const uploadCsv = async (formData: FormData): Promise<ApiResponse<null>> => {
     if (response && response.data && response?.data) {
       showToast('success', 'Sucesso!', response.data.message);
     } else {
-      showToast('error', 'Sign Up Failed', response?.data.message || 'erro desconhecido');
+      showToast('error', 'Erro!', response?.data.message || 'erro desconhecido');
     }
   } catch (error: any) {
-    showToast('error', 'Sign Up Failed', error?.response?.data?.message || 'erro desconhecido');
+    showToast('error', 'Erro!', error?.response?.data?.message || 'erro desconhecido');
   }
 
   return requestHandler(request);

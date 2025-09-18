@@ -18,13 +18,6 @@
         "backgroundColor": "#151718"
       },
       "edgeToEdgeEnabled": true,
-      "navigationBar": {
-        "backgroundColor": "#151718"
-      },
-      "statusBar": {
-        "backgroundColor": "#151718",
-        "barStyle": "light-content"
-      },
       "package": "com.anonymous.startapp"
     },
     "web": {
@@ -57,6 +50,12 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "d46e125e-62db-4fa5-b4f1-6678cf794de8"
+      }
     }
   }
 }
