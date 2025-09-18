@@ -56,7 +56,7 @@ export default function UploadCsvButton() {
       <TouchableOpacity
         style={[
           styles.iconButton,
-          { backgroundColor: primaryColor + '22' } // cor translúcida
+          { backgroundColor: primaryColor + '22' }
         ]}
         onPress={pickCsvFile}
         disabled={csvMutation.isPending}

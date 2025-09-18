@@ -19,7 +19,7 @@ export const ExtractList = () => {
   const [currentPage, setCurrentPage] = React.useState(1);
   const [orderDirection, setOrderDirection] = React.useState<OrderDirection>('desc');
 
-  // scrollViewRef removed: not needed with FlatList
+
 
   const { response, isLoading, error } = useListExtract({
     perPage: 4,
@@ -33,13 +33,13 @@ export const ExtractList = () => {
   const toggleOrder = () => setOrderDirection(prev => prev === 'asc' ? 'desc' : 'asc');
 
 
-  // Callbacks for swipe actions
+
   const handleDelete = (item: ListExtractItem) => {
-    // TODO: Implement delete logic (e.g., show confirm, call API, refresh list)
+
     alert(`Excluir lançamento: ${item.remetenteDestinatario || item.id}`);
   };
   const handleEdit = (item: ListExtractItem) => {
-    // TODO: Implement edit logic (e.g., open modal, navigate to edit screen)
+
     alert(`Editar lançamento: ${item.remetenteDestinatario || item.id}`);
   };
 
@@ -83,7 +83,7 @@ export const ExtractList = () => {
     </Swipeable>
   );
 
-  // Skeleton loader for list items (fixed size)
+
   const SKELETON_COUNT = 4;
   const renderSkeleton = () =>
     Array.from({ length: SKELETON_COUNT }).map((_, idx) => (
@@ -180,13 +180,12 @@ const createStyles = (theme: "light" | "dark") =>
       borderTopRightRadius: 32,
       paddingTop: 8,
       paddingHorizontal: 12,
-      // Remove marginTop so card starts at the top of its flex space
-      // Shadow for iOS
+
       shadowColor: '#000',
       shadowOffset: { width: 0, height: -4 },
       shadowOpacity: 0.10,
       shadowRadius: 12,
-      // Elevation for Android
+
       elevation: 10,
       overflow: 'hidden',
     },
@@ -222,7 +221,7 @@ const createStyles = (theme: "light" | "dark") =>
     fixedListHeight: {},
     scrollContent: { flexGrow: 1 },
     loader: { marginTop: 32 },
-    // Modern item styles
+
     modernItemContainer: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -331,14 +330,13 @@ const createStyles = (theme: "light" | "dark") =>
       opacity: 0.6,
       fontSize: 14,
     },
-    // Skeleton styles
+
     skeletonItem: {
       backgroundColor: Colors[theme].muted,
       opacity: 0.7,
       overflow: 'hidden',
     },
-// In your Colors.ts, add a lighter card color for both themes:
-// card: '#fff' (light), card: '#23272e' (dark) or similar
+
     skeletonTitle: {
       width: '60%',
       height: 18,
@@ -375,10 +373,3 @@ const createStyles = (theme: "light" | "dark") =>
     orderIcon: { marginRight: 4 },
   });
 
-// Adicione no seu Colors.ts:
-/// export const Colors = {
-///   ...,
-///   success: "#22c55e",
-///   error: "#E53935",
-///   ...
-/// }

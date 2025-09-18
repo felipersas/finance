@@ -39,7 +39,7 @@ const createStyles = (theme: 'light' | 'dark', type: 'delete' | 'edit') =>
       borderTopRightRadius: type === 'delete' ? 16 : 0,
       borderBottomRightRadius: type === 'delete' ? 16 : 0,
       marginHorizontal: 2,
-      marginBottom: 14, // Match the item marginBottom
+  marginBottom: 14,
     },
     actionText: {
       color: '#fff',

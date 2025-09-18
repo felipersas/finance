@@ -47,7 +47,7 @@ export const ChatPopup: React.FC<ChatPopupProps> = ({ visible, onClose }) => {
   const flatListRef = useRef<FlatList>(null);
   const chatMutation = useChatMutation();
 
-  // Theme colors
+
   const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
   const borderColor = useThemeColor({ light: '#E5E5EA', dark: '#38383A' }, 'tabIconDefault');
@@ -55,7 +55,7 @@ export const ChatPopup: React.FC<ChatPopupProps> = ({ visible, onClose }) => {
   const tintColor = useThemeColor({}, 'tint');
   const insets = useSafeAreaInsets();
 
-  // Scroll to bottom when new messages are added
+
   useEffect(() => {
     if (messages.length > 0) {
       setTimeout(() => {
@@ -101,13 +101,13 @@ export const ChatPopup: React.FC<ChatPopupProps> = ({ visible, onClose }) => {
         [{ text: strings.common.ok }]
       );
 
-      // Remove the user message if the API call failed
+
       setMessages(prev => prev.filter(msg => msg.id !== userMessage.id));
     }
   };
 
   const handleClose = () => {
-    // Reset the chat state when closing
+
     setMessages([{
       id: '1',
       text: strings.chat.helloMessage,
@@ -138,7 +138,7 @@ export const ChatPopup: React.FC<ChatPopupProps> = ({ visible, onClose }) => {
         style={[styles.container, { backgroundColor }, {paddingBottom: insets.bottom}, {paddingTop: insets.top}]}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        {/* Header */}
+
         <ThemedView style={[styles.header, { borderBottomColor: borderColor }]}>
           <ThemedText type="defaultSemiBold" style={styles.headerTitle}>
             {strings.chat.aiAssistant}
@@ -157,7 +157,7 @@ export const ChatPopup: React.FC<ChatPopupProps> = ({ visible, onClose }) => {
           </TouchableOpacity>
         </ThemedView>
 
-        {/* Messages */}
+
         <FlatList
           ref={flatListRef}
           data={messages}
@@ -168,7 +168,7 @@ export const ChatPopup: React.FC<ChatPopupProps> = ({ visible, onClose }) => {
           showsVerticalScrollIndicator={false}
         />
 
-        {/* Loading indicator */}
+
         {chatMutation.isPending && (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="small" color={tintColor} />
@@ -176,7 +176,7 @@ export const ChatPopup: React.FC<ChatPopupProps> = ({ visible, onClose }) => {
           </View>
         )}
 
-        {/* Input Area */}
+
         <ThemedView style={[styles.inputContainer, { borderTopColor: borderColor }]}>
           <View style={[styles.inputWrapper, { backgroundColor: inputBgColor }]}>
             <TextInput
