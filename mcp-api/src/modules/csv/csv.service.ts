@@ -183,10 +183,7 @@ export class CsvService {
         descricao: dto.descricao,
         tipoOperacao: parsedData.tipoOperacao?.toLowerCase() || null,
         remetenteDestinatario:
-          parsedData.remetenteDestinatario &&
-          parsedData.remetenteDestinatario.trim() !== ''
-            ? parsedData.remetenteDestinatario.toLowerCase()
-            : null,
+          parsedData.remetenteDestinatario?.toLowerCase() || null,
         documento: parsedData.documento || null,
         instituicaoFinanceira: parsedData.instituicaoFinanceira || null,
         codigoBanco: parsedData.codigoBanco || null,
@@ -276,7 +273,9 @@ export class CsvService {
 
     // Se não tem '-' e não achou tipoOperacao, salva tudo como remetenteDestinatario
     if (!cleanDescription.includes('-')) {
-      this.logger.debug(`Fallback: usando descrição inteira como remetenteDestinatario: "${cleanDescription}"`);
+      this.logger.debug(
+        `Fallback: usando descrição inteira como remetenteDestinatario: "${cleanDescription}"`,
+      );
       return { remetenteDestinatario: cleanDescription };
     }
 
