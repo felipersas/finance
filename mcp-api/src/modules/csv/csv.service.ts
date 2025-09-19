@@ -271,6 +271,10 @@ export class CsvService {
       if (result.tipoOperacao) return result;
     }
 
+    if (!cleanDescription.includes('-')) {
+      return { remetenteDestinatario: cleanDescription };
+    }
+
     return {};
   }
 
