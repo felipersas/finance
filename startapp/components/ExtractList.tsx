@@ -22,7 +22,7 @@ export const ExtractList = () => {
 
 
   const { response, isLoading, error, isFetching } = useListExtract({
-    perPage: 4,
+    perPage: 5,
     page: currentPage,
     orderDirection,
   });
@@ -61,7 +61,7 @@ export const ExtractList = () => {
       <View style={styles.modernItemContainer}>
         <View style={styles.modernItemLeft}>
           <Text style={styles.modernItemTitle} numberOfLines={1}>
-            {capitalizeEachWord(item.remetenteDestinatario ?? "")}
+            {capitalizeEachWord(item.remetenteDestinatario ?? item.descricao)}
           </Text>
           <Text style={styles.modernItemSubtitle} numberOfLines={1}>
             {item.data ? new Date(item.data).toLocaleDateString("pt-BR") : ""}
