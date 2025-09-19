@@ -373,6 +373,18 @@ export class CsvService {
       }
     }
 
+    // Se não conseguiu extrair nenhum campo útil, retorna tudo como remetenteDestinatario
+    if (
+      !parsed.tipoOperacao &&
+      !parsed.remetenteDestinatario &&
+      !parsed.documento &&
+      !parsed.codigoBanco &&
+      !parsed.agencia &&
+      !parsed.conta
+    ) {
+      return { remetenteDestinatario: description.trim() };
+    }
+
     return parsed;
   }
 }
