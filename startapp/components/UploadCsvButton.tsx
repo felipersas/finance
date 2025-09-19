@@ -4,16 +4,16 @@ import * as DocumentPicker from 'expo-document-picker';
 import { useUploadCsvMutation } from "@/hooks/useUploadCsv";
 import { useThemeColor } from '@/hooks/useThemeColor';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { Colors } from '@/constants/Colors';
+import { useTheme } from '@/hooks/useTheme';
 
 
 export default function UploadCsvButton() {
   const [selectedFile, setSelectedFile] = useState<DocumentPicker.DocumentPickerAsset | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
   const csvMutation = useUploadCsvMutation();
-  const backgroundColor = useThemeColor({}, "background");
-  const textColor = useThemeColor({}, "text");
-  const primaryColor = useThemeColor({}, "tint");
-  const mutedColor = useThemeColor({}, "muted");
+  const theme = useTheme()
+  const styles = createStyles(theme)
 
   const pickCsvFile = async () => {
     try {
@@ -56,14 +56,13 @@ export default function UploadCsvButton() {
       <TouchableOpacity
         style={[
           styles.iconButton,
-          { backgroundColor: primaryColor + '22' }
         ]}
         onPress={pickCsvFile}
         disabled={csvMutation.isPending}
         activeOpacity={0.7}
         accessibilityLabel="Selecionar arquivo CSV"
       >
-        <MaterialIcons color={primaryColor} name="add" size={32} />
+        <MaterialIcons color={Colors[theme].tint} name="add" size={32} />
       </TouchableOpacity>
       <Modal
         visible={modalVisible}
@@ -72,36 +71,34 @@ export default function UploadCsvButton() {
         onRequestClose={() => setModalVisible(false)}
       >
         <View style={styles.modalOverlay}>
-          <View style={[styles.modalContent, { backgroundColor }]}>
-            <Text style={[styles.modalTitle, { color: textColor }]}>Arquivo selecionado</Text>
-            <Text style={[styles.modalFileName, { color: mutedColor }]} numberOfLines={2}>
+          <View style={[styles.modalContent]}>
+            <Text style={[styles.modalTitle]}>Arquivo selecionado</Text>
+            <Text style={[styles.modalFileName]} numberOfLines={2}>
               {selectedFile?.name}
             </Text>
             <View style={styles.modalActions}>
               <TouchableOpacity
                 style={[
                   styles.modalButton,
-                  { backgroundColor:  mutedColor + '22' }
                 ]}
                 onPress={() => {
                   setModalVisible(false);
                   setSelectedFile(null);
                 }}
               >
-                <Text style={[styles.modalButtonText, { color: mutedColor }]}>Cancelar</Text>
+                <Text style={[styles.cancelButton, styles.cancelButton]}>Cancelar</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[
                   styles.modalButton,
-                  { backgroundColor: primaryColor + '22' }
                 ]}
                 onPress={uploadCsv}
                 disabled={csvMutation.isPending}
               >
                 {csvMutation.isPending ? (
-                  <ActivityIndicator color={primaryColor} />
+                  <ActivityIndicator color={Colors[theme].tint} />
                 ) : (
-                  <Text style={[styles.modalButtonText, { color: primaryColor }]}>Enviar</Text>
+                  <Text style={[styles.modalButtonText]}>Enviar</Text>
                 )}
               </TouchableOpacity>
             </View>
@@ -112,8 +109,10 @@ export default function UploadCsvButton() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles =  (theme: "light" | "dark") =>
+  StyleSheet.create({
   iconButton: {
+    backgroundColor: Colors[theme].background,
     height: 40,
     width: 40,
     borderRadius: 20,
@@ -127,6 +126,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modalContent: {
+    backgroundColor: Colors[theme].background,
     borderRadius: 16,
     padding: 20,
     minWidth: 240,
@@ -134,12 +134,14 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   modalTitle: {
+    color: Colors[theme].text,
     fontSize: 15,
     fontWeight: '500',
     marginBottom: 8,
     letterSpacing: 0.2,
   },
   modalFileName: {
+    color: Colors[theme].tint,
     fontSize: 13,
     marginBottom: 16,
     textAlign: 'center',
@@ -150,6 +152,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   modalButton: {
+    backgroundColor: Colors[theme].background,
     paddingVertical: 7,
     paddingHorizontal: 18,
     borderRadius: 14,
@@ -157,6 +160,13 @@ const styles = StyleSheet.create({
     marginHorizontal: 2,
   },
   modalButtonText: {
+    color: Colors[theme].tint,
+    fontWeight: '500',
+    fontSize: 14,
+    letterSpacing: 0.1,
+  },
+  cancelButton: {
+    color: Colors[theme].text,
     fontWeight: '500',
     fontSize: 14,
     letterSpacing: 0.1,
