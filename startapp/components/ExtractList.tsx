@@ -2,6 +2,7 @@ import { ListExtractItem, useListExtract } from "@/hooks/useListExtract";
 import { ThemedView } from "./ThemedView";
 import React from "react";
 import { FlatList, Text, TouchableOpacity, View, StyleSheet } from "react-native";
+import { FetchingOverlay } from "./FetchingOverlay";
 import Swipeable from 'react-native-gesture-handler/Swipeable';
 import { SwipeAction } from './SwipeAction';
 import { capitalizeEachWord } from "@/utils/formatters/capitalize-each-word";
@@ -21,7 +22,7 @@ export const ExtractList = () => {
 
 
 
-  const { response, isLoading, error } = useListExtract({
+  const { response, isLoading, error, isFetching } = useListExtract({
     perPage: 4,
     page: currentPage,
     orderDirection,
@@ -119,54 +120,54 @@ export const ExtractList = () => {
       </View>
       <View style={[styles.cardContainer, isLoading && styles.fixedListHeight]}>
         <View style={styles.pagination}>
-        <View style={styles.paginationIcon}>
-        <TouchableOpacity
-          onPress={() => setCurrentPage(p => Math.max(1, p - 1))}
-          disabled={currentPage === 1 || isLoading}
-          style={[
-            styles.pageIconButton,
-            (currentPage === 1 || isLoading) && styles.disabledButton
-          ]}
-          accessibilityLabel="Página anterior"
-        >
-          <MaterialIcons name="chevron-left" size={32} color={Colors[theme].text} />
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-          disabled={currentPage === totalPages || isLoading}
-          style={[
-            styles.pageIconButton,
-            (currentPage === totalPages || isLoading) && styles.disabledButton
-          ]}
-          accessibilityLabel="Próxima página"
-        >
-
-        <MaterialIcons name="chevron-right" size={32} color={Colors[theme].text} />
-        </TouchableOpacity>
+          <View style={styles.paginationIcon}>
+            <TouchableOpacity
+              onPress={() => setCurrentPage(p => Math.max(1, p - 1))}
+              disabled={currentPage === 1 || isLoading}
+              style={[
+                styles.pageIconButton,
+                (currentPage === 1 || isLoading) && styles.disabledButton
+              ]}
+              accessibilityLabel="Página anterior"
+            >
+              <MaterialIcons name="chevron-left" size={32} color={Colors[theme].text} />
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages || isLoading}
+              style={[
+                styles.pageIconButton,
+                (currentPage === totalPages || isLoading) && styles.disabledButton
+              ]}
+              accessibilityLabel="Próxima página"
+            >
+              <MaterialIcons name="chevron-right" size={32} color={Colors[theme].text} />
+            </TouchableOpacity>
+          </View>
+          {typeof totalResults === 'number' && totalResults > 0 && (
+            <Text style={styles.totalResultsText}>
+              {totalResults} resultados
+            </Text>
+          )}
         </View>
-        {typeof totalResults === 'number' && totalResults > 0 && (
-          <Text style={styles.totalResultsText}>
-            {totalResults} resultados
-          </Text>
-        )}
+        <View style={{ flex: 1 }}>
+          {(isLoading || isFetching) ? (
+            renderSkeleton()
+          ) : error ? (
+            <Text style={styles.emptyText}>Erro ao carregar dados.</Text>
+          ) : response?.data?.data?.length ? (
+            <FlatList
+              data={response.data.data}
+              renderItem={renderItem}
+              keyExtractor={item => item.id?.toString() || Math.random().toString()}
+              contentContainerStyle={styles.scrollContent}
+              style={styles.scrollView}
+            />
+          ) : (
+            <Text style={styles.emptyText}>Nenhum lançamento encontrado.</Text>
+          )}
+        </View>
       </View>
-        {isLoading ? (
-          renderSkeleton()
-        ) : error ? (
-          <Text style={styles.emptyText}>Erro ao carregar dados.</Text>
-        ) : response?.data?.data?.length ? (
-          <FlatList
-            data={response.data.data}
-            renderItem={renderItem}
-            keyExtractor={item => item.id?.toString() || Math.random().toString()}
-            contentContainerStyle={styles.scrollContent}
-            style={styles.scrollView}
-          />
-        ) : (
-          <Text style={styles.emptyText}>Nenhum lançamento encontrado.</Text>
-        )}
-      </View>
-
     </ThemedView>
   );
 };

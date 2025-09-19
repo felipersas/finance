@@ -15,13 +15,21 @@ export interface ListExtractItem {
 
 
 export const useListExtract = (params: PaginatedParams) => {
-  const { data: response, isLoading, error } = useQuery<ApiResponse<PaginatedResponse<ListExtractItem>>>({
-    staleTime: 1000 * 60 * 5, // 5 minutes
-    queryKey: ["list-extracts", params.page, params.perPage, params.orderDirection],
-    queryFn: () => getListExtract(params)
-  })
+  const {
+    data: response,
+    isLoading,
+    error,
+    isFetching
+  } = useQuery<ApiResponse<PaginatedResponse<ListExtractItem>>>(
+    {
+      staleTime: 1000 * 60 * 5,
+      queryKey: ["list-extracts", params.page, params.perPage, params.orderDirection],
+      queryFn: () => getListExtract(params),
+      refetchInterval: 45000
+    }
+  )
 
-  return { response, isLoading, error }
+  return { response, isLoading, error, isFetching }
 }
 
 async function getListExtract(params: PaginatedParams): Promise<ApiResponse<PaginatedResponse<ListExtractItem>>> {

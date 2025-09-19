@@ -45,7 +45,7 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
         await SecureStore.setItemAsync('token', data.token);
         await SecureStore.setItemAsync('user', data.name);
         setSession(JSON.stringify(sessionData));
-        showToast('success', 'Success!', response.data.message || 'Você fez login com sucesso.');
+        showToast('success', 'Successo!', response.data.message || 'Você fez login com sucesso.');
       } else {
         showToast('error', 'Login inválido', response.data.message || 'E-mail ou senha incorretos.');
       }
@@ -70,9 +70,9 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
         await SecureStore.setItemAsync('token', data.token);
         await SecureStore.setItemAsync('user', data.name);
         setSession(JSON.stringify(sessionData));
-        showToast('success', 'Success!', response.data.message || 'Você criou uma conta com sucesso.');
+        showToast('success', 'Successo!', response.data.message || 'Você criou uma conta com sucesso.');
       } else {
-        showToast('error', 'Sign Up Failed', response.data.message || 'Não foi possível criar a conta.');
+        showToast('error', 'Erro!', response.data.message || 'Não foi possível criar a conta.');
       }
     } catch (error: any) {
       handleApiError(error);
