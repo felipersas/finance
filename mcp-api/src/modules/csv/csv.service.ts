@@ -173,6 +173,7 @@ export class CsvService {
     userId: string,
   ): Promise<void> {
     const parsedData = this.parseDescription(dto.descricao);
+    console.log(parsedData);
 
     await this.prisma.extratoRecord.create({
       data: {
