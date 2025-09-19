@@ -2,7 +2,6 @@ import { ListExtractItem, useListExtract } from "@/hooks/useListExtract";
 import { ThemedView } from "./ThemedView";
 import React from "react";
 import { FlatList, Text, TouchableOpacity, View, StyleSheet } from "react-native";
-import { FetchingOverlay } from "./FetchingOverlay";
 import Swipeable from 'react-native-gesture-handler/Swipeable';
 import { SwipeAction } from './SwipeAction';
 import { capitalizeEachWord } from "@/utils/formatters/capitalize-each-word";
