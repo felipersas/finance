@@ -51,7 +51,9 @@ const createStyles = (theme: 'light' | 'dark') => StyleSheet.create({
   graficoContainer: {
     backgroundColor: Colors[theme].card,
     borderRadius: 16,
-    padding: 16,
+    padding: 20,
+    paddingLeft: 2,
+    paddingRight: 2,
     elevation: 2,
     marginBottom: 12,
     shadowColor: '#000',
@@ -120,8 +122,9 @@ export default function Home() {
               hideYAxisText
               hideDataPoints
               areaChart
-              xAxisLabelTextStyle={{ color: Colors[theme].text, fontSize: 12, opacity: 0.6 }}
-              spacing={46}
+              xAxisLabelTextStyle={{ color: Colors[theme].text, fontSize: 10, opacity: 0.6, textAlign: 'center' }}
+              maxValue={chartData.reduce((max, item) => (item.value > max ? item.value : max), 0) * 1.2}
+              spacing={50}
               isAnimated
               lineGradient
               curved
@@ -141,6 +144,50 @@ export default function Home() {
               showReferenceLine3={false}
               yAxisTextNumberOfLines={1}
               xAxisLength={chartData.length}
+              pointerConfig={{
+                pointerStripUptoDataPoint: true,
+                pointerStripHeight: 160,
+                pointerStripColor: Colors[theme].text,
+                pointerStripWidth: 2,
+                pointerColor: "transparent",
+                radius: 4,
+                pointerLabelWidth: 110,
+                pointerLabelHeight: 90,
+                pointerLabelComponent: (items: any[]) => {
+                  const item = items[0];
+                  return (
+                    <View
+                      style={{
+                        position: 'absolute',
+                        top: 10, // altura fixa do topo do gráfico
+                        left: 0,
+                        right: 0,
+                        alignSelf: 'center',
+                        height: 60,
+                        width: 110,
+                        backgroundColor: theme === 'dark' ? '#23272a' : '#fff',
+                        borderRadius: 8,
+                        shadowColor: '#000',
+                        shadowOpacity: 0.08,
+                        shadowRadius: 4,
+                        elevation: 4,
+                        borderWidth: 1,
+                        borderColor: Colors[theme].muted,
+                        zIndex: 10,
+                        marginLeft: -40,
+                        marginTop: -30,
+                      }}
+                    >
+                      <Text style={{ color: Colors[theme].text, fontSize: 12, opacity: 0.7, textAlign: 'center' }}>
+                        {item?.label}
+                      </Text>
+                      <Text style={{ color: Colors[theme].tint, fontWeight: 'bold', fontSize: 16, textAlign: 'center' }}>
+                        {formatMoneyView(item?.value?.toString() ?? '0')}
+                      </Text>
+                    </View>
+                  );
+                },
+              }}
             />
         </View>
         <View style={styles.categoriasContainer}>
