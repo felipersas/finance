@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { TouchableOpacity, Text, Alert, ActivityIndicator, StyleSheet, Modal, View } from 'react-native';
 import * as DocumentPicker from 'expo-document-picker';
 import { useUploadCsvMutation } from "@/hooks/useUploadCsv";
-import { useThemeColor } from '@/hooks/useThemeColor';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { Colors } from '@/constants/Colors';
 import { useTheme } from '@/hooks/useTheme';

@@ -8,6 +8,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 import { UserModule } from './modules/user/user.module';
 import { ExtractsModule } from './modules/extracts/extracts.module';
+import { AnalyticsModule } from './modules/analytics/analytics.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { ExtractsModule } from './modules/extracts/extracts.module';
     AuthModule,
     UserModule,
     ExtractsModule,
+    AnalyticsModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],
