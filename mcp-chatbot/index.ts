@@ -93,15 +93,25 @@ class MCPClient {
     let systemPrompt = prompt;
 
     if (userId) {
-      systemPrompt += `\n\nIMPORTANT USER CONTEXT:
-- You are working with data for userId: ${userId}
-- ALWAYS include WHERE user_id = ${userId} in ALL database queries
-- NEVER access data from other users
-- If no userId is provided, reject the request`;
-    }
+      systemPrompt += `
 
-    return systemPrompt;
-  }
+      CONTEXTO IMPORTANTE DE USUÁRIO:
+      - Você está operando exclusivamente com dados do userId: ${userId}
+      - Em TODAS as consultas ao banco de dados, inclua obrigatoriamente a cláusula: WHERE user_id = ${userId}
+      - Nunca acesse, utilize ou infira dados de outros usuários sob nenhuma circunstância.
+      - Não mencione o userId nas respostas ao usuário.
+      - Se não houver userId fornecido, recuse a solicitação de forma educada, explicando que é necessário um identificador de usuário para processar a análise financeira.`;
+          } else {
+            systemPrompt += `
+
+      CONTEXTO IMPORTANTE DE USUÁRIO:
+      - Nenhum userId foi fornecido.
+      - Recuse todas as solicitações e informe educadamente que é necessário um identificador de usuário válido para realizar a análise financeira.`;
+          }
+
+          return systemPrompt;
+      }
+
 
   // Process query with conversation history
   async processQuery(query: string, conversationId: string = 'default', userId?: string) {
