@@ -3,18 +3,17 @@ import React from 'react';
 import { Platform, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { AuthGuard } from '@/components/AuthGuard';
+import { ChatFAB } from '@/components/ChatFAB';
 import { HapticTab } from '@/components/HapticTab';
+import { ThemedText } from '@/components/ThemedText';
+import { ThemedView } from '@/components/ThemedView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import TabBarBackground from '@/components/ui/TabBarBackground';
 import { Colors } from '@/constants/Colors';
-import { strings } from '@/constants/Strings';
 import { useColorScheme } from '@/hooks/useColorScheme';
-import { ChatFAB } from '@/components/ChatFAB';
-import { AuthGuard } from '@/components/AuthGuard';
-import { ThemedText } from '@/components/ThemedText';
-import { useSession } from '@/providers/SessionProvider';
-import { ThemedView } from '@/components/ThemedView';
 import { useThemeColor } from '@/hooks/useThemeColor';
+import { useSession } from '@/providers/SessionProvider';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
 export default function TabLayout() {
@@ -76,15 +75,15 @@ export default function TabLayout() {
         <Tabs.Screen
           name="index"
           options={{
-            title: strings.navigation.home,
+            title: "Home",
             tabBarIcon: ({ color }) => <IconSymbol size={24} name="house.fill" color={color} />,
           }}
         />
         <Tabs.Screen
-          name="new"
+          name="transacoes"
           options={{
-            title: strings.navigation.new || "New",
-            tabBarIcon: ({ color }) => <IconSymbol size={24} name="plus" color={color} />,
+            title: 'Transações',
+            tabBarIcon: ({ color }) => <MaterialIcons size={24} name="list" color={color} />,
           }}
         />
       </Tabs>

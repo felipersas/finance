@@ -1,15 +1,16 @@
+import { Colors } from "@/constants/Colors";
 import { ListExtractItem, useListExtract } from "@/hooks/useListExtract";
-import { ThemedView } from "./ThemedView";
+import { useTheme } from "@/hooks/useTheme";
+import { capitalizeEachWord } from "@/utils/formatters/capitalize-each-word";
+import { formatMoneyView } from "@/utils/formatters/format-money";
+import Feather from '@expo/vector-icons/Feather';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import React from "react";
-import { FlatList, Text, TouchableOpacity, View, StyleSheet } from "react-native";
+import { FlatList, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import Swipeable from 'react-native-gesture-handler/Swipeable';
 import { SwipeAction } from './SwipeAction';
-import { capitalizeEachWord } from "@/utils/formatters/capitalize-each-word";
+import { ThemedView } from "./ThemedView";
 import UploadCsvButton from "./UploadCsvButton";
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import Feather from '@expo/vector-icons/Feather';
-import { Colors } from "@/constants/Colors";
-import { useTheme } from "@/hooks/useTheme";
 
 type OrderDirection = 'asc' | 'desc';
 
@@ -69,7 +70,7 @@ export const ExtractList = () => {
         </View>
         <View style={styles.modernItemRight}>
           <Text style={styles.modernItemValue} numberOfLines={1}>
-            R${Math.abs(item.valor).toFixed(2).replace(".", ",")}
+            {formatMoneyView(Math.abs(item.valor).toString())}
           </Text>
           <View style={styles.modernArrowCircle}>
             <Feather
