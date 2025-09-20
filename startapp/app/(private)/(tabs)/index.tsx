@@ -113,8 +113,8 @@ export default function Home() {
           <Text style={styles.sectionTitle}>Gastos últimos 7 dias</Text>
             <LineChart
               data={chartData}
-              height={120}
-              width={width - 64}
+              height={160}
+              width={width}
               color={Colors[theme].tint}
               startFillColor={Colors[theme].tint}
               endFillColor={Colors[theme].tint}
@@ -123,7 +123,7 @@ export default function Home() {
               hideDataPoints
               areaChart
               xAxisLabelTextStyle={{ color: Colors[theme].text, fontSize: 10, opacity: 0.6, textAlign: 'center' }}
-              maxValue={chartData.reduce((max, item) => (item.value > max ? item.value : max), 0) * 1.2}
+              maxValue={chartData.reduce((max, item) => (item.value > max ? item.value : max), 0) * 1.4}
               spacing={50}
               isAnimated
               lineGradient
