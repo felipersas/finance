@@ -145,6 +145,8 @@ class MCPClient {
         messages,
         tools: this.tools.length > 0 ? this.tools : undefined,
         tool_choice: "auto",
+        temperature: 0.2,
+        max_completion_tokens: 1300,
       });
 
       console.log("LLM Response:", response);
@@ -194,6 +196,8 @@ class MCPClient {
           messages,
           tools: this.tools.length > 0 ? this.tools : undefined,
           tool_choice: "auto",
+          temperature: 0.2,
+          max_completion_tokens: 1300,
         });
 
         const followUpChoice = followUpResponse.choices[0];
@@ -233,6 +237,8 @@ class MCPClient {
           const finalResponse = await this.llm.chat.completions.create({
             model,
             messages,
+            temperature: 0.2,
+            max_completion_tokens: 1300,
           });
 
           if (finalResponse.choices[0].message?.content) {
