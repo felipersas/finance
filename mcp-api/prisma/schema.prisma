@@ -14,7 +14,7 @@ datasource db {
 }
 
 enum ExtratoType {
-  Profissional
+  Empresa
   Pessoal
 }
 

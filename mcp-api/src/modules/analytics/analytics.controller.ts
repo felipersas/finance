@@ -9,9 +9,11 @@ export class AnalyticsController {
 
   @Get('')
   async getUserAnalytics(@CurrentUser() user: JwtUser) {
+    const data = await this.analyticsService.getUserAnalytics(user.userId);
+    console.log("data", data);
     return {
       message: 'Dados de usuário encontrados com sucesso',
-      data: await this.analyticsService.getUserAnalytics(user.userId),
+      data,
     };
   }
 }

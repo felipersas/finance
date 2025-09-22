@@ -1,11 +1,15 @@
 import { Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from 'src/prisma.service';
 
 @Injectable()
 export class AnalyticsRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findUserBalance(userId: string) {
+  async findUserBalance(
+    userId: string,
+    where?: Prisma.ExtratoRecordWhereInput,
+  ) {
     const now = new Date();
     const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
@@ -14,38 +18,66 @@ export class AnalyticsRepository {
         valor: true,
       },
       where: {
+        ...where,
         userId,
         createdAt: {
           gte: firstDayOfMonth,
+          ...(<Prisma.ExtratoRecordWhereInput>where?.createdAt || {}),
         },
       },
     });
   }
 
-  async findUser7daysActivity(userId: string) {
-    const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+  async findUser7daysActivity(
+    userId: string,
+    where?: Prisma.ExtratoRecordWhereInput,
+  ) {
+    const now = new Date();
+    const start = new Date(
+      Date.UTC(
+        now.getUTCFullYear(),
+        now.getUTCMonth(),
+        now.getUTCDate() - 6,
+        0,
+        0,
+        0,
+        0,
+      ),
+    );
+    const end = new Date(
+      Date.UTC(
+        now.getUTCFullYear(),
+        now.getUTCMonth(),
+        now.getUTCDate(),
+        23,
+        59,
+        59,
+        999,
+      ),
+    );
+
+    console.log({ start, end });
 
     const records = await this.prisma.extratoRecord.findMany({
       where: {
+        ...where,
         userId,
-        valor: { lt: 0 },
-        createdAt: {
-          gte: sevenDaysAgo,
+        data: {
+          // <-- use "data" aqui!
+          gte: start,
+          lte: end,
         },
+        valor: { lt: 0 }, // só gastos
       },
-      orderBy: {
-        createdAt: 'asc',
-      },
-      select: {
-        valor: true,
-        createdAt: true,
-      },
+      orderBy: { data: 'asc' },
+      select: { valor: true, data: true },
     });
+
+    console.log(records);
 
     const spentPerDay: Record<string, number> = {};
     for (const rec of records) {
-      const day = rec.createdAt.toISOString().slice(0, 10);
+      const day = rec.data.toISOString().slice(0, 10);
       const value =
         typeof rec.valor === 'object' &&
         typeof rec.valor.toNumber === 'function'

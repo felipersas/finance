@@ -11,7 +11,7 @@ export interface ListExtractItem {
   descricao: string
   remetenteDestinatario: string
   data: string
-  tipo: 'Pessoal' | 'Profissional';
+  tipo: 'Pessoal' | 'Empresa';
 }
 
 

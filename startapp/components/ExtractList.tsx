@@ -29,7 +29,7 @@ export const ExtractList = () => {
   const updateTipoMutation = useUpdateTipoExtract();
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [selectedTipo, setSelectedTipo] = useState<'Pessoal' | 'Profissional'>('Pessoal');
+  const [selectedTipo, setSelectedTipo] = useState<'Pessoal' | 'Empresa'>('Pessoal');
   const totalPages = response?.data?.pages || 1;
   const totalResults = response?.data?.items || 0;
   const toggleOrder = () => setOrderDirection(prev => prev === 'asc' ? 'desc' : 'asc');
@@ -59,7 +59,7 @@ export const ExtractList = () => {
     }
   };
 
-  const handleChangeTipo = async (tipo: 'Pessoal' | 'Profissional') => {
+  const handleChangeTipo = async (tipo: 'Pessoal' | 'Empresa') => {
     if (!selectedId) return;
     await updateTipoMutation.mutateAsync(
       { id: selectedId, tipo },
@@ -106,20 +106,20 @@ export const ExtractList = () => {
               onPress={() => handleOpenTipoModal(item.id)}
               style={[
                 styles.categoryBadge,
-                item.tipo === 'Profissional'
-                  ? styles.categoryProfissional
+                item.tipo === 'Empresa'
+                  ? styles.categoryEmpresa
                   : styles.categoryPessoal,
                 { alignSelf: 'flex-end', marginTop: 8 }
               ]}
-              accessibilityLabel={item.tipo === 'Profissional' ? 'Categoria profissional' : 'Categoria pessoal'}
+              accessibilityLabel={item.tipo === 'Empresa' ? 'Categoria empresa' : 'Categoria pessoal'}
             >
               <Text style={[
                 styles.categoryBadgeText,
-                item.tipo === 'Profissional'
-                  ? styles.categoryProfissionalText
+                item.tipo === 'Empresa'
+                  ? styles.categoryEmpresaText
                   : styles.categoryPessoalText
               ]}>
-                {item.tipo === 'Profissional' ? 'PRO' : 'PES'}
+                {item.tipo === 'Empresa' ? 'EMP' : 'PES'}
               </Text>
             </TouchableOpacity>
           </View>
@@ -232,15 +232,15 @@ export const ExtractList = () => {
             <TouchableOpacity
               style={[
                 styles.tipoButton,
-                selectedTipo === 'Profissional' ? styles.tipoButtonProfissional : styles.tipoButtonDefault
+                selectedTipo === 'Empresa' ? styles.tipoButtonEmpresa : styles.tipoButtonDefault
               ]}
-              onPress={() => handleChangeTipo('Profissional')}
+              onPress={() => handleChangeTipo('Empresa')}
             >
-              <Text style={styles.tipoTextProfissional}>Profissional</Text>
+              <Text style={styles.tipoTextEmpresa}>Empresa</Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.cancelButton}>
               <Text style={styles.cancelText}>Cancelar</Text>
-            </TouchableOpacity>
+              </TouchableOpacity>
           </View>
         </View>
       </Modal>
@@ -261,7 +261,7 @@ const createStyles = (theme: "light" | "dark") =>
       backgroundColor: 'transparent',
       marginLeft: 0,
     },
-    categoryProfissional: {
+    categoryEmpresa: {
       borderColor: Colors[theme].tint,
     },
     categoryPessoal: {
@@ -272,7 +272,7 @@ const createStyles = (theme: "light" | "dark") =>
       fontSize: 11,
       letterSpacing: 0.5,
     },
-    categoryProfissionalText: {
+    categoryEmpresaText: {
       color: Colors[theme].tint,
     },
     categoryPessoalText: {
@@ -512,7 +512,7 @@ const createStyles = (theme: "light" | "dark") =>
       borderColor: Colors.success,
       backgroundColor: Colors.success + '22',
     },
-    tipoButtonProfissional: {
+    tipoButtonEmpresa: {
       borderWidth: 2,
       borderColor: Colors[theme].tint,
       backgroundColor: Colors[theme].tint + '22',
@@ -527,7 +527,7 @@ const createStyles = (theme: "light" | "dark") =>
       fontWeight: 'bold',
       fontSize: 15,
     },
-    tipoTextProfissional: {
+    tipoTextEmpresa: {
       color: Colors[theme].tint,
       fontWeight: 'bold',
       fontSize: 15,

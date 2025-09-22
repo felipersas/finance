@@ -36,6 +36,7 @@ export const useUploadCsvMutation = () => {
     mutationFn: uploadCsv,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['list-extracts'] });
+      queryClient.invalidateQueries({ queryKey: ['analytics'] });
     },
   });
 };

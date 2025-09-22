@@ -3,7 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 interface UpdateTipoParams {
   id: string;
-  tipo: 'Pessoal' | 'Profissional';
+  tipo: 'Pessoal' | 'Empresa';
 }
 
 export function useUpdateTipoExtract() {
