@@ -13,6 +13,11 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum ExtratoType {
+  Profissional
+  Pessoal
+}
+
 model ExtratoRecord {
   id                     String   @id @default(uuid())
   userId                 String?   @map("user_id")
@@ -27,6 +32,7 @@ model ExtratoRecord {
   codigoBanco           String?  @map("codigo_banco") @db.VarChar(10)
   agencia               String?  @db.VarChar(20)
   conta                 String?  @db.VarChar(50)
+  tipo                  ExtratoType?
   createdAt             DateTime @default(now()) @map("created_at")
 
   user User? @relation(fields: [userId], references: [id], onDelete: Cascade)

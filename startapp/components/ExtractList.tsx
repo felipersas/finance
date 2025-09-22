@@ -1,12 +1,13 @@
 import { Colors } from "@/constants/Colors";
+import { useUpdateTipoExtract } from "@/hooks/mutations/useUpdateTipoExtract";
 import { ListExtractItem, useListExtract } from "@/hooks/useListExtract";
 import { useTheme } from "@/hooks/useTheme";
 import { capitalizeEachWord } from "@/utils/formatters/capitalize-each-word";
 import { formatMoneyView } from "@/utils/formatters/format-money";
 import Feather from '@expo/vector-icons/Feather';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import React from "react";
-import { FlatList, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import React, { useState } from "react";
+import { FlatList, Modal, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import Swipeable from 'react-native-gesture-handler/Swipeable';
 import { SwipeAction } from './SwipeAction';
 import { ThemedView } from "./ThemedView";
@@ -14,33 +15,31 @@ import UploadCsvButton from "./UploadCsvButton";
 
 type OrderDirection = 'asc' | 'desc';
 
+
 export const ExtractList = () => {
   const theme = useTheme();
   const styles = createStyles(theme);
   const [currentPage, setCurrentPage] = React.useState(1);
   const [orderDirection, setOrderDirection] = React.useState<OrderDirection>('desc');
-
-
-
   const { response, isLoading, error, isFetching } = useListExtract({
     perPage: 5,
     page: currentPage,
     orderDirection,
   });
-
+  const updateTipoMutation = useUpdateTipoExtract();
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedTipo, setSelectedTipo] = useState<'Pessoal' | 'Profissional'>('Pessoal');
   const totalPages = response?.data?.pages || 1;
   const totalResults = response?.data?.items || 0;
-
   const toggleOrder = () => setOrderDirection(prev => prev === 'asc' ? 'desc' : 'asc');
 
 
 
   const handleDelete = (item: ListExtractItem) => {
-
     alert(`Excluir lançamento: ${item.remetenteDestinatario || item.id}`);
   };
   const handleEdit = (item: ListExtractItem) => {
-
     alert(`Editar lançamento: ${item.remetenteDestinatario || item.id}`);
   };
 
@@ -50,6 +49,27 @@ export const ExtractList = () => {
   const renderRightActions = (item: ListExtractItem) => (
     <SwipeAction type="delete" onPress={() => handleDelete(item)} />
   );
+
+  const handleOpenTipoModal = (id: string) => {
+    const item = response?.data?.data?.find(i => i.id === id);
+    if (item) {
+      setSelectedId(id);
+      setSelectedTipo(item.tipo);
+      setModalVisible(true);
+    }
+  };
+
+  const handleChangeTipo = async (tipo: 'Pessoal' | 'Profissional') => {
+    if (!selectedId) return;
+    await updateTipoMutation.mutate(
+      { id: selectedId, tipo },
+      {
+        onSuccess: () => setModalVisible(false),
+        onSettled: () => setSelectedTipo(tipo),
+      }
+    );
+
+  };
 
   const renderItem = ({ item }: { item: ListExtractItem }) => (
     <Swipeable
@@ -68,18 +88,41 @@ export const ExtractList = () => {
             {item.data ? new Date(item.data).toLocaleDateString("pt-BR") : ""}
           </Text>
         </View>
-        <View style={styles.modernItemRight}>
-          <Text style={styles.modernItemValue} numberOfLines={1}>
-            {formatMoneyView(Math.abs(item.valor).toString())}
-          </Text>
-          <View style={styles.modernArrowCircle}>
-            <Feather
-              name={item.valor >= 0 ? "arrow-down-left" : "arrow-up-right"}
-              size={18}
-              color={item.valor >= 0 ? Colors.success : Colors.error}
-            />
+          <View style={styles.modernItemRight}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end' }}>
+              <Text style={styles.modernItemValue} numberOfLines={1}>
+                {formatMoneyView(Math.abs(item.valor).toString())}
+              </Text>
+              <View style={styles.modernArrowCircle}>
+                <Feather
+                  name={item.valor >= 0 ? "arrow-down-left" : "arrow-up-right"}
+                  size={18}
+                  color={item.valor >= 0 ? Colors.success : Colors.error}
+                />
+              </View>
+            </View>
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={() => handleOpenTipoModal(item.id)}
+              style={[
+                styles.categoryBadge,
+                item.tipo === 'Profissional'
+                  ? styles.categoryProfissional
+                  : styles.categoryPessoal,
+                { alignSelf: 'flex-end', marginTop: 8 }
+              ]}
+              accessibilityLabel={item.tipo === 'Profissional' ? 'Categoria profissional' : 'Categoria pessoal'}
+            >
+              <Text style={[
+                styles.categoryBadgeText,
+                item.tipo === 'Profissional'
+                  ? styles.categoryProfissionalText
+                  : styles.categoryPessoalText
+              ]}>
+                {item.tipo === 'Profissional' ? 'PRO' : 'PES'}
+              </Text>
+            </TouchableOpacity>
           </View>
-        </View>
       </View>
     </Swipeable>
   );
@@ -168,12 +211,73 @@ export const ExtractList = () => {
           )}
         </View>
       </View>
+      <Modal
+        visible={modalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            <Text style={styles.modalTitle}>Alterar tipo da transação</Text>
+            <TouchableOpacity
+              style={[
+                styles.tipoButton,
+                selectedTipo === 'Pessoal' ? styles.tipoButtonPessoal : styles.tipoButtonDefault
+              ]}
+              onPress={() => handleChangeTipo('Pessoal')}
+            >
+              <Text style={styles.tipoTextPessoal}>Pessoal</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.tipoButton,
+                selectedTipo === 'Profissional' ? styles.tipoButtonProfissional : styles.tipoButtonDefault
+              ]}
+              onPress={() => handleChangeTipo('Profissional')}
+            >
+              <Text style={styles.tipoTextProfissional}>Profissional</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.cancelButton}>
+              <Text style={styles.cancelText}>Cancelar</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </ThemedView>
   );
 };
 
 const createStyles = (theme: "light" | "dark") =>
   StyleSheet.create({
+    categoryBadge: {
+      minWidth: 38,
+      height: 22,
+      borderRadius: 11,
+      paddingHorizontal: 10,
+      justifyContent: 'center',
+      alignItems: 'center',
+      borderWidth: 1.5,
+      backgroundColor: 'transparent',
+      marginLeft: 0,
+    },
+    categoryProfissional: {
+      borderColor: Colors[theme].tint,
+    },
+    categoryPessoal: {
+      borderColor: Colors.success,
+    },
+    categoryBadgeText: {
+      fontWeight: 'bold',
+      fontSize: 11,
+      letterSpacing: 0.5,
+    },
+    categoryProfissionalText: {
+      color: Colors[theme].tint,
+    },
+    categoryPessoalText: {
+      color: Colors.success,
+    },
     cardContainer: {
       flex: 1,
       backgroundColor: Colors[theme].card || '#fff',
@@ -250,7 +354,7 @@ const createStyles = (theme: "light" | "dark") =>
       letterSpacing: 0.2,
     },
     modernItemRight: {
-      flexDirection: 'row',
+      flexDirection: 'column',
       alignItems: 'center',
       marginLeft: 16,
       gap: 8,
@@ -372,5 +476,69 @@ const createStyles = (theme: "light" | "dark") =>
       paddingHorizontal: 14,
     },
     orderIcon: { marginRight: 4 },
+    modalOverlay: {
+      flex: 1,
+      backgroundColor: theme === 'dark' ? 'rgba(0,0,0,0.7)' : 'rgba(0,0,0,0.3)',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    modalContainer: {
+      backgroundColor: Colors[theme].card,
+      borderRadius: 16,
+      padding: 24,
+      minWidth: 260,
+      alignItems: 'center',
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.15,
+      shadowRadius: 8,
+      elevation: 6,
+    },
+    modalTitle: {
+      fontWeight: 'bold',
+      fontSize: 16,
+      marginBottom: 16,
+      color: Colors[theme].text,
+    },
+    tipoButton: {
+      borderRadius: 8,
+      padding: 12,
+      marginBottom: 12,
+      width: 180,
+      alignItems: 'center',
+    },
+    tipoButtonPessoal: {
+      borderWidth: 2,
+      borderColor: Colors.success,
+      backgroundColor: Colors.success + '22',
+    },
+    tipoButtonProfissional: {
+      borderWidth: 2,
+      borderColor: Colors[theme].tint,
+      backgroundColor: Colors[theme].tint + '22',
+    },
+    tipoButtonDefault: {
+      borderWidth: 1,
+      borderColor: '#ccc',
+      backgroundColor: Colors[theme].background,
+    },
+    tipoTextPessoal: {
+      color: Colors.success,
+      fontWeight: 'bold',
+      fontSize: 15,
+    },
+    tipoTextProfissional: {
+      color: Colors[theme].tint,
+      fontWeight: 'bold',
+      fontSize: 15,
+    },
+    cancelButton: {
+      marginTop: 16,
+    },
+    cancelText: {
+      color: Colors[theme].text,
+      opacity: 0.6,
+      fontSize: 15,
+    },
   });
 

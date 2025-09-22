@@ -11,6 +11,7 @@ export interface ListExtractItem {
   descricao: string
   remetenteDestinatario: string
   data: string
+  tipo: 'Pessoal' | 'Profissional';
 }
 
 
@@ -22,7 +23,7 @@ export const useListExtract = (params: PaginatedParams) => {
     isFetching
   } = useQuery<ApiResponse<PaginatedResponse<ListExtractItem>>>(
     {
-      staleTime: 1000 * 60 * 5,
+  staleTime: 0,
       queryKey: ["list-extracts", params.page, params.perPage, params.orderDirection],
       queryFn: () => getListExtract(params),
       refetchInterval: 45000

@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PaginatedParamsDto } from 'src/common/dtos/paginated-params.dto';
 import { ExtractsRepository } from './extracts.repository';
+import { ExtratoType } from '@prisma/client';
 
 @Injectable()
 export class ExtractsService {
@@ -13,5 +14,9 @@ export class ExtractsService {
       params.orderDirection,
       userId,
     );
+  }
+
+  async updateTipo(id: string, tipo: ExtratoType, userId: string) {
+    return await this.extractsRepository.updateTipo(id, tipo, userId);
   }
 }

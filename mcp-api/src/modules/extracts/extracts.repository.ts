@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { ExtratoType } from '@prisma/client';
 import paginatedResponse from 'src/common/utils/paginated-response';
 import { PrismaService } from 'src/prisma.service';
 
@@ -30,9 +31,22 @@ export class ExtractsRepository {
         valor: true,
         remetenteDestinatario: true,
         descricao: true,
+        tipo: true,
       },
     });
     const total = await this.prisma.extratoRecord.count({ where: { userId } });
     return paginatedResponse(perPage, total, extracts);
+  }
+
+  async updateTipo(id: string, tipo: ExtratoType, userId: string) {
+    return this.prisma.extratoRecord.update({
+      where: {
+        id,
+        userId,
+      },
+      data: {
+        tipo,
+      },
+    });
   }
 }
