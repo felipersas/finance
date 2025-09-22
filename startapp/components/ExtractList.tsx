@@ -61,7 +61,7 @@ export const ExtractList = () => {
 
   const handleChangeTipo = async (tipo: 'Pessoal' | 'Profissional') => {
     if (!selectedId) return;
-    await updateTipoMutation.mutate(
+    await updateTipoMutation.mutateAsync(
       { id: selectedId, tipo },
       {
         onSuccess: () => setModalVisible(false),
