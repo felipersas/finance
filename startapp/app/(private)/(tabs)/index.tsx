@@ -3,6 +3,7 @@ import { Colors } from '@/constants/Colors';
 import { useGetAnalytics } from '@/hooks/useAnalytics';
 import { useTheme } from '@/hooks/useTheme';
 import { formatMoneyView } from '@/utils/formatters/format-money';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
 import React, { useState } from 'react';
 import { ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
@@ -127,23 +128,49 @@ export default function Home() {
   return (
     <ThemedView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={styles.saldoContainer}>
-          <Text style={styles.saldoLabel}>Saldo total</Text>
-          <Text style={styles.saldoValor}>
+        {/* Card de saldo total com empresa e pessoal lado a lado */}
+        <View
+          style={{
+            backgroundColor: Colors[theme].card,
+            borderRadius: 16,
+            padding: 20,
+            marginBottom: 12,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 1 },
+            shadowOpacity: 0.06,
+            shadowRadius: 2,
+            elevation: 2,
+            minWidth: 280,
+          }}
+        >
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+            <Text style={[styles.saldoLabel, { flex: 1 }]}>Saldo total</Text>
+            {/* Ícone de carteira */}
+            <View>
+              <MaterialIcons name="account-balance-wallet" size={28} color={Colors[theme].tint} />
+            </View>
+          </View>
+          <Text style={[styles.saldoValor, { fontSize: 32, marginBottom: 12 }]}>
             {isLoading ? '...' : formatMoneyView((analytics?.saldoTotal ?? 0).toString())}
           </Text>
-        </View>
-        <View style={styles.saldoContainer}>
-          <Text style={styles.saldoLabel}>Saldo empresa</Text>
-          <Text style={styles.saldoValor}>
-            {isLoading ? '...' : formatMoneyView((analytics?.saldoEmpresa ?? 0).toString())}
-          </Text>
-        </View>
-        <View style={styles.saldoContainer}>
-          <Text style={styles.saldoLabel}>Saldo pessoal</Text>
-          <Text style={styles.saldoValor}>
-            {isLoading ? '...' : formatMoneyView((analytics?.saldoPessoal ?? 0).toString())}
-          </Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+            {/* Empresa */}
+            <View style={{ flex: 1, alignItems: 'center' }}>
+              <Text style={[styles.saldoLabel, { fontSize: 14, marginBottom: 2 }]}>Empresa</Text>
+              <Text style={[styles.saldoValor, { fontSize: 16 }]}>
+                {isLoading ? '...' : formatMoneyView((analytics?.saldoEmpresa ?? 0).toString())}
+              </Text>
+            </View>
+            {/* Linha vertical separadora */}
+            <View style={{ width: 1, height: 32, backgroundColor: Colors[theme].muted, marginHorizontal: 12, opacity: 0.4 }} />
+            {/* Pessoal */}
+            <View style={{ flex: 1, alignItems: 'center' }}>
+              <Text style={[styles.saldoLabel, { fontSize: 14, marginBottom: 2 }]}>Pessoal</Text>
+              <Text style={[styles.saldoValor, { fontSize: 16 }]}>
+                {isLoading ? '...' : formatMoneyView((analytics?.saldoPessoal ?? 0).toString())}
+              </Text>
+            </View>
+          </View>
         </View>
         <View style={styles.graficoContainer}>
           <Text style={styles.sectionTitle}>Gastos últimos 7 dias</Text>
