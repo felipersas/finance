@@ -3,12 +3,12 @@ import { APP_GUARD } from '@nestjs/core';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { ConfigService } from '@nestjs/config';
-import { AuthService } from './auth.service';
-import { AuthController } from './auth.controller';
-import { JwtAuthGuard } from './guards/jwt-auth.guard';
-import { LocalAuthGuard } from './guards/local-auth.guard';
-import { JwtStrategy } from './strategies/jwt.strategy';
-import { LocalStrategy } from './strategies/local.strategy';
+import { AuthService } from './domain/services/auth.service';
+import { AuthController } from './infrastructure/adapters/controllers/auth.controller';
+import { JwtAuthGuard } from './infrastructure/adapters/guards/jwt-auth.guard';
+import { LocalAuthGuard } from './infrastructure/adapters/guards/local-auth.guard';
+import { JwtStrategy } from './domain/services/jwt.strategy';
+import { LocalStrategy } from './domain/services/local.strategy';
 import { UserModule } from '../user/user.module';
 
 @Module({
@@ -30,6 +30,18 @@ import { UserModule } from '../user/user.module';
   ],
   controllers: [AuthController],
   providers: [
+    {
+      provide: 'AuthServicePort',
+      useClass: AuthService,
+    },
+    {
+      provide: 'JwtStrategyPort',
+      useClass: JwtStrategy,
+    },
+    {
+      provide: 'LocalStrategyPort',
+      useClass: LocalStrategy,
+    },
     AuthService,
     JwtStrategy,
     LocalStrategy,
@@ -37,7 +49,7 @@ import { UserModule } from '../user/user.module';
     LocalAuthGuard,
     {
       provide: APP_GUARD,
-      useClass: JwtAuthGuard, // Use the new Passport-based guard
+      useClass: JwtAuthGuard,
     },
   ],
   exports: [AuthService, JwtAuthGuard, LocalAuthGuard],

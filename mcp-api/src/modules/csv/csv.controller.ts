@@ -8,13 +8,17 @@ import {
   Query,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { CsvService } from './csv.service';
+import type { CsvServicePort } from './domain/ports/csv-service.port';
+import { Inject } from '@nestjs/common';
 import type { JwtUser } from '../auth/strategies/jwt.strategy';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 
 @Controller('csv')
 export class CsvController {
-  constructor(private readonly csvService: CsvService) {}
+  constructor(
+    @Inject('CsvServicePort')
+    private readonly csvService: CsvServicePort,
+  ) {}
 
   @Post('upload')
   @UseInterceptors(FileInterceptor('file'))
