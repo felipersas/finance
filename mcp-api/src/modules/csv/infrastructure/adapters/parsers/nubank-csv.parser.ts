@@ -4,6 +4,20 @@ import { Readable } from 'stream';
 import type { CsvParserPort } from '../../../domain/ports/csv-parser.port';
 import type { ParsedCsvRecord } from '../../../domain/types/csv.types';
 
+// Função utilitária para extrair campos da descrição Nubank
+function parseNubankDescription(descricao: string): Record<string, string> {
+  // Divide por ' - ' (traço e espaço)
+  const parts = descricao.split(' - ');
+  // Mapeamento para os campos esperados pelo DTO/banco
+  const mapped: Record<string, string> = {};
+  if (parts[0]) mapped.tipoOperacao = parts[0].trim();
+  if (parts[1]) mapped.remetenteDestinatario = parts[1].trim();
+  if (parts[2]) mapped.documento = parts[2].trim();
+  if (parts[3]) mapped.instituicaoFinanceira = parts[3].trim();
+  if (parts[4]) mapped.extra = parts.slice(4).join(' - ').trim();
+  return mapped;
+}
+
 @Injectable()
 export class NubankCsvParser implements CsvParserPort {
   async supports(buffer: Buffer): Promise<boolean> {
@@ -21,16 +35,25 @@ export class NubankCsvParser implements CsvParserPort {
       stream
         .pipe(
           parse({
-            columns: ['Data', 'Valor', 'Identificador', 'Descricao'],
+            columns: ['Data', 'Valor', 'Identificador', 'Descrição'],
             skip_empty_lines: true,
             trim: true,
             from_line: 2,
           }),
         )
-        .on('data', (data) => {
-          // Valor pode vir como string, converter para number
-          data.valor = Number(data.valor);
-          records.push(data);
+         .on('data', (data: Record<string, unknown>) => {
+           // Tipagem explícita dos campos esperados
+           const base = {
+             data: String(data['Data'] ?? ''),
+             valor: Number(data['Valor'] ?? 0),
+             identificador: String(data['Identificador'] ?? ''),
+             descricao: String(data['Descrição'] ?? ''),
+           };
+           // Extrai campos da descrição
+           const parsedDescricao = parseNubankDescription(base.descricao);
+           // Mescla os campos extraídos ao registro original
+           const merged: ParsedCsvRecord = { ...base, ...parsedDescricao };
+           records.push(merged);
         })
         .on('error', (error) => reject(error))
         .on('end', () => resolve(records));
