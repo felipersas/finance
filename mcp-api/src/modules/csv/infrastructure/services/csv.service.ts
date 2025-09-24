@@ -162,9 +162,7 @@ export class CsvService implements CsvServicePort {
     if (!dateString?.trim()) return null;
     const cleanDate = dateString.trim();
     // Try DD/MM/YYYY, DD-MM-YYYY, DD.MM.YYYY
-    const ddmmyyyy = cleanDate.match(
-      /^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})$/,
-    );
+    const ddmmyyyy = cleanDate.match(/^(\d{1,2})[/\-.](\d{1,2})[/\-.](\d{4})$/);
     if (ddmmyyyy) {
       return this.createValidatedDate(
         parseInt(ddmmyyyy[3], 10),

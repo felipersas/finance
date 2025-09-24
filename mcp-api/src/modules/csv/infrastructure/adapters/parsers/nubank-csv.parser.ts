@@ -23,8 +23,8 @@ export class NubankCsvParser implements CsvParserPort {
   async supports(buffer: Buffer): Promise<boolean> {
     // Nubank CSV geralmente tem header: "Data,Valor,Identificador,Descricao"
     const firstLine = buffer.toString('utf8').split('\n')[0];
-    return (
-      firstLine.trim().toLowerCase() === 'data,valor,identificador,descrição'
+    return await Promise.resolve(
+      firstLine.trim().toLowerCase() === 'data,valor,identificador,descrição',
     );
   }
 
@@ -41,19 +41,26 @@ export class NubankCsvParser implements CsvParserPort {
             from_line: 2,
           }),
         )
-         .on('data', (data: Record<string, unknown>) => {
-           // Tipagem explícita dos campos esperados
-           const base = {
-             data: String(data['Data'] ?? ''),
-             valor: Number(data['Valor'] ?? 0),
-             identificador: String(data['Identificador'] ?? ''),
-             descricao: String(data['Descrição'] ?? ''),
-           };
-           // Extrai campos da descrição
-           const parsedDescricao = parseNubankDescription(base.descricao);
-           // Mescla os campos extraídos ao registro original
-           const merged: ParsedCsvRecord = { ...base, ...parsedDescricao };
-           records.push(merged);
+        .on('data', (data: ParsedCsvRecord) => {
+          // Tipagem explícita dos campos esperados
+          const base: ParsedCsvRecord = {
+            data: typeof data['Data'] === 'string' ? data['Data'] : '',
+            valor:
+              typeof data['Valor'] === 'number'
+                ? data['Valor']
+                : Number(data['Valor'] ?? 0),
+            identificador:
+              typeof data['Identificador'] === 'string'
+                ? data['Identificador']
+                : '',
+            descricao:
+              typeof data['Descrição'] === 'string' ? data['Descrição'] : '',
+          };
+          // Extrai campos da descrição
+          const parsedDescricao = parseNubankDescription(base.descricao);
+          // Mescla os campos extraídos ao registro original
+          const merged: ParsedCsvRecord = { ...base, ...parsedDescricao };
+          records.push(merged);
         })
         .on('error', (error) => reject(error))
         .on('end', () => resolve(records));
