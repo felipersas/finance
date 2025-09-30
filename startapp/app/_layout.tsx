@@ -2,21 +2,22 @@ import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, View, ActivityIndicator, Platform } from 'react-native';
 import * as SystemUI from 'expo-system-ui';
+import { ActivityIndicator, Platform, StyleSheet, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 
-import { SessionProvider, useSession } from '@/providers/SessionProvider';
-import { useColorScheme } from '@/hooks/useColorScheme';
-import { QueryProvider } from '@/providers/QueryProvider';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { SplashScreenController } from './splash';
 import { ThemedView } from '@/components/ThemedView';
-import { useThemeColor } from '@/hooks/useThemeColor';
-import { useEffect } from 'react';
-import { Toast } from 'react-native-toast-message/lib/src/Toast';
 import toastConfig from '@/config/ToastConfig';
+import { useColorScheme } from '@/hooks/useColorScheme';
+import { useThemeColor } from '@/hooks/useThemeColor';
+import { QueryProvider } from '@/providers/QueryProvider';
+import { SessionProvider, useSession } from '@/providers/SessionProvider';
+import { useEffect } from 'react';
+import { LogLevel, OneSignal } from 'react-native-onesignal';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { Toast } from 'react-native-toast-message/lib/src/Toast';
+import { SplashScreenController } from './splash';
 
 function RootNavigator() {
   const { session, isLoading } = useSession();
@@ -78,9 +79,22 @@ export default function RootLayout() {
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
 
+
+    // Initialize OneSignal in useEffect to ensure it runs only once
+    useEffect(() => {
+    // Enable verbose logging for debugging (remove in production)
+    OneSignal.Debug.setLogLevel(LogLevel.Verbose);
+    // Initialize with your OneSignal App ID
+    OneSignal.initialize('4b694497-60fc-46fa-abf5-911e4db927ca');
+    // Use this method to prompt for push notifications.
+    // We recommend removing this method after testing and instead use In-App Messages to prompt for notification permission.
+    OneSignal.Notifications.requestPermission(true);
+  }, []); // Ensure this only runs once on app mount
+
   if (!loaded) {
     return null;
   }
+
 
   return (
     <QueryProvider>
