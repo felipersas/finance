@@ -1,5 +1,5 @@
-import { AppButton } from '@/components/AppButton';
 import { NotificationList } from '@/components/notifications/NotificationList';
+import { ReminderModal } from '@/components/notifications/ReminderModal';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { Colors } from '@/constants/Colors';
@@ -8,7 +8,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { NotificationType } from '@/types/notification';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import React, { useState } from 'react';
-import { StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, TextInput, TouchableOpacity } from 'react-native';
 
 const tipos = [
   { label: 'Todos', value: 'all' },
@@ -114,66 +114,16 @@ export default function AlertasLembretesScreen() {
         onPressItem={item => markAsRead(item.id)}
         onLongPressItem={item => item.isReminder ? handleOpenForm(item) : undefined}
       />
-      {/* Modal de lembrete */}
-      {modalVisible && (
-        <ThemedView style={styles.modalOverlay}>
-          <ThemedView style={styles.modalCardMinimal}>
-            <ThemedText type="subtitle" style={styles.modalTitleMinimal}>{editReminder ? 'Editar lembrete' : 'Criar lembrete'}</ThemedText>
-            <View style={styles.modalFormMinimal}>
-              <TextInput
-                style={styles.inputMinimal}
-                placeholder="Título"
-                value={form.title}
-                onChangeText={v => setForm(f => ({ ...f, title: v }))}
-                placeholderTextColor={styles.inputPlaceholder.color}
-              />
-              <TextInput
-                style={styles.inputMinimal}
-                placeholder="Descrição"
-                value={form.description}
-                onChangeText={v => setForm(f => ({ ...f, description: v }))}
-                placeholderTextColor={styles.inputPlaceholder.color}
-              />
-              <TextInput
-                style={styles.inputMinimal}
-                placeholder="Data (YYYY-MM-DD)"
-                value={form.date}
-                onChangeText={v => setForm(f => ({ ...f, date: v }))}
-                placeholderTextColor={styles.inputPlaceholder.color}
-              />
-              <TextInput
-                style={styles.inputMinimal}
-                placeholder="Horário (HH:mm)"
-                value={form.time}
-                onChangeText={v => setForm(f => ({ ...f, time: v }))}
-                placeholderTextColor={styles.inputPlaceholder.color}
-              />
-            </View>
-            <View style={styles.modalActionsMinimal}>
-              <AppButton
-                title="Salvar"
-                onPress={handleSaveReminder}
-                style={styles.saveButtonMinimal}
-                textStyle={styles.saveButtonTextMinimal}
-              />
-              {editReminder && (
-                <AppButton
-                  title="Excluir"
-                  onPress={handleDeleteReminder}
-                  style={styles.deleteButtonMinimal}
-                  textStyle={styles.deleteButtonTextMinimal}
-                />
-              )}
-              <AppButton
-                title="Cancelar"
-                onPress={() => setModalVisible(false)}
-                style={styles.cancelButtonMinimal}
-                textStyle={styles.cancelButtonTextMinimal}
-              />
-            </View>
-          </ThemedView>
-        </ThemedView>
-      )}
+      <ReminderModal
+        visible={modalVisible}
+        form={form}
+        editReminder={editReminder}
+        onChange={(field, value) => setForm(f => ({ ...f, [field]: value }))}
+        onSave={handleSaveReminder}
+        onDelete={handleDeleteReminder}
+        onCancel={() => setModalVisible(false)}
+        theme={theme}
+      />
     </ThemedView>
   );
 }
