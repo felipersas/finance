@@ -2,6 +2,7 @@
 import { AppButton } from '@/components/AppButton';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
+import { DatePicker } from '@/components/ui/DatePicker';
 import Input from '@/components/ui/Input';
 import { Colors } from '@/constants/Colors';
 import { strings } from '@/constants/Strings';
@@ -66,10 +67,13 @@ export const ReminderModal: React.FC<ReminderModalProps> = ({
   }, [visible, initialValues, defaultValues, reset]);
 
   if (!visible) return null;
+  const isEdit = !!editReminder;
   return (
     <ThemedView style={styles.modalOverlay}>
       <ThemedView style={styles.modalCardMinimal}>
-        <ThemedText type="subtitle" style={styles.modalTitleMinimal}>{editReminder ? strings.common.edit + ' lembrete' : strings.common.save + ' lembrete'}</ThemedText>
+        <ThemedText type="subtitle" style={styles.modalTitleMinimal}>
+          {isEdit ? strings.common.edit + ' lembrete' : 'Criar lembrete'}
+        </ThemedText>
         <FormProvider {...methods}>
           <View style={styles.modalFormMinimal}>
             <Controller
@@ -106,17 +110,15 @@ export const ReminderModal: React.FC<ReminderModalProps> = ({
             <Controller
               control={control}
               name="date"
-              render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
-                <Input
+              render={({ field: { onChange, value }, fieldState: { error } }) => (
+                <DatePicker
+                  theme={theme}
                   label="Data"
-                  placeholder="YYYY-MM-DD"
                   value={value}
-                  onValueChange={onChange}
-                  onBlur={onBlur}
+                  onChange={onChange}
                   isRequired={true}
                   isInvalid={!!error}
                   errorMessage={error?.message}
-                  keyboardType="numeric"
                 />
               )}
             />
@@ -137,14 +139,14 @@ export const ReminderModal: React.FC<ReminderModalProps> = ({
               )}
             />
           </View>
-          <View style={styles.modalActionsMinimal}>
+          <View style={isEdit ? styles.modalActionsEdit : styles.modalActionsCreate}>
             <AppButton
-              title={strings.common.save}
+              title={isEdit ? strings.common.save : 'Criar'}
               onPress={handleSubmit(onSave)}
-              style={styles.saveButtonMinimal}
-              textStyle={styles.saveButtonTextMinimal}
+              style={isEdit ? styles.saveButtonMinimal : styles.saveButtonCreate}
+              textStyle={isEdit ? styles.saveButtonTextMinimal : styles.saveButtonTextCreate}
             />
-            {editReminder && (
+            {isEdit && (
               <AppButton
                 title={strings.common.delete}
                 onPress={onDelete}
@@ -155,8 +157,8 @@ export const ReminderModal: React.FC<ReminderModalProps> = ({
             <AppButton
               title={strings.common.cancel}
               onPress={onCancel}
-              style={styles.cancelButtonMinimal}
-              textStyle={styles.cancelButtonTextMinimal}
+              style={isEdit ? styles.cancelButtonMinimal : styles.cancelButtonCreate}
+              textStyle={isEdit ? styles.cancelButtonTextMinimal : styles.cancelButtonTextCreate}
             />
           </View>
         </FormProvider>
@@ -170,7 +172,8 @@ const createStyles = (theme: 'light' | 'dark') => {
   return StyleSheet.create({
     modalOverlay: {
       position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-      backgroundColor: theme === 'dark' ? 'rgba(0,0,0,0.7)' : 'rgba(0,0,0,0.3)', justifyContent: 'center', alignItems: 'center', zIndex: 10,
+      justifyContent: 'center', alignItems: 'center', zIndex: 10,
+      backgroundColor: theme === 'dark' ? 'rgba(0,0,0,0.7)' : 'rgba(0,0,0,0.3)',
     },
     modalCardMinimal: {
       backgroundColor: palette.card,
@@ -212,13 +215,22 @@ const createStyles = (theme: 'light' | 'dark') => {
       elevation: 1,
     },
     inputPlaceholder: { color: palette.muted },
-    modalActionsMinimal: {
+    // Actions for edit mode
+    modalActionsEdit: {
       flexDirection: 'row',
       gap: 8,
       justifyContent: 'flex-end',
       alignItems: 'center',
       width: '100%',
       marginTop: 2,
+    },
+    // Actions for create mode (vertical, more clear)
+    modalActionsCreate: {
+      flexDirection: 'column',
+      gap: 10,
+      width: '100%',
+      marginTop: 2,
+      alignItems: 'stretch',
     },
     saveButtonMinimal: {
       borderRadius: 10,
@@ -228,6 +240,13 @@ const createStyles = (theme: 'light' | 'dark') => {
       minWidth: 90,
     },
     saveButtonTextMinimal: { color: '#fff', fontWeight: '600', fontSize: 15 },
+    saveButtonCreate: {
+      borderRadius: 12,
+      paddingVertical: 14,
+      backgroundColor: Colors.success,
+      marginBottom: 4,
+    },
+    saveButtonTextCreate: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
     deleteButtonMinimal: {
       borderRadius: 10,
       paddingVertical: 10,
@@ -246,5 +265,11 @@ const createStyles = (theme: 'light' | 'dark') => {
       minWidth: 90,
     },
     cancelButtonTextMinimal: { fontSize: 15, color: palette.text },
+    cancelButtonCreate: {
+      borderRadius: 12,
+      paddingVertical: 14,
+      backgroundColor: palette.muted,
+    },
+    cancelButtonTextCreate: { fontSize: 16, color: palette.text },
   });
 };

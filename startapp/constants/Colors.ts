@@ -7,7 +7,6 @@ const tint = '#b4da4aff'; // modern lime accent
 const onyx = '#181A1B'; // onyx dark
 const onyxLight = '#23272a';
 const error = '#B3261E';
-
 export const Colors = {
   error,
   success: tint,

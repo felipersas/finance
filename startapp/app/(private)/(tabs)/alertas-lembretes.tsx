@@ -40,7 +40,12 @@ export default function AlertasLembretesScreen() {
 
   // Modal open handler
   const handleOpenForm = (reminder?: any) => {
-    setEditReminder(reminder || null);
+    // Se reminder for passado, abre para editar, senão abre para criar
+    if (reminder && typeof reminder === 'object' && reminder.id) {
+      setEditReminder(reminder);
+    } else {
+      setEditReminder(null);
+    }
     setModalVisible(true);
   };
 
@@ -105,8 +110,8 @@ export default function AlertasLembretesScreen() {
       />
       <ReminderModal
         visible={modalVisible}
-        editReminder={editReminder}
-        initialValues={editReminder ? {
+        editReminder={editReminder && typeof editReminder === 'object' && editReminder.id ? editReminder : null}
+        initialValues={editReminder && typeof editReminder === 'object' && editReminder.id ? {
           title: editReminder.title || '',
           description: editReminder.description || '',
           date: editReminder.date ? editReminder.date.slice(0, 10) : '',
@@ -122,7 +127,6 @@ export default function AlertasLembretesScreen() {
 }
 
 const createStyles = (theme: "light" | "dark", selectedTipo?: string) => {
-  // Minimal modal styles (after palette assignment)
   const palette = Colors[theme];
   const staticStylesMinimal = StyleSheet.create({
     modalCardMinimal: {
