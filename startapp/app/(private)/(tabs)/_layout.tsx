@@ -11,7 +11,6 @@ import { ThemedView } from '@/components/ThemedView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import TabBarBackground from '@/components/ui/TabBarBackground';
 import { Colors } from '@/constants/Colors';
-import { NotificationProvider } from '@/contexts/notifications/NotificationContext';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { useSession } from '@/providers/SessionProvider';
@@ -25,16 +24,15 @@ export default function TabLayout() {
 
   return (
     <AuthGuard requireAuth={true}>
-      <NotificationProvider>
-        <ThemedView style={[
-          styles.container,
-          {
-            backgroundColor: Colors[colorScheme ?? 'light'].background,
-            paddingTop: insets.top,
-            paddingLeft: insets.left,
-            paddingRight: insets.right,
-          }
-        ]}>
+      <ThemedView style={[
+        styles.container,
+        {
+          backgroundColor: Colors[colorScheme ?? 'light'].background,
+          paddingTop: insets.top,
+          paddingLeft: insets.left,
+          paddingRight: insets.right,
+        }
+      ]}>
           <ThemedView style={styles.header}>
             <ThemedText type="subtitle" style={styles.title}>Olá, {session?.name}!</ThemedText>
             <MaterialIcons color={text} size={32} name="logout" onPress={signOut} />;
@@ -99,7 +97,6 @@ export default function TabLayout() {
             right={20}
           />
         </ThemedView>
-      </NotificationProvider>
     </AuthGuard>
   );
 }

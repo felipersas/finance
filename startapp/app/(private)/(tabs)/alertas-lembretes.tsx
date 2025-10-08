@@ -3,7 +3,7 @@ import { ReminderFormData, ReminderModal } from '@/components/notifications/Remi
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { Colors } from '@/constants/Colors';
-import { useNotifications } from '@/contexts/notifications/NotificationContext';
+import { useCreateNotification, useDeleteNotification, useNotifications, useUpdateNotification } from '@/hooks/useNotifications';
 import { useTheme } from '@/hooks/useTheme';
 import { NotificationType } from '@/types/notification';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
@@ -23,7 +23,10 @@ export default function AlertasLembretesScreen() {
   const theme = useTheme();
   const [tipo, setTipo] = useState('all');
   const styles = createStyles(theme, tipo);
-  const { notifications, markAsRead, addReminder, updateReminder, deleteReminder } = useNotifications();
+  const { data: notifications = [], refetch } = useNotifications();
+  const createMutation = useCreateNotification();
+  const updateMutation = useUpdateNotification();
+  const deleteMutation = useDeleteNotification();
   const [search, setSearch] = useState('');
   const [modalVisible, setModalVisible] = useState(false);
   const [editReminder, setEditReminder] = useState<any>(null);
@@ -40,7 +43,6 @@ export default function AlertasLembretesScreen() {
 
   // Modal open handler
   const handleOpenForm = (reminder?: any) => {
-    // Se reminder for passado, abre para editar, senão abre para criar
     if (reminder && typeof reminder === 'object' && reminder.id) {
       setEditReminder(reminder);
     } else {
@@ -50,24 +52,29 @@ export default function AlertasLembretesScreen() {
   };
 
   // Save handler for ReminderModal
-  const handleSaveReminder = (data: ReminderFormData) => {
+  const handleSaveReminder = async (data: ReminderFormData) => {
     const newReminder = {
-      id: editReminder?.id || Math.random().toString(36).slice(2),
       title: data.title,
       description: data.description ?? '',
       type: 'lembrete' as NotificationType,
       date: data.date,
       time: data.time ?? '',
-      read: false,
       isReminder: true,
     };
-    if (editReminder) updateReminder(newReminder);
-    else addReminder(newReminder);
+    if (editReminder) {
+      await updateMutation.mutateAsync({ id: editReminder.id, input: newReminder });
+    } else {
+      await createMutation.mutateAsync(newReminder);
+    }
     setModalVisible(false);
+    refetch();
   };
-  const handleDeleteReminder = () => {
-    if (editReminder) deleteReminder(editReminder.id);
-    setModalVisible(false);
+  const handleDeleteReminder = async () => {
+    if (editReminder) {
+      await deleteMutation.mutateAsync(editReminder.id);
+      setModalVisible(false);
+      refetch();
+    }
   };
 
   return (
@@ -105,7 +112,7 @@ export default function AlertasLembretesScreen() {
       </ThemedView>
       <NotificationList
         data={filtered}
-        onPressItem={item => markAsRead(item.id)}
+        onPressItem={undefined} // Mark as read can be implemented as a mutation if needed
         onLongPressItem={item => item.isReminder ? handleOpenForm(item) : undefined}
       />
       <ReminderModal
