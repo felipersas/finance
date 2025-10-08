@@ -1,89 +1,165 @@
+
 import { AppButton } from '@/components/AppButton';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
+import Input from '@/components/ui/Input';
 import { Colors } from '@/constants/Colors';
+import { strings } from '@/constants/Strings';
+import { zodResolver } from '@hookform/resolvers/zod';
 import React from 'react';
-import { StyleSheet, TextInput, View } from 'react-native';
+import { Controller, FormProvider, useForm } from 'react-hook-form';
+import { StyleSheet, View } from 'react-native';
+import { z } from 'zod';
 
 interface ReminderModalProps {
   visible: boolean;
-  form: { title: string; description: string; date: string; time: string };
   editReminder: any;
-  onChange: (field: keyof ReminderModalProps['form'], value: string) => void;
-  onSave: () => void;
+  onSave: (data: ReminderFormData) => void;
   onDelete: () => void;
   onCancel: () => void;
   theme: 'light' | 'dark';
+  initialValues?: ReminderFormData;
 }
+
+
+
+const ReminderSchema = z.object({
+  title: z.string().min(1, { message: strings.validation.fieldRequired }),
+  description: z.string().optional(),
+  date: z.string()
+    .min(1, { message: strings.validation.fieldRequired })
+    .regex(/^\d{4}-\d{2}-\d{2}$/, { message: 'Formato: YYYY-MM-DD' }),
+  time: z.string()
+    .regex(/^([01]\d|2[0-3]):([0-5]\d)$/, { message: 'Formato: HH:mm' })
+    .optional()
+    .or(z.literal('')),
+});
+
+export type ReminderFormData = z.infer<typeof ReminderSchema>;
 
 export const ReminderModal: React.FC<ReminderModalProps> = ({
   visible,
-  form,
   editReminder,
-  onChange,
   onSave,
   onDelete,
   onCancel,
   theme,
+  initialValues,
 }) => {
   const styles = createStyles(theme);
+  const defaultValues = React.useMemo(() => initialValues || {
+    title: '',
+    description: '',
+    date: '',
+    time: '',
+  }, [initialValues]);
+  const methods = useForm<z.infer<typeof ReminderSchema>>({
+    defaultValues,
+    resolver: zodResolver(ReminderSchema),
+    mode: 'onBlur',
+    reValidateMode: 'onChange',
+  });
+  const { control, handleSubmit, reset } = methods;
+
+  React.useEffect(() => {
+    reset(defaultValues);
+  }, [visible, initialValues, defaultValues, reset]);
+
   if (!visible) return null;
   return (
     <ThemedView style={styles.modalOverlay}>
       <ThemedView style={styles.modalCardMinimal}>
-        <ThemedText type="subtitle" style={styles.modalTitleMinimal}>{editReminder ? 'Editar lembrete' : 'Criar lembrete'}</ThemedText>
-        <View style={styles.modalFormMinimal}>
-          <TextInput
-            style={styles.inputMinimal}
-            placeholder="Título"
-            value={form.title}
-            onChangeText={v => onChange('title', v)}
-            placeholderTextColor={styles.inputPlaceholder.color}
-          />
-          <TextInput
-            style={styles.inputMinimal}
-            placeholder="Descrição"
-            value={form.description}
-            onChangeText={v => onChange('description', v)}
-            placeholderTextColor={styles.inputPlaceholder.color}
-          />
-          <TextInput
-            style={styles.inputMinimal}
-            placeholder="Data (YYYY-MM-DD)"
-            value={form.date}
-            onChangeText={v => onChange('date', v)}
-            placeholderTextColor={styles.inputPlaceholder.color}
-          />
-          <TextInput
-            style={styles.inputMinimal}
-            placeholder="Horário (HH:mm)"
-            value={form.time}
-            onChangeText={v => onChange('time', v)}
-            placeholderTextColor={styles.inputPlaceholder.color}
-          />
-        </View>
-        <View style={styles.modalActionsMinimal}>
-          <AppButton
-            title="Salvar"
-            onPress={onSave}
-            style={styles.saveButtonMinimal}
-            textStyle={styles.saveButtonTextMinimal}
-          />
-          {editReminder && (
-            <AppButton
-              title="Excluir"
-              onPress={onDelete}
-              style={styles.deleteButtonMinimal}
-              textStyle={styles.deleteButtonTextMinimal}
+        <ThemedText type="subtitle" style={styles.modalTitleMinimal}>{editReminder ? strings.common.edit + ' lembrete' : strings.common.save + ' lembrete'}</ThemedText>
+        <FormProvider {...methods}>
+          <View style={styles.modalFormMinimal}>
+            <Controller
+              control={control}
+              name="title"
+              render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
+                <Input
+                  label="Título"
+                  placeholder="Título"
+                  value={value}
+                  onValueChange={onChange}
+                  onBlur={onBlur}
+                  isRequired={true}
+                  isInvalid={!!error}
+                  errorMessage={error?.message}
+                />
+              )}
             />
-          )}
-          <AppButton
-            title="Cancelar"
-            onPress={onCancel}
-            style={styles.cancelButtonMinimal}
-            textStyle={styles.cancelButtonTextMinimal}
-          />
-        </View>
+            <Controller
+              control={control}
+              name="description"
+              render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
+                <Input
+                  label="Descrição"
+                  placeholder="Descrição"
+                  value={value}
+                  onValueChange={onChange}
+                  onBlur={onBlur}
+                  isInvalid={!!error}
+                  errorMessage={error?.message}
+                />
+              )}
+            />
+            <Controller
+              control={control}
+              name="date"
+              render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
+                <Input
+                  label="Data"
+                  placeholder="YYYY-MM-DD"
+                  value={value}
+                  onValueChange={onChange}
+                  onBlur={onBlur}
+                  isRequired={true}
+                  isInvalid={!!error}
+                  errorMessage={error?.message}
+                  keyboardType="numeric"
+                />
+              )}
+            />
+            <Controller
+              control={control}
+              name="time"
+              render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
+                <Input
+                  label="Horário"
+                  placeholder="HH:mm"
+                  value={value}
+                  onValueChange={onChange}
+                  onBlur={onBlur}
+                  isInvalid={!!error}
+                  errorMessage={error?.message}
+                  keyboardType="numeric"
+                />
+              )}
+            />
+          </View>
+          <View style={styles.modalActionsMinimal}>
+            <AppButton
+              title={strings.common.save}
+              onPress={handleSubmit(onSave)}
+              style={styles.saveButtonMinimal}
+              textStyle={styles.saveButtonTextMinimal}
+            />
+            {editReminder && (
+              <AppButton
+                title={strings.common.delete}
+                onPress={onDelete}
+                style={styles.deleteButtonMinimal}
+                textStyle={styles.deleteButtonTextMinimal}
+              />
+            )}
+            <AppButton
+              title={strings.common.cancel}
+              onPress={onCancel}
+              style={styles.cancelButtonMinimal}
+              textStyle={styles.cancelButtonTextMinimal}
+            />
+          </View>
+        </FormProvider>
       </ThemedView>
     </ThemedView>
   );

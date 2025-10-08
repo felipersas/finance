@@ -1,5 +1,5 @@
 import { NotificationList } from '@/components/notifications/NotificationList';
-import { ReminderModal } from '@/components/notifications/ReminderModal';
+import { ReminderFormData, ReminderModal } from '@/components/notifications/ReminderModal';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { Colors } from '@/constants/Colors';
@@ -38,32 +38,21 @@ export default function AlertasLembretesScreen() {
   // Badge de não lidas
   const unreadCount = notifications.filter(n => !n.read).length;
 
-  // Formulário de lembrete
-  const [form, setForm] = useState({ title: '', description: '', date: '', time: '' });
+  // Modal open handler
   const handleOpenForm = (reminder?: any) => {
-    if (reminder) {
-      setForm({
-        title: reminder.title,
-        description: reminder.description,
-        date: reminder.date ? reminder.date.slice(0, 10) : '',
-        time: reminder.time || '',
-      });
-      setEditReminder(reminder);
-    } else {
-      setForm({ title: '', description: '', date: '', time: '' });
-      setEditReminder(null);
-    }
+    setEditReminder(reminder || null);
     setModalVisible(true);
   };
-  const handleSaveReminder = () => {
-    if (!form.title || !form.date) return;
+
+  // Save handler for ReminderModal
+  const handleSaveReminder = (data: ReminderFormData) => {
     const newReminder = {
       id: editReminder?.id || Math.random().toString(36).slice(2),
-      title: form.title,
-      description: form.description,
+      title: data.title,
+      description: data.description ?? '',
       type: 'lembrete' as NotificationType,
-      date: form.date,
-      time: form.time,
+      date: data.date,
+      time: data.time ?? '',
       read: false,
       isReminder: true,
     };
@@ -116,9 +105,13 @@ export default function AlertasLembretesScreen() {
       />
       <ReminderModal
         visible={modalVisible}
-        form={form}
         editReminder={editReminder}
-        onChange={(field, value) => setForm(f => ({ ...f, [field]: value }))}
+        initialValues={editReminder ? {
+          title: editReminder.title || '',
+          description: editReminder.description || '',
+          date: editReminder.date ? editReminder.date.slice(0, 10) : '',
+          time: editReminder.time || '',
+        } : undefined}
         onSave={handleSaveReminder}
         onDelete={handleDeleteReminder}
         onCancel={() => setModalVisible(false)}
