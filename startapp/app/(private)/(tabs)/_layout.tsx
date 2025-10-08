@@ -1,102 +1,130 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
-import { Platform, StyleSheet } from 'react-native';
+import { Animated, Platform, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AuthGuard } from '@/components/AuthGuard';
 import { ChatFAB } from '@/components/ChatFAB';
+import { Drawer } from '@/components/Drawer';
 import { HapticTab } from '@/components/HapticTab';
-import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import TabBarBackground from '@/components/ui/TabBarBackground';
 import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
-import { useThemeColor } from '@/hooks/useThemeColor';
+import { useTheme } from '@/hooks/useTheme';
 import { useSession } from '@/providers/SessionProvider';
+import { Ionicons } from '@expo/vector-icons';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
+  const theme = useTheme();
   const insets = useSafeAreaInsets();
-  const {session, signOut} = useSession();
-  const text = useThemeColor({}, "text")
+  const { session, signOut } = useSession();
+  const [drawerOpen, setDrawerOpen] = React.useState(false);
+  const drawerAnim = React.useRef(new Animated.Value(-280)).current;
+
+  React.useEffect(() => {
+    if (drawerOpen) {
+      Animated.timing(drawerAnim, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+    } else {
+      Animated.timing(drawerAnim, {
+        toValue: -280,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [drawerOpen]);
 
   return (
     <AuthGuard requireAuth={true}>
       <ThemedView style={[
         styles.container,
         {
-          backgroundColor: Colors[colorScheme ?? 'light'].background,
+          backgroundColor: Colors[theme].background,
           paddingTop: insets.top,
           paddingLeft: insets.left,
           paddingRight: insets.right,
         }
       ]}>
-          <ThemedView style={styles.header}>
-            <ThemedText type="subtitle" style={styles.title}>Olá, {session?.name}!</ThemedText>
-            <MaterialIcons color={text} size={32} name="logout" onPress={signOut} />;
-          </ThemedView>
-          <Tabs
-            screenOptions={{
-              tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-              headerShown: false,
-              tabBarButton: HapticTab,
-              tabBarBackground: TabBarBackground,
-              tabBarStyle: Platform.select({
-                ios: {
-                  position: 'absolute',
-                  backgroundColor: Colors[colorScheme ?? 'light'].background,
-                  height: 84 + insets.bottom, // Altura da tab bar + safe area
-                  paddingBottom: insets.bottom + 8, // Safe area + espaçamento extra
-                  paddingTop: 12, // Espaçamento no topo para separar dos ícones
-                },
-                default: {
-                  backgroundColor: Colors[colorScheme ?? 'light'].background,
-                  height: 84 + insets.bottom,
-                  paddingBottom: insets.bottom + 8,
-                  paddingTop: 8,
-                },
-              }),
-              tabBarItemStyle: {
-                paddingVertical: 4, // Espaçamento vertical para cada item da tab
+        {/* Minimalist top bar with hamburger icon */}
+        <View style={styles.topBarMinimal}>
+          <TouchableOpacity onPress={() => setDrawerOpen(true)} style={styles.hamburgerButton}>
+            <Ionicons name="menu" size={28} color={Colors[theme].text} />
+          </TouchableOpacity>
+        </View>
+        {/* Drawer component */}
+        <Drawer
+          open={drawerOpen}
+          drawerAnim={drawerAnim}
+          colorScheme={theme}
+          session={session}
+          signOut={signOut}
+          onClose={() => setDrawerOpen(false)}
+        />
+        <Tabs
+          screenOptions={{
+            tabBarActiveTintColor: Colors[theme].tint,
+            headerShown: false,
+            tabBarButton: HapticTab,
+            tabBarBackground: TabBarBackground,
+            tabBarStyle: Platform.select({
+              ios: {
+                position: 'absolute',
+                backgroundColor: Colors[theme].background,
+                height: 84 + insets.bottom,
+                paddingBottom: insets.bottom + 8,
+                paddingTop: 12,
               },
-              tabBarLabelStyle: {
-                fontSize: 12,
-                fontWeight: '500',
-                marginTop: 4, // Espaço entre ícone e label
+              default: {
+                backgroundColor: Colors[theme].background,
+                height: 84 + insets.bottom,
+                paddingBottom: insets.bottom + 8,
+                paddingTop: 8,
               },
-              sceneStyle: {
-                backgroundColor: Colors[colorScheme ?? 'light'].background,
-              },
-            }}>
-            <Tabs.Screen
-              name="index"
-              options={{
-                title: "Home",
-                tabBarIcon: ({ color }) => <IconSymbol size={24} name="house.fill" color={color} />,
-              }}
-            />
-            <Tabs.Screen
-              name="transacoes"
-              options={{
-                title: 'Transações',
-                tabBarIcon: ({ color }) => <MaterialIcons size={24} name="list" color={color} />,
-              }}
-            />
-            <Tabs.Screen
-              name="alertas-lembretes"
-              options={{
-                title: 'Alertas',
-                tabBarIcon: ({ color }) => <MaterialIcons size={24} name="notifications-active" color={color} />,
-              }}
-            />
-          </Tabs>
-          <ChatFAB
-            bottom={Platform.OS === 'ios' ? insets.bottom + 100 : 110}
-            right={20}
+            }),
+            tabBarItemStyle: {
+              paddingVertical: 4,
+            },
+            tabBarLabelStyle: {
+              fontSize: 12,
+              fontWeight: '500',
+              marginTop: 4,
+            },
+            sceneStyle: {
+              backgroundColor: Colors[theme].background,
+            },
+          }}>
+          <Tabs.Screen
+            name="index"
+            options={{
+              title: "Home",
+              tabBarIcon: ({ color }) => <IconSymbol size={24} name="house.fill" color={color} />,
+            }}
           />
-        </ThemedView>
+          <Tabs.Screen
+            name="transacoes"
+            options={{
+              title: 'Transações',
+              tabBarIcon: ({ color }) => <MaterialIcons size={24} name="list" color={color} />,
+            }}
+          />
+          <Tabs.Screen
+            name="alertas-lembretes"
+            options={{
+              title: 'Alertas',
+              tabBarIcon: ({ color }) => <MaterialIcons size={24} name="notifications-active" color={color} />,
+            }}
+          />
+        </Tabs>
+        <ChatFAB
+          bottom={Platform.OS === 'ios' ? insets.bottom + 100 : 110}
+          right={20}
+        />
+      </ThemedView>
     </AuthGuard>
   );
 }
@@ -105,15 +133,16 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  title: {
-    textAlign: 'left',
-    fontSize: 28,
-  },
-  header: {
-    display: 'flex',
+  topBarMinimal: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 16,
+    justifyContent: 'flex-start',
+    paddingHorizontal: 18,
+    paddingTop: 18,
+    paddingBottom: 8,
+  },
+  hamburgerButton: {
+    padding: 6,
+    borderRadius: 16,
   },
 });
