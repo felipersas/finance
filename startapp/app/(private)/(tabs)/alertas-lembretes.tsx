@@ -3,10 +3,10 @@ import { ReminderFormData, ReminderModal } from '@/components/notifications/Remi
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { Colors } from '@/constants/Colors';
-import { useCreateNotification, useDeleteNotification, useNotifications, useUpdateNotification } from '@/hooks/useNotifications';
+import { useCreateNotification, useDeleteNotification, useMarkNotificationAsRead, useNotifications, useUpdateNotification } from '@/hooks/useNotifications';
 import { useTheme } from '@/hooks/useTheme';
 import { NotificationType } from '@/types/notification';
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import { StyleSheet, TextInput, TouchableOpacity } from 'react-native';
 
@@ -30,6 +30,7 @@ export default function AlertasLembretesScreen() {
   const [search, setSearch] = useState('');
   const [modalVisible, setModalVisible] = useState(false);
   const [editReminder, setEditReminder] = useState<any>(null);
+  const markAsReadMutation = useMarkNotificationAsRead();
 
   // Filtro
   const filtered = notifications.filter(n => {
@@ -38,8 +39,6 @@ export default function AlertasLembretesScreen() {
     return matchTipo && matchSearch;
   });
 
-  // Badge de não lidas
-  const unreadCount = notifications.filter(n => !n.read).length;
 
   // Modal open handler
   const handleOpenForm = (reminder?: any) => {
@@ -79,40 +78,36 @@ export default function AlertasLembretesScreen() {
 
   return (
     <ThemedView style={styles.container}>
-      <ThemedView style={styles.header}>
-        <ThemedText type="subtitle" style={styles.title}>Alertas e Lembretes</ThemedText>
-        <TouchableOpacity style={styles.badgeBox} onPress={handleOpenForm}>
-          <MaterialIcons name="add-alert" size={24} color={styles.icon.color} />
-          {unreadCount > 0 && (
-            <ThemedView style={styles.badge}>
-              <ThemedText style={styles.badgeText}>{unreadCount}</ThemedText>
-            </ThemedView>
-          )}
-        </TouchableOpacity>
-      </ThemedView>
-      <ThemedView style={styles.filterRow}>
+      <ThemedView style={styles.topBarMinimal}>
         <TextInput
-          style={styles.searchInput}
+          style={styles.searchInputMinimal}
           placeholder="Pesquisar..."
           value={search}
           onChangeText={setSearch}
           placeholderTextColor={styles.searchInputPlaceholder.color}
         />
-        <ThemedView style={styles.tipoTabs}>
-          {tipos.map(t => (
-            <TouchableOpacity
-              key={t.value}
-              style={styles.getTipoTab(t.value)}
-              onPress={() => setTipo(t.value)}
-            >
-              <ThemedText style={styles.getTipoTabText(t.value)}>{t.label}</ThemedText>
-            </TouchableOpacity>
-          ))}
-        </ThemedView>
+        <TouchableOpacity style={styles.addButtonMinimal} onPress={handleOpenForm} activeOpacity={0.85}>
+          <Ionicons name="add" size={28} color={Colors[theme].background} />
+        </TouchableOpacity>
+      </ThemedView>
+      <ThemedView style={styles.tipoTabsMinimal}>
+        {tipos.map(t => (
+          <TouchableOpacity
+            key={t.value}
+            style={[styles.getTipoTab(t.value), { marginRight: 10, marginBottom: 4 }]}
+            onPress={() => setTipo(t.value)}
+          >
+            <ThemedText style={styles.getTipoTabText(t.value)}>{t.label}</ThemedText>
+          </TouchableOpacity>
+        ))}
       </ThemedView>
       <NotificationList
         data={filtered}
-        onPressItem={undefined} // Mark as read can be implemented as a mutation if needed
+        onPressItem={item => {
+          if (!item.read) {
+            markAsReadMutation.mutate(item.id);
+          }
+        }}
         onLongPressItem={item => item.isReminder ? handleOpenForm(item) : undefined}
       />
       <ReminderModal
@@ -212,15 +207,43 @@ const createStyles = (theme: "light" | "dark", selectedTipo?: string) => {
   });
   const staticStyles = StyleSheet.create({
     container: { flex: 1, marginHorizontal: 12 },
-    header: {
+    topBarMinimal: {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
-      padding: 18,
+      paddingTop: 18,
       paddingBottom: 8,
     },
-    title: { fontSize: 22, fontWeight: 'bold' },
-    badgeBox: { flexDirection: 'row', alignItems: 'center', position: 'relative' },
+    searchInputMinimal: {
+      flex: 1,
+      borderRadius: 16,
+      padding: 10,
+      fontSize: 15,
+      backgroundColor: palette.card,
+      color: palette.text,
+      borderWidth: 0,
+      marginRight: 8,
+    },
+    addButtonMinimal: {
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+      backgroundColor: palette.tint,
+      alignItems: 'center',
+      justifyContent: 'center',
+      shadowColor: palette.tint,
+      shadowOpacity: 0.12,
+      shadowRadius: 4,
+      elevation: 2,
+    },
+    tipoTabsMinimal: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      alignItems: 'center',
+      marginLeft: 4,
+      marginBottom: 8,
+      marginTop: 4,
+    },
     badge: {
       position: 'absolute', top: -6, right: -12, borderRadius: 8, minWidth: 16, height: 16,
       alignItems: 'center', justifyContent: 'center', paddingHorizontal: 3,
@@ -275,7 +298,7 @@ const createStyles = (theme: "light" | "dark", selectedTipo?: string) => {
   const searchInputPlaceholder = { color: palette.muted };
   const inputPlaceholder = { color: palette.muted };
   const getTipoTab = (value: string) => ({
-    paddingVertical: 6, paddingHorizontal: 14, borderRadius: 16, marginRight: 6, borderWidth: 1,
+    paddingVertical: 6, paddingHorizontal: 14, borderRadius: 16, borderWidth: 1, marginVertical: 6,
     backgroundColor: selectedTipo === value ? palette.tint + '22' : palette.card,
     borderColor: selectedTipo === value ? palette.tint : palette.muted,
   });

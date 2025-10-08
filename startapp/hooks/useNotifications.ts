@@ -1,6 +1,19 @@
+// Mark a notification as read
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../services/api';
 import { Notification } from '../types/notification';
+export function useMarkNotificationAsRead() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { data } = await api.patch(`/notifications/${id}/read`);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+    },
+  });
+}
 
 // Fetch all alerts/reminders
 export function useNotifications() {

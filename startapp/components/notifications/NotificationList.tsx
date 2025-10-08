@@ -41,6 +41,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 16,
+    textAlign: 'center',
     color: '#888',
     opacity: 0.7,
   },
