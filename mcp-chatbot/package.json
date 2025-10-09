@@ -5,9 +5,9 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsc && chmod 755 build/index.js",
+    "build": "npx tsc && chmod 755 build/index.js",
     "start": "node build/index.js",
-    "dev": "tsc && node build/index.js"
+    "dev": "npx tsc && node build/index.js"
   },
   "keywords": ["chatbot", "mcp", "openai", "ai-assistant"],
   "author": "",

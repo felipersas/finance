@@ -4,8 +4,8 @@
   "main": "main.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsc && chmod 755 build/main.js",
-    "build:windows": "tsc",
+    "build": "npx tsc && chmod 755 build/main.js",
+    "build:windows": "npx tsc",
     "server": "node build/main.js",
     "start": "npm run build && node build/main.js"
   },
