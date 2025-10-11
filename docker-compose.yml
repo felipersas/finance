@@ -34,7 +34,8 @@ services:
     environment:
       - NODE_ENV=development
       - PORT=3000
-      - DATABASE_URL=mysql://root:rootpassword@mysql:3306/extrato_db
+      # - DATABASE_URL=mysql://root:rootpassword@mysql:3306/extrato_db
+      - DATABASE_URL=postgresql://postgres:86530e280a12a0493f1b658299258787@84.46.248.113:5432/postgres
       - JWT_SECRET=slkdfklçsadkf0892i81uj2iojflkdsajfçlkasjfoiu78
       - JWT_EXPIRES_IN=7d
       - CHATBOT_URL=http://mcp-chatbot:3001

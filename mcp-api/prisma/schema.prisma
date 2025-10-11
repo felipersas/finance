@@ -1,57 +1,52 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-enum ExtratoType {
-  Empresa
-  Pessoal
-}
-
 model ExtratoRecord {
-  id                     String   @id @default(uuid())
-  userId                 String?   @map("user_id")
-  data                   DateTime
-  valor                  Decimal  @db.Decimal(15, 2)
-  identificador          String   @db.VarChar(255) @unique
-  descricao              String?  @db.Text
-  tipoOperacao          String?  @map("tipo_operacao") @db.VarChar(100)
-  remetenteDestinatario String?  @map("remetente_destinatario") @db.VarChar(255)
-  documento             String?  @db.VarChar(50)
-  instituicaoFinanceira String?  @map("instituicao_financeira") @db.VarChar(255)
-  codigoBanco           String?  @map("codigo_banco") @db.VarChar(10)
-  agencia               String?  @db.VarChar(20)
-  conta                 String?  @db.VarChar(50)
+  id                    String                 @id @default(uuid())
+  userId                String?                @map("user_id")
+  data                  DateTime
+  valor                 Decimal                @db.Decimal(15, 2)
+  identificador         String                 @unique @db.VarChar(255)
+  descricao             String?
+  tipoOperacao          String?                @map("tipo_operacao") @db.VarChar(100)
+  remetenteDestinatario String?                @map("remetente_destinatario") @db.VarChar(255)
+  documento             String?                @db.VarChar(50)
+  instituicaoFinanceira String?                @map("instituicao_financeira") @db.VarChar(255)
+  codigoBanco           String?                @map("codigo_banco") @db.VarChar(10)
+  agencia               String?                @db.VarChar(20)
+  conta                 String?                @db.VarChar(50)
   tipo                  ExtratoType?
-  createdAt             DateTime @default(now()) @map("created_at")
+  createdAt             DateTime               @default(now()) @map("created_at")
+  embedding             Unsupported("vector")?
+  user                  User?                  @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
-  @@map("extrato_records")
   @@index([data], map: "idx_data")
   @@index([identificador], map: "idx_identificador")
   @@index([tipoOperacao], map: "idx_tipo_operacao")
   @@index([documento], map: "idx_documento")
   @@index([codigoBanco], map: "idx_codigo_banco")
+  @@map("extrato_records")
 }
 
 model User {
-  id        String   @id @default(uuid())
+  id        String          @id @default(uuid())
   name      String
-  email     String   @unique
+  email     String          @unique
   password  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
   records   ExtratoRecord[]
+
   @@map("user")
+}
+
+enum ExtratoType {
+  Empresa
+  Pessoal
 }
