@@ -22,10 +22,9 @@ export const sqlGenerationTool = createTool({
   id: 'sql-generation',
   inputSchema: z.object({
     naturalLanguageQuery: z.string().describe('Natural language query from the user'),
-    databaseSchema: z.string().describe('Tool ID for database introspection'),
   }),
   description: 'Generates SQL queries from natural language descriptions using database schema information',
-  execute: async ({ context: { naturalLanguageQuery, databaseSchema }, runtimeContext }) => {
+  execute: async ({ context: { naturalLanguageQuery }, runtimeContext }) => {
     const start = Date.now();
     try {
       console.log('🔍 [SQL-GEN] RuntimeContext received:', runtimeContext);
@@ -58,32 +57,31 @@ export const sqlGenerationTool = createTool({
 
       const systemPrompt = `Expert PostgreSQL query generator. Convert natural language to SQL.
 
-User ID: ${user.sub}
+      User ID: ${user.sub}
 
-SCHEMA:
-${schemaDescription}
+      SCHEMA:
+      ${schemaDescription}
 
-RULES:
-- SELECT only
-- PostgreSQL syntax
-- Qualify columns in joins
-- ILIKE for text searches
-- Always WHERE user_id = '${user.sub}'
-- LIMIT for large sets
-- Fast, concise response`;
+      RULES:
+      - SELECT only
+      - PostgreSQL syntax
+      - Qualify columns in joins
+      - ILIKE for text searches
+      - Always WHERE user_id = '${user.sub}'
+      - LIMIT for large sets
+      - Fast, concise response`;
 
       const userPrompt = `Generate a SQL query for this question: "${naturalLanguageQuery}"
 
-Please provide:
-1. The SQL query
-2. A clear explanation of what the query does
-3. Your confidence level (0-1)
-4. Any assumptions you made
-5. List of tables used`;
+      Please provide:
+      1. The SQL query
+      2. A clear explanation of what the query does
+      3. Your confidence level (0-1)
+      4. Any assumptions you made
+      5. List of tables used`;
 
-      // Call the LLM to generate the SQL query
       const response = await generateObject({
-        model: openai('gpt-4.1'),
+        model: openai('gpt-4.1-mini'),
         system: systemPrompt,
         prompt: userPrompt,
         schema: sqlGenerationSchema,
