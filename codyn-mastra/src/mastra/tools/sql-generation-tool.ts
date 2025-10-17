@@ -44,19 +44,14 @@ export const sqlGenerationTool = createTool({
       }
 
       // Fetch database schema using introspection tool
-      const databaseSchema = await databaseIntrospectionTool?.execute({
+      if (!databaseIntrospectionTool.execute) {
+        throw new Error('Database introspection tool execute method is not available');
+      }
+
+      const schema = await databaseIntrospectionTool.execute({
         context: {},
         runtimeContext: runtimeContext || new RuntimeContext(),
       });
-
-      let schema = databaseSchema;
-      if (!schema) {
-        // Fetch database schema using introspection tool
-        schema = await databaseIntrospectionTool.execute({
-          context: {},
-          runtimeContext: runtimeContext || new RuntimeContext(),
-        });
-      }
 
       // Create a comprehensive schema description for the AI
       const schemaDescription = createSchemaDescription(schema);

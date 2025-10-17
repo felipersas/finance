@@ -4,6 +4,7 @@ import { PinoLogger } from '@mastra/loggers';
 import { sqlAgent } from './agents/sql-agent';
 import { databaseQueryWorkflow } from './workflows/database-query-workflow';
 import { MastraJwtAuth } from '@mastra/auth';
+import { LibSQLStore } from '@mastra/libsql';
 
 
 export const mastra = new Mastra({
@@ -15,6 +16,12 @@ export const mastra = new Mastra({
     name: 'Mastra',
     level: 'info',
   }),
+  storage: new LibSQLStore({
+      url: "file:./mastra.db", // Storage is required for tracing
+    }),
+    telemetry: {
+      enabled: true, // Enables OTEL Tracing
+    },
   observability: {
     default: {
       enabled: true,
