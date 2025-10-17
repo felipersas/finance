@@ -4,6 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { firstValueFrom } from 'rxjs';
 import { NotFound } from '../errors/not-found';
 import { Unauthorized } from '../errors/unauthorized';
+import { Readable } from 'stream';
 
 export interface ExternalRequestOptions {
   timeout?: number;
@@ -57,6 +58,50 @@ export class ExternalHttpService {
     options: ExternalRequestOptions = {},
   ): Promise<T> {
     return this.makeRequest('DELETE', url, undefined, options);
+  }
+
+  async postStream(
+    url: string,
+    data: any,
+    options: ExternalRequestOptions = {},
+  ): Promise<Readable> {
+    const {
+      timeout = 60000,
+      serviceName = 'external-service',
+      additionalHeaders = {},
+    } = options;
+
+    const headers = {
+      'Content-Type': 'application/json',
+      'X-Internal-Token': this.internalToken,
+      'User-Agent': `mcp-api-internal/1.0`,
+      'X-Service-Name': 'mcp-api',
+      Accept: 'text/event-stream',
+      ...additionalHeaders,
+    };
+
+    try {
+      const response = await firstValueFrom(
+        this.httpService.post(url, data, {
+          headers,
+          timeout,
+          responseType: 'stream',
+        }),
+      );
+
+      return response.data as Readable;
+    } catch (error: any) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      if (error.response?.status === 403) {
+        throw new Unauthorized(`Unauthorized to access ${serviceName}`);
+      }
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      if (error.response?.status === 404) {
+        throw new NotFound(`${serviceName} not found`);
+      }
+
+      throw new Error(`Failed to communicate with ${serviceName}`);
+    }
   }
 
   private async makeRequest<T = any>(

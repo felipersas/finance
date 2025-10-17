@@ -22,6 +22,7 @@ export const sqlGenerationTool = createTool({
   id: 'sql-generation',
   inputSchema: z.object({
     naturalLanguageQuery: z.string().describe('Natural language query from the user'),
+    databaseSchema: z.any().describe('Database schema information'),
   }),
   description: 'Generates SQL queries from natural language descriptions using database schema information',
   execute: async ({ context: { naturalLanguageQuery }, runtimeContext }) => {

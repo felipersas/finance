@@ -35,7 +35,7 @@ services:
     container_name: mcp-api
     restart: unless-stopped
     ports:
-      - "3000:3000"
+      - "3333:3333"
     environment:
       - NODE_ENV=development
       - PORT=3000

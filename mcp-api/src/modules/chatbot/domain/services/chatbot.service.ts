@@ -14,18 +14,60 @@ export class ChatbotService implements ChatbotServicePort {
     this.apiURL = this.configService.get<string>('CHATBOT_URL') || this.apiURL;
   }
 
-  async chat(query: string, userId: string): Promise<any> {
-    return this.externalHttpService.post(
-      `${this.apiURL}/chat`,
-      {
-        query: query,
-        userId: userId,
-        timestamp: new Date().toISOString(),
-      },
+  async chat(query: string, userId: string, token?: string): Promise<any> {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    // Build the payload according to Mastra API spec
+    const payload: {
+      messages: Array<{
+        role: string;
+        content: Array<{ type: string; text: string }>;
+      }>;
+      resourceId?: string;
+      threadId?: string;
+      runId?: string;
+      structuredOutput?: any;
+      tracingOptions?: any;
+    } = {
+      messages: [{ role: 'user', content: [{ type: 'text', text: query }] }],
+      resourceId: userId,
+      // threadId is required when agent uses Memory
+      threadId: `thread-${userId}`,
+      // Optional: uncomment to add custom runId
+      // runId: `run-${Date.now()}`,
+      // Optional: uncomment to enable structured output
+      // structuredOutput: {
+      //   schema: {},
+      //   model: 'gpt-4o-mini',
+      //   instructions: 'Return structured data',
+      //   errorStrategy: 'strict',
+      // },
+      // Optional: uncomment to add tracing metadata
+      // tracingOptions: {
+      //   metadata: {
+      //     userId: userId,
+      //   },
+      // },
+    };
+
+    // Use generate endpoint instead of stream to get only final response
+    const response: any = await this.externalHttpService.post(
+      `${this.apiURL}/api/agents/sqlAgent/generate`,
+      payload,
       {
         serviceName: 'chatbot-service',
-        timeout: 30000,
+        timeout: 300000, // 5 minutes for generation
+        additionalHeaders: headers,
       },
     );
+
+    // Return the raw response from the external API without any processing
+    return response;
   }
 }
