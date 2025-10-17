@@ -1,4 +1,5 @@
 import { createTool } from '@mastra/core/tools';
+import { User } from '../types/user';
 import { z } from 'zod';
 import { generateObject } from 'ai';
 import { openai } from '@ai-sdk/openai';
@@ -28,7 +29,7 @@ export const sqlGenerationTool = createTool({
     const start = Date.now();
     try {
       console.log('🔍 [SQL-GEN] RuntimeContext received:', runtimeContext);
-      const user = runtimeContext.get('user');
+      const user: User = runtimeContext.get('user');
       console.log('🔍 [SQL-GEN] userId extracted:', user.sub);
       if (!user) {
         throw new Error('User is required for data filtering');
