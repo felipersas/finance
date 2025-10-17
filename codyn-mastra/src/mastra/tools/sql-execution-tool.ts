@@ -1,6 +1,7 @@
 import { createTool } from '@mastra/core/tools';
 import { z } from 'zod';
 import { pool } from '../db';
+import { User } from '../types/user';
 
 export const sqlExecutionTool = createTool({
   id: 'sql-execution',
@@ -9,8 +10,7 @@ export const sqlExecutionTool = createTool({
   }),
   description: 'Executes SQL queries against a PostgreSQL database',
   execute: async ({ context: { query }, runtimeContext }) => {
-    const start = Date.now();
-    const user = runtimeContext.get('user');
+    const user: User = runtimeContext.get('user');
     if (!user) {
       throw new Error('User is required for data filtering');
     }
@@ -38,9 +38,7 @@ export const sqlExecutionTool = createTool({
         executedQuery: query,
       };
     } finally {
-      const end = Date.now();
-      const seconds = ((end - start) / 1000).toFixed(2);
-      console.log(`[DEBUG] sqlExecutionTool executed in ${seconds} seconds`);
+      // Removed timing log for speed
     }
   },
 });

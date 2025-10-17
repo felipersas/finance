@@ -68,6 +68,8 @@ export class ChatbotService implements ChatbotServicePort {
     );
 
     // Return the raw response from the external API without any processing
-    return response;
+    return {
+      text: response.text,
+    };
   }
 }

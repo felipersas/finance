@@ -17,6 +17,7 @@ export class ChatbotController {
     @CurrentUser() user: JwtUser,
     @Headers('authorization') authHeader?: string,
   ): Promise<any> {
+    console.log('teste');
     const token = authHeader?.replace('Bearer ', '');
     return this.chatbotService.chat(chatDto.query, user.userId, token);
   }

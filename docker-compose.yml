@@ -5,12 +5,12 @@ services:
     container_name: pgvector-db
     restart: unless-stopped
     environment:
-      POSTGRES_DB: extrato_db
-      POSTGRES_USER: mcpuser
-      POSTGRES_PASSWORD: mcppassword
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_HOST_AUTH_METHOD: trust
     ports:
-      - "5433:5432"
+      - "${POSTGRES_HOST_PORT}:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./postgres-init:/docker-entrypoint-initdb.d
@@ -19,12 +19,37 @@ services:
     mem_limit: 1g
     cpus: 0.33
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U mcpuser -d extrato_db"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 10s
       timeout: 5s
       retries: 5
 
 
+
+  # Mastra AI Service
+  codyn-mastra:
+    build:
+      context: ./codyn-mastra
+      dockerfile: Dockerfile
+      target: development
+    container_name: codyn-mastra
+    restart: unless-stopped
+    ports:
+      - "${MASTRA_PORT}:4111"
+    environment:
+      - NODE_ENV=${NODE_ENV}
+      - DATABASE_URL=${DATABASE_URL}
+      - JWT_SECRET=${JWT_SECRET}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    volumes:
+      - ./codyn-mastra:/app
+      - /app/node_modules
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - mcp-network
+    command: npm run dev
 
   # NestJS API Service
   mcp-api:
@@ -35,14 +60,14 @@ services:
     container_name: mcp-api
     restart: unless-stopped
     ports:
-      - "3333:3333"
+      - "${API_PORT}:3333"
     environment:
-      - NODE_ENV=development
-      - PORT=3000
-      - DATABASE_URL=postgresql://mcpuser:mcppassword@db:5432/extrato_db
-      - JWT_SECRET=slkdfklçsadkf0892i81uj2iojflkdsajfçlkasjfoiu78
-      - JWT_EXPIRES_IN=7d
-
+      - NODE_ENV=${NODE_ENV}
+      - PORT=${API_PORT}
+      - DATABASE_URL=${DATABASE_URL}
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRES_IN=${JWT_EXPIRES_IN}
+      - CHATBOT_URL=${CHATBOT_URL}
       - INTERNAL_API_TOKEN=${INTERNAL_API_TOKEN}
     volumes:
       - ./mcp-api:/app

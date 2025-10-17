@@ -6,8 +6,7 @@ import { openai } from '@ai-sdk/openai';
 import { databaseIntrospectionTool } from './database-introspection-tool';
 import { RuntimeContext } from '@mastra/core/runtime-context';
 
-// Simple in-memory cache for SQL generation results
-const sqlCache = new Map<string, any>();
+// Cache disabled for faster response
 
 // Define the schema for SQL generation output
 const sqlGenerationSchema = z.object({
@@ -28,70 +27,83 @@ export const sqlGenerationTool = createTool({
   execute: async ({ context: { naturalLanguageQuery }, runtimeContext }) => {
     const start = Date.now();
     try {
-      console.log('🔍 [SQL-GEN] RuntimeContext received:', runtimeContext);
       const user: User = runtimeContext.get('user');
-      console.log('🔍 [SQL-GEN] userId extracted:', user.sub);
       if (!user) {
         throw new Error('User is required for data filtering');
       }
-      console.log('🔌 Generating SQL query for:', naturalLanguageQuery);
 
-      // Check cache first
-      const cacheKey = `${user.sub}:${naturalLanguageQuery}`;
-      if (sqlCache.has(cacheKey)) {
-        console.log('📋 Returning cached SQL generation result');
-        return sqlCache.get(cacheKey);
-      }
+      // Simple hardcoded schema for speed - extrato_records table only
+      const schemaDescription = `
+Table: public.extrato_records (72 rows)
+Columns:
+  - id: text [PRIMARY KEY]
+  - user_id: text [NOT NULL]
+  - data: timestamp
+  - valor: numeric(15,2) [NOT NULL]
+  - descricao: text
+  - tipo_operacao: varchar(100)
+  - remetente_destinatario: varchar(255)
+  - documento: varchar(50)
+  - tipo: ExtratoType
+Relationships:
+  - user_id → user.id
+`;
 
-      // Fetch database schema using introspection tool
-      if (!databaseIntrospectionTool.execute) {
-        throw new Error('Database introspection tool execute method is not available');
-      }
+      const systemPrompt = `Generate PostgreSQL SELECT query.
+SCHEMA: ${schemaDescription}
+RULES: SELECT only | Use exact Portuguese columns (valor, data, descricao) | ALWAYS WHERE user_id = '${user.sub}' | ILIKE for text search`;
 
-      const schema = await databaseIntrospectionTool.execute({
-        context: {},
-        runtimeContext: runtimeContext || new RuntimeContext(),
-      });
-
-      // Create a comprehensive schema description for the AI
-      const schemaDescription = createSchemaDescription(schema);
-
-      const systemPrompt = `Expert PostgreSQL query generator. Convert natural language to SQL.
-
-      User ID: ${user.sub}
-
-      SCHEMA:
-      ${schemaDescription}
-
-      RULES:
-      - SELECT only
-      - PostgreSQL syntax
-      - Qualify columns in joins
-      - ILIKE for text searches
-      - Always WHERE user_id = '${user.sub}'
-      - LIMIT for large sets
-      - Fast, concise response`;
-
-      const userPrompt = `Generate a SQL query for this question: "${naturalLanguageQuery}"
-
-      Please provide:
-      1. The SQL query
-      2. A clear explanation of what the query does
-      3. Your confidence level (0-1)
-      4. Any assumptions you made
-      5. List of tables used`;
+      const userPrompt = `SQL for: "${naturalLanguageQuery}"
+Return: {sql, explanation, confidence, assumptions, tables_used}`;
 
       const response = await generateObject({
-        model: openai('gpt-4.1-mini'),
+        model: openai('gpt-4o-mini'),
         system: systemPrompt,
         prompt: userPrompt,
         schema: sqlGenerationSchema,
       });
 
-      // Cache the result
-      sqlCache.set(cacheKey, response);
+      // Validate and fix the SQL to ensure userId is properly included
+      let finalSql = response.object.sql;
 
-      return response;
+      // Check if SQL contains the actual userId value
+      if (finalSql && !finalSql.includes(user.sub)) {
+        console.warn('⚠️  [SQL-GEN] Warning: Generated SQL does not contain userId value!');
+
+        // Check if it has a placeholder like ${userId} or $userId
+        if (finalSql.includes('${userId}') || finalSql.includes('$userId') || finalSql.includes('user_id = ?')) {
+          console.log('🔧 [SQL-GEN] Fixing SQL: Replacing placeholder with actual userId');
+          finalSql = finalSql.replace(/\$\{userId\}/g, `'${user.sub}'`);
+          finalSql = finalSql.replace(/\$userId/g, `'${user.sub}'`);
+          finalSql = finalSql.replace(/user_id\s*=\s*\?/gi, `user_id = '${user.sub}'`);
+        }
+        // If SQL has WHERE but no user_id filter, inject it
+        else if (finalSql.toLowerCase().includes('where') && !finalSql.toLowerCase().includes('user_id')) {
+          console.log('🔧 [SQL-GEN] Fixing SQL: Adding missing user_id filter');
+          finalSql = finalSql.replace(/WHERE/i, `WHERE user_id = '${user.sub}' AND`);
+        }
+        // If no WHERE clause exists, add it
+        else if (!finalSql.toLowerCase().includes('where')) {
+          console.log('🔧 [SQL-GEN] Fixing SQL: Adding WHERE clause with user_id');
+          // Find the FROM clause and add WHERE after table name
+          const fromMatch = finalSql.match(/FROM\s+(\w+)/i);
+          if (fromMatch) {
+            const tableName = fromMatch[1];
+            finalSql = finalSql.replace(
+              new RegExp(`FROM\\s+${tableName}`, 'i'),
+              `FROM ${tableName} WHERE user_id = '${user.sub}'`
+            );
+          }
+        }
+      }
+
+      return {
+        ...response,
+        object: {
+          ...response.object,
+          sql: finalSql,
+        },
+      };
     } catch (error) {
       return {
         error: error instanceof Error ? error.message : String(error),
@@ -104,67 +116,3 @@ export const sqlGenerationTool = createTool({
     }
   },
 });
-
-function createSchemaDescription(databaseSchema: any): string {
-  let description = '';
-
-  // Group columns by table
-  const tableColumns = new Map<string, any[]>();
-  databaseSchema.columns.forEach((column: any) => {
-    const tableKey = `${column.table_schema}.${column.table_name}`;
-    if (!tableColumns.has(tableKey)) {
-      tableColumns.set(tableKey, []);
-    }
-    tableColumns.get(tableKey)?.push(column);
-  });
-
-  // Create table descriptions
-  databaseSchema.tables.forEach((table: any) => {
-    const tableKey = `${table.schema_name}.${table.table_name}`;
-    const columns = tableColumns.get(tableKey) || [];
-    const rowCount = databaseSchema.rowCounts.find(
-      (rc: any) => rc.schema_name === table.schema_name && rc.table_name === table.table_name,
-    );
-
-    description += `\nTable: ${table.schema_name}.${table.table_name}`;
-    if (rowCount) {
-      description += ` (${rowCount.row_count} rows)`;
-    }
-    description += '\nColumns:\n';
-
-    columns.forEach((column: any) => {
-      description += `  - ${column.column_name}: ${column.data_type}`;
-      if (column.character_maximum_length) {
-        description += `(${column.character_maximum_length})`;
-      }
-      if (column.is_primary_key) {
-        description += ' [PRIMARY KEY]';
-      }
-      if (column.is_nullable === 'NO') {
-        description += ' [NOT NULL]';
-      }
-      if (column.column_default) {
-        description += ` [DEFAULT: ${column.column_default}]`;
-      }
-      description += '\n';
-    });
-  });
-
-  // Add relationship information
-  if (databaseSchema.relationships.length > 0) {
-    description += '\nRelationships:\n';
-    databaseSchema.relationships.forEach((rel: any) => {
-      description += `  - ${rel.table_schema}.${rel.table_name}.${rel.column_name} → ${rel.foreign_table_schema}.${rel.foreign_table_name}.${rel.foreign_column_name}\n`;
-    });
-  }
-
-  // Add index information
-  if (databaseSchema.indexes.length > 0) {
-    description += '\nIndexes:\n';
-    databaseSchema.indexes.forEach((index: any) => {
-      description += `  - ${index.schema_name}.${index.table_name}: ${index.index_name}\n`;
-    });
-  }
-
-  return description;
-}
