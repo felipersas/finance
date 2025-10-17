@@ -17,11 +17,11 @@ export const mastra = new Mastra({
     level: 'info',
   }),
   storage: new LibSQLStore({
-      url: "file:./mastra.db", // Storage is required for tracing
-    }),
-    telemetry: {
-      enabled: true, // Enables OTEL Tracing
-    },
+      url: "file:./mastra.db",
+  }),
+  telemetry: {
+      enabled: true,
+  },
   observability: {
     default: {
       enabled: true,
