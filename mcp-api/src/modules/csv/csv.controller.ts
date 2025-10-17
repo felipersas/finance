@@ -12,6 +12,7 @@ import type { CsvServicePort } from './domain/ports/csv-service.port';
 import { Inject } from '@nestjs/common';
 import type { JwtUser } from '../auth/strategies/jwt.strategy';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { Public } from 'src/common/decorators/public.decorator';
 
 @Controller('csv')
 export class CsvController {

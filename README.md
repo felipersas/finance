@@ -1,34 +1,24 @@
 # MCP Development Environment
 
-This repository contains a complete development environment for the MCP (Model Context Protocol) ecosystem with four interconnected services:
+This repository contains a complete development environment for the MCP (Model Context Protocol) ecosystem.
 
 ## Services Overview
 
 ### 1. **mcp-api** (Port 3000)
-- **Technology**: NestJS, Prisma ORM, MySQL
-- **Purpose**: Main API with authentication, user management, CSV processing, and chatbot integration
-- **Database**: MySQL with Prisma ORM
-- **Features**: JWT authentication, file upload, RESTful APIs
+- **Technology**: NestJS, Prisma ORM, PostgreSQL
+- **Purpose**: Main API with authentication, user management, CSV processing, and analytics
+- **Database**: PostgreSQL with Prisma ORM
+- **Features**: JWT authentication, file upload, RESTful APIs, vector embeddings support
 
-### 2. **mcp-chatbot** (Port 3001)
-- **Technology**: Node.js, Express, OpenAI integration
-- **Purpose**: Chatbot service that interfaces with MCP servers using OpenAI
-- **Features**: Conversation history, tool calling, MCP client integration
+### 2. **PostgreSQL Database** (Port 5433)
+- **Technology**: PostgreSQL 18 with pgvector extension
+- **Purpose**: Main database with vector embeddings support
+- **Features**: Persistent data storage, health checks, vector similarity search
 
-### 3. **mcp-server-extrato** (Ports 3002-3003)
-- **Technology**: TypeScript, MCP SDK, MySQL
-- **Purpose**: MCP server for financial data (extrato) and weather data processing
-- **Features**: Database operations, weather API integration, financial analysis
-
-### 4. **startapp** (Ports 8081, 19000-19002)
+### 3. **startapp** (Ports 8081, 19000-19002)
 - **Technology**: React Native, Expo, TypeScript
 - **Purpose**: Mobile/web frontend application
-- **Features**: Cross-platform mobile app with chat functionality
-
-### 5. **mysql** (Port 3306)
-- **Technology**: MySQL 8.0
-- **Purpose**: Shared database for mcp-api and mcp-server-extrato
-- **Features**: Persistent data storage, health checks
+- **Features**: Cross-platform mobile app with financial tracking functionality</parameter>
 
 ## Quick Start
 
@@ -51,12 +41,16 @@ This repository contains a complete development environment for the MCP (Model C
 
 3. **Edit the `.env` file with your actual values**
    ```bash
-   # Required: Add your OpenAI API key
-   OPENAI_API_KEY=your-actual-openai-api-key-here
+   # PostgreSQL Configuration
+   POSTGRES_DB=extrato_db
+   POSTGRES_USER=mcpuser
+   POSTGRES_PASSWORD=mcppassword
 
-   # Optional: Customize other values if needed
+   # API Configuration
    JWT_SECRET=your-custom-jwt-secret
-   MYSQL_ROOT_PASSWORD=your-custom-password
+   JWT_EXPIRES_IN=7d
+   INTERNAL_API_TOKEN=your-internal-api-token
+   ```</parameter>
    ```
 
 4. **Start all services**
@@ -78,21 +72,14 @@ After starting with Docker Compose:
   - Health check: http://localhost:3000
   - API docs: http://localhost:3000/api (if Swagger is configured)
 
-- **mcp-chatbot**: http://localhost:3001
-  - Health check: http://localhost:3001/health
-  - Chat endpoint: http://localhost:3001/chat
-
-- **mcp-server-extrato**:
-  - REST API: http://localhost:3002
-  - MCP HTTP: http://localhost:3003
-
 - **expo-app**:
   - Metro bundler: http://localhost:8081
   - Expo DevTools: http://localhost:19000
 
-- **MySQL**: localhost:3306
+- **PostgreSQL**: localhost:5433
   - User: mcpuser
   - Password: mcppassword
+  - Database: extrato_db</parameter>
   - Database: mcp_database
 
 ## Development Workflow
@@ -123,11 +110,18 @@ docker-compose logs -f mcp-api
 # Run Prisma migrations
 docker-compose exec mcp-api npm run prisma:migrate:dev
 
+# Generate Prisma Client
+docker-compose exec mcp-api npm run prisma:generate
+
 # Access Prisma Studio
 docker-compose exec mcp-api npm run prisma:studio
 
-# Access MySQL directly
-docker-compose exec mysql mysql -u mcpuser -p mcp_database
+# Access PostgreSQL directly
+docker-compose exec db psql -U mcpuser -d extrato_db
+
+# View PostgreSQL tables
+docker-compose exec db psql -U mcpuser -d extrato_db -c "\dt"
+```</parameter>
 ```
 
 ### Development Commands
@@ -162,19 +156,7 @@ The React Native app runs in the `expo-app` container with Expo CLI. To develop:
 
 ## API Integration
 
-### Chat API Usage
-```javascript
-// Example: Send message to chatbot
-const response = await fetch('http://localhost:3001/chat', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({
-    query: 'Show me financial summary for last month',
-    conversationId: 'user-123'
-  })
-});
-```
-
+### MCP API Usage</parameter>
 ### MCP API Usage
 ```javascript
 // Example: Authentication
@@ -192,29 +174,30 @@ const authResponse = await fetch('http://localhost:3000/auth/signin', {
 
 ### Common Issues
 
-1. **OpenAI API Key Missing**
+1. **Database Connection Errors**
    ```
-   Error: OPENAI_API_KEY is not set
+   Error: Can't connect to PostgreSQL server
    ```
-   **Solution**: Add your OpenAI API key to the `.env` file
+   **Solution**: Wait for PostgreSQL to fully start (check with `docker-compose logs db`)
 
-2. **Database Connection Errors**
-   ```
-   Error: Can't connect to MySQL server
-   ```
-   **Solution**: Wait for MySQL to fully start (check with `docker-compose logs mysql`)
-
+2. **Port Conflicts**</parameter>
 3. **Port Conflicts**
    ```
    Error: Port 3000 is already in use
    ```
    **Solution**: Stop conflicting services or change ports in `docker-compose.yml`
 
-4. **Prisma Migration Issues**
+3. **Prisma Migration Issues**
    ```
    Error: Migration failed
    ```
    **Solution**: Reset database with `docker-compose exec mcp-api npm run prisma:migrate:reset`
+
+4. **pgvector Extension Issues**
+   ```
+   Error: extension "vector" not found
+   ```
+   **Solution**: Verify extension is enabled with `docker-compose exec db psql -U mcpuser -d extrato_db -c "CREATE EXTENSION IF NOT EXISTS vector;"`</parameter>
 
 ### Debugging Commands
 ```bash
@@ -225,7 +208,7 @@ docker-compose ps
 docker-compose exec mcp-api sh
 
 # Check database connectivity
-docker-compose exec mysql mysqladmin ping -h localhost
+docker-compose exec db pg_isready -U mcpuser -d extrato_db</parameter>
 
 # View service logs in real-time
 docker-compose logs -f mcp-api
@@ -239,10 +222,8 @@ docker-compose logs -f mcp-api
 ## Architecture Notes
 
 ### Service Communication
-- **mcp-api** ↔ **mysql**: Direct database connection
-- **mcp-chatbot** ↔ **mcp-server-extrato**: MCP protocol via stdio/http
+- **mcp-api** ↔ **PostgreSQL**: Direct database connection via Prisma ORM
 - **startapp** ↔ **mcp-api**: HTTP REST API calls
-- **mcp-server-extrato** ↔ **mysql**: Direct database connection for weather/financial data
 
 ### Network Configuration
 - All services run on a custom Docker network (`mcp-network`)
@@ -250,17 +231,30 @@ docker-compose logs -f mcp-api
 - External access via mapped ports on localhost
 
 ### Data Flow
-1. **Mobile App** sends chat request to **mcp-api**
-2. **mcp-api** forwards to **mcp-chatbot**
-3. **mcp-chatbot** uses **mcp-server-extrato** for data processing
-4. **mcp-server-extrato** queries **mysql** database
-5. Response flows back through the chain to the mobile app
+1. **Mobile App** sends requests to **mcp-api**
+2. **mcp-api** processes requests and queries **PostgreSQL** database
+3. Response flows back to the mobile app
+
+### Database Features
+- **Vector Embeddings**: pgvector extension enables similarity search
+- **Prisma ORM**: Type-safe database access with automatic migrations
+- **Health Checks**: Ensures database availability before starting dependent services</parameter>
+
+## PostgreSQL Migration
+
+This project has been migrated from MySQL to PostgreSQL with pgvector support. For detailed PostgreSQL setup instructions, see [POSTGRES_SETUP.md](./POSTGRES_SETUP.md).
+
+### Key Changes
+- Database: MySQL 8.0 → PostgreSQL 18 with pgvector
+- Port: 3306 → 5433 (dev) / 5432 (prod)
+- Vector Support: Enabled vector embeddings for AI/ML features
 
 ## Contributing
 
 1. Make changes to source code in respective directories
 2. Services will automatically reload (development mode)
 3. For database schema changes, run migrations in the mcp-api container
+4. Test changes across all affected services</parameter>
 4. Test changes across all affected services
 
 ## Security Notes
