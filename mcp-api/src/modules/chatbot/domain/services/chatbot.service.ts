@@ -29,16 +29,12 @@ export class ChatbotService implements ChatbotServicePort {
         role: string;
         content: Array<{ type: string; text: string }>;
       }>;
-      resourceId?: string;
-      threadId?: string;
       runId?: string;
       structuredOutput?: any;
       tracingOptions?: any;
     } = {
       messages: [{ role: 'user', content: [{ type: 'text', text: query }] }],
-      resourceId: userId,
-      // threadId is required when agent uses Memory
-      threadId: `thread-${userId}`,
+      // No resourceId/threadId since agent has no memory configured
       // Optional: uncomment to add custom runId
       // runId: `run-${Date.now()}`,
       // Optional: uncomment to enable structured output
