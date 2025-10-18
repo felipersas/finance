@@ -26,6 +26,46 @@ services:
     # Security improvements
     command: postgres -c shared_preload_libraries=vector -c max_connections=200
 
+  # Mastra AI Service - Production
+  codyn-mastra:
+    build:
+      context: ./codyn-mastra
+      dockerfile: Dockerfile
+      target: production
+    container_name: codyn-mastra-prod
+    restart: always
+    ports:
+      - "4111:4111"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-extrato_db}
+      - JWT_SECRET=${JWT_SECRET}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - mcp-network-prod
+      - CodynNet
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.codyn-mastra-prod.rule=Host(`${TRAEFIK_MASTRA_DOMAIN:-mastra.mcp.codyn.site}`)"
+      - "traefik.http.services.codyn-mastra-prod.loadbalancer.server.port=4111"
+      - "traefik.http.routers.codyn-mastra-prod.tls.certresolver=letsencryptresolver"
+      - "traefik.http.routers.codyn-mastra-prod.service=codyn-mastra-prod"
+      - "traefik.docker.network=CodynNet"
+      - "traefik.http.routers.codyn-mastra-prod.entrypoints=websecure"
+      - "traefik.http.routers.codyn-mastra-prod.priority=1"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4111/health || exit 1"]
+      timeout: 10s
+      retries: 5
+      interval: 30s
+      start_period: 30s
+    mem_limit: 1g
+    cpus: 0.5
+
   # NestJS API Service - Production
   mcp-api:
     build:
@@ -42,7 +82,7 @@ services:
       - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-extrato_db}
       - JWT_SECRET=${JWT_SECRET}
       - JWT_EXPIRES_IN=${JWT_EXPIRES_IN:-7d}
-
+      - CHATBOT_URL=http://codyn-mastra-prod:4111
       - INTERNAL_API_TOKEN=${INTERNAL_API_TOKEN}
     depends_on:
       db:
