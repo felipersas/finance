@@ -78,14 +78,17 @@ jobs:
               docker stack rm mcp 2>/dev/null || true
               sleep 10
 
-              echo "🏗️  Building images with cache..."
-              timeout 600 docker compose -f docker-compose.prod.yml build --no-cache --parallel || {
-                echo "❌ Build failed or timed out, trying without cache..."
-                docker compose -f docker-compose.prod.yml build --no-cache --parallel
-              }
+              echo "🏗️  Building images..."
+              cd codyn-mastra
+              docker build -t mcp-codyn-mastra:latest --target production .
+              cd ..
 
-              echo "🚀 Deploying with Docker Swarm..."
-              docker stack deploy -c docker-compose.prod.yml mcp
+              cd mcp-api
+              docker build -t mcp-mcp-api:latest --target production .
+              cd ..
+
+              echo "🚀 Deploying with Docker Swarm (loading .env)..."
+              bash -c 'set -a && source .env && set +a && docker stack deploy -c docker-compose.prod.yml mcp'
 
               echo "⏳ Waiting for services to start..."
               sleep 30
@@ -213,7 +216,7 @@ jobs:
             echo "Checking API..."
             RETRY=0
             MAX_RETRIES=30
-            until [ -n "$API_CONTAINER" ] && docker exec $API_CONTAINER curl -sf http://localhost:3000/health >/dev/null 2>&1; do
+            until [ -n "$API_CONTAINER" ] && docker exec $API_CONTAINER curl -sf http://localhost:3000/ >/dev/null 2>&1; do
               RETRY=$((RETRY+1))
               if [ $RETRY -ge $MAX_RETRIES ]; then
                 echo "❌ API health check failed after $MAX_RETRIES attempts"
@@ -234,7 +237,7 @@ jobs:
             # Check Mastra health
             echo "Checking Mastra..."
             RETRY=0
-            until [ -n "$MASTRA_CONTAINER" ] && docker exec $MASTRA_CONTAINER curl -sf http://localhost:4111/health >/dev/null 2>&1; do
+            until [ -n "$MASTRA_CONTAINER" ] && docker exec $MASTRA_CONTAINER curl -sf http://localhost:4111/ >/dev/null 2>&1; do
               RETRY=$((RETRY+1))
               if [ $RETRY -ge $MAX_RETRIES ]; then
                 echo "⚠️  Mastra health check failed (non-critical)"

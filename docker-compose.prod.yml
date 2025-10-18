@@ -10,7 +10,8 @@ services:
     volumes:
       - pgdata_prod:/var/lib/postgresql/data
     networks:
-      - internal-net  # Apenas rede interna para isolamento
+      - internal-net
+      - CodynNet
     deploy:
       mode: replicated
       replicas: 1
@@ -24,7 +25,7 @@ services:
         condition: on-failure
         delay: 5s
         max_attempts: 3
-      endpoint_mode: vip  # Virtual IP mode for better DNS resolution
+      endpoint_mode: vip
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB:-extrato_db}"]
       timeout: 10s
@@ -39,13 +40,13 @@ services:
     hostname: codyn-mastra
     environment:
       - NODE_ENV=production
-      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-extrato_db}  # Corrigido para @db
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-extrato_db}
       - JWT_SECRET=${JWT_SECRET}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - GITHUB_TOKEN=${GITHUB_TOKEN}
     networks:
-      - CodynNet      # Para Traefik
-      - internal-net  # Para comunicações internas
+      - CodynNet
+      - internal-net
     deploy:
       mode: replicated
       replicas: 1
@@ -81,17 +82,23 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=3000
-      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-extrato_db}  # Corrigido para @db
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-extrato_db}
       - JWT_SECRET=${JWT_SECRET}
       - JWT_EXPIRES_IN=${JWT_EXPIRES_IN:-7d}
-      - CHATBOT_URL=http://codyn-mastra:4111  # Corrigido para codyn-mastra
+      - CHATBOT_URL=http://codyn-mastra:4111
       - INTERNAL_API_TOKEN=${INTERNAL_API_TOKEN}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_DB=${POSTGRES_DB:-extrato_db}
     networks:
-      - CodynNet      # Para Traefik
-      - internal-net  # Para comunicações internas
+      - CodynNet
+      - internal-net
     deploy:
       mode: replicated
       replicas: 1
+      resources:
+        limits:
+          memory: 1G
+          cpus: '0.5'
       restart_policy:
         condition: on-failure
         delay: 10s
@@ -99,15 +106,15 @@ services:
       endpoint_mode: vip
       labels:
         - "traefik.enable=true"
-        - "traefik.http.routers.mcp-api.rule=Host(`${TRAEFIK_DOMAIN:-api.codyn.site}`)"
-        - "traefik.http.services.mcp-api.loadbalancer.server.port=3000"
-        - "traefik.http.routers.mcp-api.tls.certresolver=letsencryptresolver"
-        - "traefik.http.routers.mcp-api.service=mcp-api"
+        - "traefik.http.routers.mcp-api-prod.rule=Host(`${TRAEFIK_DOMAIN:-api.codyn.site}`)"
+        - "traefik.http.services.mcp-api-prod.loadbalancer.server.port=3000"
+        - "traefik.http.routers.mcp-api-prod.tls.certresolver=letsencryptresolver"
+        - "traefik.http.routers.mcp-api-prod.service=mcp-api-prod"
         - "traefik.docker.network=CodynNet"
-        - "traefik.http.routers.mcp-api.entrypoints=websecure"
-        - "traefik.http.routers.mcp-api.priority=1"
+        - "traefik.http.routers.mcp-api-prod.entrypoints=websecure"
+        - "traefik.http.routers.mcp-api-prod.priority=1"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:3000/"]
       timeout: 10s
       retries: 5
       interval: 30s
@@ -119,8 +126,7 @@ volumes:
 
 networks:
   CodynNet:
-    external: true  # Mantém para Traefik
+    external: true
   internal-net:
     driver: overlay
-    internal: true  # Rede interna para isolamento
-    attachable: true  # Permite melhor resolução de DNS
+    attachable: true
