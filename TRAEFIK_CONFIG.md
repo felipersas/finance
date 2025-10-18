@@ -18,8 +18,8 @@ TRAEFIK_MASTRA_DOMAIN=mastra.codyn.site
 
 ```env
 # Domínios do Traefik - Produção
-TRAEFIK_DOMAIN=api.mcp.codyn.site
-TRAEFIK_MASTRA_DOMAIN=mastra.mcp.codyn.site
+TRAEFIK_DOMAIN=api.codyn.site
+TRAEFIK_MASTRA_DOMAIN=mastra.codyn.site
 ```
 
 ## Serviços Configurados
@@ -44,12 +44,12 @@ TRAEFIK_MASTRA_DOMAIN=mastra.mcp.codyn.site
 
 1. **mcp-api** - API NestJS (Produção)
    - Porta interna: 3000
-   - Domínio padrão: `api.mcp.codyn.site`
+   - Domínio padrão: `api.codyn.site`
    - Router: `mcp-api`
 
 2. **codyn-mastra** - Mastra AI Service (Produção)
    - Porta interna: 4111
-   - Domínio padrão: `mastra.mcp.codyn.site`
+   - Domínio padrão: `mastra.codyn.site`
    - Router: `codyn-mastra-prod`
 
 3. **db** - PostgreSQL com pgvector
@@ -106,8 +106,8 @@ docker-compose up -d
 
 1. Configure as variáveis no `.env.prod`:
 ```bash
-TRAEFIK_DOMAIN=api.mcp.codyn.site
-TRAEFIK_MASTRA_DOMAIN=mastra.mcp.codyn.site
+TRAEFIK_DOMAIN=api.codyn.site
+TRAEFIK_MASTRA_DOMAIN=mastra.codyn.site
 ```
 
 2. Suba os containers:
@@ -116,8 +116,8 @@ docker-compose -f docker-compose.prod.yml up -d
 ```
 
 3. Acesse:
-   - API: https://api.mcp.codyn.site
-   - Mastra: https://mastra.mcp.codyn.site
+   - API: https://api.codyn.site
+   - Mastra: https://mastra.codyn.site
 
 ## DNS
 
@@ -126,8 +126,6 @@ Certifique-se de que os domínios apontam para o IP da sua VPS:
 ```
 api.codyn.site          A    <IP_DA_VPS>
 mastra.codyn.site       A    <IP_DA_VPS>
-api.mcp.codyn.site      A    <IP_DA_VPS>
-mastra.mcp.codyn.site   A    <IP_DA_VPS>
 ```
 
 ## Certificados SSL

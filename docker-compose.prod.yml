@@ -49,7 +49,7 @@ services:
       - mcp-network-prod
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.codyn-mastra-prod.rule=Host(`${TRAEFIK_MASTRA_DOMAIN:-mastra.mcp.codyn.site}`)"
+      - "traefik.http.routers.codyn-mastra-prod.rule=Host(`${TRAEFIK_MASTRA_DOMAIN:-mastra.codyn.site}`)"
       - "traefik.http.services.codyn-mastra-prod.loadbalancer.server.port=4111"
       - "traefik.http.routers.codyn-mastra-prod.tls.certresolver=letsencryptresolver"
       - "traefik.http.routers.codyn-mastra-prod.service=codyn-mastra-prod"
@@ -92,7 +92,7 @@ services:
       - mcp-network-prod
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.mcp-api.rule=Host(`${TRAEFIK_DOMAIN:-api.mcp.codyn.site}`)"
+      - "traefik.http.routers.mcp-api.rule=Host(`${TRAEFIK_DOMAIN:-api.codyn.site}`)"
       - "traefik.http.services.mcp-api.loadbalancer.server.port=3000"
       - "traefik.http.routers.mcp-api.tls.certresolver=letsencryptresolver"
       - "traefik.http.routers.mcp-api.service=mcp-api"
