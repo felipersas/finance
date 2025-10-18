@@ -1,0 +1,127 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch: # Permite executar manualmente
+
+env:
+  DEPLOY_PATH: /home/deploy/mcp
+
+jobs:
+  deploy:
+    name: Deploy to VPS
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Add VPS to known hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Create deployment directory
+        run: |
+          ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "mkdir -p ${{ env.DEPLOY_PATH }}"
+
+      - name: Copy files to VPS
+        run: |
+          rsync -avz --delete \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='node_modules' \
+            --exclude='.env' \
+            --exclude='*.log' \
+            --exclude='pgdata' \
+            --exclude='pgdata_prod' \
+            ./ ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:${{ env.DEPLOY_PATH }}/
+
+      - name: Copy production environment file
+        run: |
+          scp .env.prod ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:${{ env.DEPLOY_PATH }}/.env
+
+      - name: Deploy with Docker Compose
+        run: |
+          ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'ENDSSH'
+            cd ${{ env.DEPLOY_PATH }}
+
+            echo "🔍 Checking Docker and Docker Compose..."
+            docker --version
+            docker compose version
+
+            echo "📦 Pulling latest images..."
+            docker compose -f docker-compose.prod.yml pull
+
+            echo "🏗️  Building images..."
+            docker compose -f docker-compose.prod.yml build --no-cache
+
+            echo "🚀 Starting services..."
+            docker compose -f docker-compose.prod.yml up -d --remove-orphans
+
+            echo "🧹 Cleaning up unused images..."
+            docker image prune -af
+
+            echo "✅ Deployment completed!"
+
+            echo "📊 Container status:"
+            docker compose -f docker-compose.prod.yml ps
+          ENDSSH
+
+      - name: Health Check
+        run: |
+          echo "⏳ Waiting 30 seconds for services to start..."
+          sleep 30
+
+          ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'ENDSSH'
+            cd ${{ env.DEPLOY_PATH }}
+
+            echo "🏥 Checking service health..."
+
+            # Check if containers are running
+            if docker compose -f docker-compose.prod.yml ps | grep -q "Up"; then
+              echo "✅ Containers are running"
+            else
+              echo "❌ Some containers are not running"
+              docker compose -f docker-compose.prod.yml ps
+              exit 1
+            fi
+
+            # Check database health
+            echo "Checking database..."
+            docker exec pgvector-db-prod pg_isready -U mcpuser -d extrato_db || exit 1
+
+            # Check API health
+            echo "Checking API..."
+            timeout 10 bash -c 'until docker exec mcp-api-prod curl -f http://localhost:3000/health; do sleep 2; done' || exit 1
+
+            echo "✅ All health checks passed!"
+          ENDSSH
+
+      - name: Show logs on failure
+        if: failure()
+        run: |
+          ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'ENDSSH'
+            cd ${{ env.DEPLOY_PATH }}
+            echo "📋 Showing logs for debugging..."
+            docker compose -f docker-compose.prod.yml logs --tail=50
+          ENDSSH
+
+      - name: Send notification on success
+        if: success()
+        run: |
+          echo "✅ Deployment to production completed successfully!"
+          echo "🌐 API available at: https://api.mcp.codyn.site"
+
+      - name: Send notification on failure
+        if: failure()
+        run: |
+          echo "❌ Deployment to production failed!"
+          echo "Check the logs above for details."
