@@ -44,9 +44,6 @@ jobs:
             --exclude='pgdata_prod' \
             ./ ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:${{ env.DEPLOY_PATH }}/
 
-      - name: Copy production environment file
-        run: |
-          scp .env.prod ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:${{ env.DEPLOY_PATH }}/.env
 
       - name: Deploy with Docker Compose
         run: |
