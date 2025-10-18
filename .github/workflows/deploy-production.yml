@@ -44,7 +44,7 @@ jobs:
             --exclude='pgdata_prod' \
             ./ ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:${{ env.DEPLOY_PATH }}/
 
-      - name: Deploy with Docker Compose
+      - name: Deploy with Swarm (preferred) or Compose fallback
         run: |
           ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'ENDSSH'
             cd ${{ env.DEPLOY_PATH }}
@@ -64,46 +64,102 @@ jobs:
             echo "🧹 Cleaning up any stale build cache..."
             docker builder prune -f --filter "until=24h" || true
 
-            echo "🛑 Stopping existing containers..."
-            docker compose -f docker-compose.prod.yml down || true
+            # Check if Swarm is active and CodynNet network exists
+            SWARM_ACTIVE=$(docker info --format '{{.Swarm.LocalNodeState}}' 2>/dev/null || echo "inactive")
+            NETWORK_EXISTS=$(docker network inspect CodynNet >/dev/null 2>&1 && echo "yes" || echo "no")
 
-            echo "🏗️  Building images with cache..."
-            timeout 600 docker compose -f docker-compose.prod.yml build --parallel || {
-              echo "❌ Build failed or timed out, trying without cache..."
-              docker compose -f docker-compose.prod.yml build --no-cache --parallel
-            }
+            echo "🔍 Swarm status: $SWARM_ACTIVE"
+            echo "🔍 CodynNet network exists: $NETWORK_EXISTS"
 
-            echo "🚀 Starting services..."
-            docker compose -f docker-compose.prod.yml up -d --remove-orphans
+            if [ "$SWARM_ACTIVE" = "active" ] && [ "$NETWORK_EXISTS" = "yes" ]; then
+              echo "✅ Using Docker Swarm deployment (preferred)"
 
-            echo "⏳ Waiting 10 seconds for containers to initialize..."
-            sleep 10
+              echo "🛑 Removing existing MCP stack..."
+              docker stack rm mcp 2>/dev/null || true
+              sleep 10
 
-            echo "🌐 Connecting containers to CodynNet (Swarm network)..."
-            docker network connect CodynNet mcp-api-prod 2>/dev/null || echo "mcp-api already connected or failed"
-            docker network connect CodynNet codyn-mastra-prod 2>/dev/null || echo "codyn-mastra already connected or failed"
+              echo "🏗️  Building images with cache..."
+              timeout 600 docker compose -f docker-compose.prod.yml build --parallel || {
+                echo "❌ Build failed or timed out, trying without cache..."
+                docker compose -f docker-compose.prod.yml build --no-cache --parallel
+              }
 
-            echo "✅ Containers connected to CodynNet"
+              echo "🚀 Deploying with Docker Swarm..."
+              docker stack deploy -c docker-compose.prod.yml mcp
 
-            echo "📊 Container status:"
-            docker compose -f docker-compose.prod.yml ps
+              echo "⏳ Waiting for services to start..."
+              sleep 30
+
+              echo "📊 Stack status:"
+              docker stack services mcp
+
+              DEPLOY_METHOD="swarm"
+
+            else
+              echo "⚠️  Swarm not available or CodynNet network missing. Using Docker Compose fallback."
+              echo "   Reason: Swarm=$SWARM_ACTIVE, Network=$NETWORK_EXISTS"
+
+              echo "🛑 Stopping existing containers..."
+              docker compose -f docker-compose.prod.yml down || true
+
+              echo "🏗️  Building images with cache..."
+              timeout 600 docker compose -f docker-compose.prod.yml build --parallel || {
+                echo "❌ Build failed or timed out, trying without cache..."
+                docker compose -f docker-compose.prod.yml build --no-cache --parallel
+              }
+
+              echo "🚀 Starting services with Docker Compose..."
+              docker compose -f docker-compose.prod.yml up -d --remove-orphans
+
+              echo "⏳ Waiting 10 seconds for containers to initialize..."
+              sleep 10
+
+              echo "🌐 Attempting to connect containers to CodynNet (if available)..."
+              if docker network inspect CodynNet >/dev/null 2>&1; then
+                echo "✅ CodynNet network exists, connecting containers..."
+                docker network connect CodynNet mcp-api-prod 2>/dev/null || echo "mcp-api already connected or failed"
+                docker network connect CodynNet codyn-mastra-prod 2>/dev/null || echo "codyn-mastra already connected or failed"
+                echo "✅ Containers connected to CodynNet"
+              else
+                echo "⚠️  CodynNet network not found! Deploying without network connection."
+                echo "   You can manually connect later with:"
+                echo "   docker network connect CodynNet mcp-api-prod"
+                echo "   docker network connect CodynNet codyn-mastra-prod"
+              fi
+
+              echo "📊 Container status:"
+              docker compose -f docker-compose.prod.yml ps
+
+              DEPLOY_METHOD="compose"
+            fi
 
             echo ""
-            echo "🔍 Detailed container inspection:"
-            for container in pgvector-db-prod mcp-api-prod codyn-mastra-prod; do
-              if docker ps -a --format '{{.Names}}' | grep -q "^${container}$"; then
-                STATUS=$(docker inspect -f '{{.State.Status}}' "$container" 2>/dev/null)
-                echo "  $container: $STATUS"
-                if [ "$STATUS" != "running" ]; then
-                  echo "    ⚠️  Container not running! Showing logs:"
-                  docker logs --tail=30 "$container" 2>&1 | sed 's/^/      /'
+            echo "🔍 Detailed container/service inspection:"
+            if [ "$DEPLOY_METHOD" = "swarm" ]; then
+              echo "=== Swarm Services ==="
+              docker stack ps mcp --no-trunc
+              echo ""
+              echo "=== Service Logs (last 20 lines) ==="
+              docker service logs mcp_db --tail=20 2>&1 || echo "Service not found"
+              docker service logs mcp_mcp-api --tail=20 2>&1 || echo "Service not found"
+              docker service logs mcp_codyn-mastra --tail=20 2>&1 || echo "Service not found"
+            else
+              for container in pgvector-db-prod mcp-api-prod codyn-mastra-prod; do
+                if docker ps -a --format '{{.Names}}' | grep -q "^${container}$"; then
+                  STATUS=$(docker inspect -f '{{.State.Status}}' "$container" 2>/dev/null)
+                  NETWORKS=$(docker inspect -f '{{range $k, $v := .NetworkSettings.Networks}}{{$k}} {{end}}' "$container" 2>/dev/null)
+                  echo "  $container: $STATUS (networks: $NETWORKS)"
+                  if [ "$STATUS" != "running" ]; then
+                    echo "    ⚠️  Container not running! Showing logs:"
+                    docker logs --tail=30 "$container" 2>&1 | sed 's/^/      /'
+                  fi
+                else
+                  echo "  $container: NOT FOUND"
                 fi
-              else
-                echo "  $container: NOT FOUND"
-              fi
-            done
+              done
+            fi
 
-            echo "✅ Deployment completed!"
+            echo "✅ Deployment completed using $DEPLOY_METHOD method!"
           ENDSSH
 
       - name: Health Check
@@ -116,17 +172,32 @@ jobs:
 
             echo "🏥 Checking service health..."
 
-            echo "📊 Service states:"
-            docker stack services mcp
+            # Detect deployment method
+            if docker stack ls | grep -q mcp; then
+              DEPLOY_METHOD="swarm"
+              echo "📊 Detected Swarm deployment"
+              echo "📊 Service states:"
+              docker stack services mcp
+              echo ""
+              echo "📊 Running tasks:"
+              docker stack ps mcp --no-trunc
+            else
+              DEPLOY_METHOD="compose"
+              echo "📊 Detected Compose deployment"
+              echo "📊 Container status:"
+              docker compose -f docker-compose.prod.yml ps
+            fi
 
-            echo ""
-            echo "📊 Running tasks:"
-            docker stack ps mcp --no-trunc
-
-            # Get container IDs
-            DB_CONTAINER=$(docker ps -q --filter "label=com.docker.swarm.service.name=mcp_db")
-            API_CONTAINER=$(docker ps -q --filter "label=com.docker.swarm.service.name=mcp_mcp-api")
-            MASTRA_CONTAINER=$(docker ps -q --filter "label=com.docker.swarm.service.name=mcp_codyn-mastra")
+            # Get container IDs based on deployment method
+            if [ "$DEPLOY_METHOD" = "swarm" ]; then
+              DB_CONTAINER=$(docker ps -q --filter "label=com.docker.swarm.service.name=mcp_db")
+              API_CONTAINER=$(docker ps -q --filter "label=com.docker.swarm.service.name=mcp_mcp-api")
+              MASTRA_CONTAINER=$(docker ps -q --filter "label=com.docker.swarm.service.name=mcp_codyn-mastra")
+            else
+              DB_CONTAINER=$(docker ps -q --filter "name=pgvector-db-prod")
+              API_CONTAINER=$(docker ps -q --filter "name=mcp-api-prod")
+              MASTRA_CONTAINER=$(docker ps -q --filter "name=codyn-mastra-prod")
+            fi
 
             # Check database health
             echo "Checking database..."
@@ -152,7 +223,11 @@ jobs:
               fi
               echo "Waiting for API... ($RETRY/$MAX_RETRIES)"
               sleep 2
-              API_CONTAINER=$(docker ps -q --filter "label=com.docker.swarm.service.name=mcp_mcp-api")
+              if [ "$DEPLOY_METHOD" = "swarm" ]; then
+                API_CONTAINER=$(docker ps -q --filter "label=com.docker.swarm.service.name=mcp_mcp-api")
+              else
+                API_CONTAINER=$(docker ps -q --filter "name=mcp-api-prod")
+              fi
             done
             echo "✅ API is healthy"
 
@@ -168,7 +243,11 @@ jobs:
               fi
               echo "Waiting for Mastra... ($RETRY/$MAX_RETRIES)"
               sleep 2
-              MASTRA_CONTAINER=$(docker ps -q --filter "label=com.docker.swarm.service.name=mcp_codyn-mastra")
+              if [ "$DEPLOY_METHOD" = "swarm" ]; then
+                MASTRA_CONTAINER=$(docker ps -q --filter "label=com.docker.swarm.service.name=mcp_codyn-mastra")
+              else
+                MASTRA_CONTAINER=$(docker ps -q --filter "name=codyn-mastra-prod")
+              fi
             done
 
             if [ $RETRY -lt $MAX_RETRIES ]; then
@@ -184,17 +263,38 @@ jobs:
           ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'ENDSSH'
             cd ${{ env.DEPLOY_PATH }}
             echo "📋 Showing logs for debugging..."
+
+            # Detect deployment method
+            if docker stack ls | grep -q mcp; then
+              DEPLOY_METHOD="swarm"
+              echo "📊 Detected Swarm deployment"
+            else
+              DEPLOY_METHOD="compose"
+              echo "📊 Detected Compose deployment"
+            fi
+
             echo ""
-            echo "=== Stack Services ==="
-            docker stack services mcp
-            echo ""
-            echo "=== Stack Tasks ==="
-            docker stack ps mcp --no-trunc
-            echo ""
-            echo "=== Service Logs ==="
-            docker service logs mcp_db --tail=50 2>&1 || echo "Service not found"
-            docker service logs mcp_mcp-api --tail=50 2>&1 || echo "Service not found"
-            docker service logs mcp_codyn-mastra --tail=50 2>&1 || echo "Service not found"
+            if [ "$DEPLOY_METHOD" = "swarm" ]; then
+              echo "=== Stack Services ==="
+              docker stack services mcp
+              echo ""
+              echo "=== Stack Tasks ==="
+              docker stack ps mcp --no-trunc
+              echo ""
+              echo "=== Service Logs ==="
+              docker service logs mcp_db --tail=50 2>&1 || echo "Service not found"
+              docker service logs mcp_mcp-api --tail=50 2>&1 || echo "Service not found"
+              docker service logs mcp_codyn-mastra --tail=50 2>&1 || echo "Service not found"
+            else
+              echo "=== Container Status ==="
+              docker compose -f docker-compose.prod.yml ps -a
+              echo ""
+              echo "=== Container Logs ==="
+              docker logs pgvector-db-prod --tail=50 2>&1 || echo "Container not found"
+              docker logs mcp-api-prod --tail=50 2>&1 || echo "Container not found"
+              docker logs codyn-mastra-prod --tail=50 2>&1 || echo "Container not found"
+            fi
+
             echo ""
             echo "=== Networks ==="
             docker network ls
