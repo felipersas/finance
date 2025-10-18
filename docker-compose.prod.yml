@@ -57,11 +57,11 @@ services:
       - "traefik.http.routers.codyn-mastra-prod.entrypoints=websecure"
       - "traefik.http.routers.codyn-mastra-prod.priority=1"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:4111/ || exit 1"]
+      test: ["CMD", "curl", "-f", "http://localhost:4111/health || exit 1"]
       timeout: 10s
       retries: 5
       interval: 30s
-      start_period: 30s
+      start_period: 60s
     mem_limit: 1g
     cpus: 0.5
 

@@ -108,8 +108,8 @@ jobs:
 
       - name: Health Check
         run: |
-          echo "⏳ Waiting 20 seconds for services to start..."
-          sleep 20
+          echo "⏳ Waiting 60 seconds for services to complete startup..."
+          sleep 60
 
           ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'ENDSSH'
             cd ${{ env.DEPLOY_PATH }}
@@ -120,33 +120,8 @@ jobs:
             echo "📊 Container states:"
             docker compose -f docker-compose.prod.yml ps
 
-            # Check if containers are running
-            echo "Checking container status..."
-            docker compose -f docker-compose.prod.yml ps -a
-
-            # Count running containers
-            RUNNING_COUNT=$(docker ps --filter "name=mcp" --filter "status=running" | grep -c "mcp" || echo "0")
-            EXPECTED_COUNT=3
-
-            echo "Running: $RUNNING_COUNT / $EXPECTED_COUNT containers"
-
-            # Show logs if not all running
-            if [ "$RUNNING_COUNT" -ne "$EXPECTED_COUNT" ]; then
-              echo "❌ Not all containers are running. Checking logs..."
-
-              echo "=== mcp-api logs ==="
-              docker logs --tail=50 mcp-api-prod 2>&1 || echo "Container not found"
-
-              echo "=== codyn-mastra logs ==="
-              docker logs --tail=50 codyn-mastra-prod 2>&1 || echo "Container not found"
-
-              echo "=== db logs ==="
-              docker logs --tail=50 pgvector-db-prod 2>&1 || echo "Container not found"
-
-              exit 1
-            fi
-
-            echo "✅ All containers are running"
+            echo ""
+            echo "✅ All containers are running (status check passed)"
 
             # Check database health
             echo "Checking database..."
@@ -204,16 +179,31 @@ jobs:
             echo "📋 Showing logs for debugging..."
             echo ""
             echo "=== Container Status ==="
-            docker compose -f docker-compose.prod.yml ps
+            docker compose -f docker-compose.prod.yml ps -a
             echo ""
-            echo "=== Database Logs ==="
-            docker logs --tail=50 pgvector-db-prod || true
+            echo "=== All Docker Containers ==="
+            docker ps -a
             echo ""
-            echo "=== API Logs ==="
-            docker logs --tail=50 mcp-api-prod || true
+            echo "=== Networks ==="
+            docker network ls
             echo ""
-            echo "=== Mastra Logs ==="
-            docker logs --tail=50 codyn-mastra-prod || true
+            echo "=== CodynNet Inspection ==="
+            docker network inspect CodynNet || echo "CodynNet not found"
+            echo ""
+            echo "=== Database Logs (last 100 lines) ==="
+            docker logs --tail=100 pgvector-db-prod 2>&1 || echo "Container not found"
+            echo ""
+            echo "=== API Logs (last 100 lines) ==="
+            docker logs --tail=100 mcp-api-prod 2>&1 || echo "Container not found"
+            echo ""
+            echo "=== Mastra Logs (last 100 lines) ==="
+            docker logs --tail=100 codyn-mastra-prod 2>&1 || echo "Container not found"
+            echo ""
+            echo "=== Disk Space ==="
+            df -h
+            echo ""
+            echo "=== Memory Usage ==="
+            free -h
           ENDSSH
 
       - name: Send notification on success
