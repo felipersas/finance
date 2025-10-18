@@ -40,9 +40,12 @@ services:
   codyn-mastra:
     image: mcp-codyn-mastra:latest
     hostname: codyn-mastra
+    depends_on:
+      db:
+        condition: service_healthy
     environment:
       - NODE_ENV=production
-      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-extrato_db}?schema=public
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-extrato_db}
       - JWT_SECRET=${JWT_SECRET}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - GITHUB_TOKEN=${GITHUB_TOKEN}
@@ -81,6 +84,11 @@ services:
   mcp-api:
     image: mcp-mcp-api:latest
     hostname: mcp-api
+    depends_on:
+      db:
+        condition: service_healthy
+      codyn-mastra:
+        condition: service_healthy
     environment:
       - NODE_ENV=production
       - PORT=3000
