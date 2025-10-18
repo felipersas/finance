@@ -61,14 +61,23 @@ jobs:
               exit 1
             fi
 
+            echo "🧹 Cleaning up any stale build cache..."
+            docker builder prune -f --filter "until=24h" || true
+
+            echo "🛑 Stopping existing containers..."
+            docker compose -f docker-compose.prod.yml down || true
+
             echo "🏗️  Building images with cache..."
-            DOCKER_BUILDKIT=1 docker compose -f docker-compose.prod.yml build --parallel
+            timeout 600 docker compose -f docker-compose.prod.yml build --parallel || {
+              echo "❌ Build failed or timed out, trying without cache..."
+              docker compose -f docker-compose.prod.yml build --no-cache --parallel
+            }
 
             echo "🚀 Starting services..."
             docker compose -f docker-compose.prod.yml up -d --remove-orphans
 
             echo "⏳ Waiting 5 seconds for containers to initialize..."
-            sleep 5
+            sleep 10
 
             echo "📊 Container status:"
             docker compose -f docker-compose.prod.yml ps

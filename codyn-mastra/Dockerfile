@@ -53,13 +53,6 @@ COPY --from=builder /app/src ./src
 # Install curl for healthchecks
 RUN apk add --no-cache curl
 
-# Create non-root user for security
-RUN addgroup -g 1001 -S nodejs && \
-    adduser -S mastra -u 1001 && \
-    chown -R mastra:nodejs /app
-
-USER mastra
-
 # Expose Mastra port
 EXPOSE 4111
 
