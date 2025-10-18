@@ -5,7 +5,7 @@ echo "🚀 Starting MCP API V2..."
 
 # Wait for database to be ready
 echo "⏳ Waiting for database..."
-until pg_isready -h mcp_db -p 5432 -U ${POSTGRES_USER:-mcpuser} > /dev/null 2>&1; do
+until pg_isready -h db -p 5432 -U ${POSTGRES_USER:-mcpuser} > /dev/null 2>&1; do
   echo "Waiting for database connection..."
   sleep 2
 done
