@@ -14,6 +14,8 @@ services:
     deploy:
       mode: replicated
       replicas: 1
+      placement:
+        max_replicas_per_node: 1
       resources:
         limits:
           memory: 2G
@@ -22,12 +24,13 @@ services:
         condition: on-failure
         delay: 5s
         max_attempts: 3
+      endpoint_mode: vip  # Virtual IP mode for better DNS resolution
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB:-extrato_db}"]
       timeout: 10s
-      retries: 5
-      interval: 30s
-      start_period: 30s
+      retries: 10
+      interval: 10s
+      start_period: 40s
     command: postgres -c shared_preload_libraries=vector -c max_connections=200
 
   # Mastra AI Service - Production (must start before API)
@@ -52,8 +55,9 @@ services:
           cpus: '0.5'
       restart_policy:
         condition: on-failure
-        delay: 5s
-        max_attempts: 3
+        delay: 10s
+        max_attempts: 5
+      endpoint_mode: vip
       labels:
         - "traefik.enable=true"
         - "traefik.http.routers.codyn-mastra-prod.rule=Host(`${TRAEFIK_MASTRA_DOMAIN:-mastra.codyn.site}`)"
@@ -68,7 +72,7 @@ services:
       timeout: 10s
       retries: 5
       interval: 30s
-      start_period: 60s
+      start_period: 90s
 
   # NestJS API Service - Production
   mcp-api:
@@ -90,8 +94,9 @@ services:
       replicas: 1
       restart_policy:
         condition: on-failure
-        delay: 5s
-        max_attempts: 3
+        delay: 10s
+        max_attempts: 5
+      endpoint_mode: vip
       labels:
         - "traefik.enable=true"
         - "traefik.http.routers.mcp-api.rule=Host(`${TRAEFIK_DOMAIN:-api.codyn.site}`)"
@@ -106,7 +111,7 @@ services:
       timeout: 10s
       retries: 5
       interval: 30s
-      start_period: 30s
+      start_period: 60s
 
 volumes:
   pgdata_prod:
@@ -118,3 +123,4 @@ networks:
   internal-net:
     driver: overlay
     internal: true  # Rede interna para isolamento
+    attachable: true  # Permite melhor resolução de DNS
