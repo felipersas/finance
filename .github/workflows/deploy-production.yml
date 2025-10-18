@@ -79,6 +79,12 @@ jobs:
             echo "⏳ Waiting 10 seconds for containers to initialize..."
             sleep 10
 
+            echo "🌐 Connecting containers to CodynNet (Swarm network)..."
+            docker network connect CodynNet mcp-api-prod 2>/dev/null || echo "mcp-api already connected or failed"
+            docker network connect CodynNet codyn-mastra-prod 2>/dev/null || echo "codyn-mastra already connected or failed"
+
+            echo "✅ Containers connected to CodynNet"
+
             echo "📊 Container status:"
             docker compose -f docker-compose.prod.yml ps
 

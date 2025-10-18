@@ -47,7 +47,6 @@ services:
         condition: service_healthy
     networks:
       - mcp-network-prod
-      - CodynNet
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.codyn-mastra-prod.rule=Host(`${TRAEFIK_MASTRA_DOMAIN:-mastra.mcp.codyn.site}`)"
@@ -58,7 +57,7 @@ services:
       - "traefik.http.routers.codyn-mastra-prod.entrypoints=websecure"
       - "traefik.http.routers.codyn-mastra-prod.priority=1"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:4111/health || exit 1"]
+      test: ["CMD", "curl", "-f", "http://localhost:4111/ || exit 1"]
       timeout: 10s
       retries: 5
       interval: 30s
@@ -91,7 +90,6 @@ services:
         condition: service_started
     networks:
       - mcp-network-prod
-      - CodynNet
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.mcp-api.rule=Host(`${TRAEFIK_DOMAIN:-api.mcp.codyn.site}`)"
@@ -102,7 +100,7 @@ services:
       - "traefik.http.routers.mcp-api.entrypoints=websecure"
       - "traefik.http.routers.mcp-api.priority=1"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/health || exit 1"]
+      test: ["CMD", "curl", "-f", "http://localhost:3000/ || exit 1"]
       timeout: 10s
       retries: 5
       interval: 30s
