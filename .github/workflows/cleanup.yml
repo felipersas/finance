@@ -1,0 +1,99 @@
+name: Cleanup Docker Images
+
+on:
+  schedule:
+    # Roda todo domingo às 3h da manhã
+    - cron: '0 3 * * 0'
+  workflow_dispatch: # Permite executar manualmente
+
+env:
+  DEPLOY_PATH: /home/deploy/mcp
+
+jobs:
+  cleanup:
+    name: Clean up Docker resources
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Add VPS to known hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Clean up Docker resources
+        run: |
+          ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'ENDSSH'
+            cd ${{ env.DEPLOY_PATH }}
+
+            echo "🧹 Starting Docker cleanup..."
+            echo ""
+
+            echo "📊 Disk usage before cleanup:"
+            df -h / | grep -v Filesystem
+
+            echo ""
+            echo "🗑️  Removing unused images..."
+            docker image prune -af
+
+            echo ""
+            echo "🗑️  Removing unused containers..."
+            docker container prune -f
+
+            echo ""
+            echo "🗑️  Removing unused volumes..."
+            docker volume prune -f
+
+            echo ""
+            echo "🗑️  Removing unused networks..."
+            docker network prune -f
+
+            echo ""
+            echo "🗑️  Removing build cache..."
+            docker builder prune -af
+
+            echo ""
+            echo "📊 Disk usage after cleanup:"
+            df -h / | grep -v Filesystem
+
+            echo ""
+            echo "✅ Cleanup completed!"
+
+            echo ""
+            echo "📦 Remaining images:"
+            docker images --format "table {{.Repository}}\t{{.Tag}}\t{{.Size}}"
+
+            echo ""
+            echo "🐳 Running containers:"
+            docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Size}}"
+          ENDSSH
+
+      - name: Verify services are still running
+        run: |
+          ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'ENDSSH'
+            cd ${{ env.DEPLOY_PATH }}
+
+            echo "🔍 Verifying services..."
+
+            RUNNING=$(docker compose -f docker-compose.prod.yml ps --format json 2>/dev/null | jq -r 'select(.State == "running") | .Name' | wc -l)
+            TOTAL=$(docker compose -f docker-compose.prod.yml ps --format json 2>/dev/null | jq -r '.[].Name' | wc -l)
+
+            echo "Running: $RUNNING / $TOTAL containers"
+
+            if [ "$RUNNING" -eq "$TOTAL" ] && [ "$TOTAL" -gt 0 ]; then
+              echo "✅ All services are running correctly"
+            else
+              echo "⚠️  Some services may not be running"
+              docker compose -f docker-compose.prod.yml ps
+            fi
+          ENDSSH
+
+      - name: Send notification
+        if: success()
+        run: |
+          echo "✅ Docker cleanup completed successfully!"
+          echo "🗑️  Freed up disk space on VPS"

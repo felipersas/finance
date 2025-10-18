@@ -1,46 +1,54 @@
-# Multi-stage build for NestJS
+# Multi-stage build for NestJS - Optimized for cache
 FROM node:20-alpine AS base
 
 WORKDIR /app
 
-# Copy package files
+# Install dependencies in a separate layer for better caching
+FROM base AS deps
+
+# Copy only dependency files first (better cache)
 COPY package*.json ./
 COPY prisma ./prisma/
 
-# Install dependencies
-RUN npm ci
+# Install all dependencies (including dev for build)
+RUN npm ci && npm cache clean --force
+
+# Generate Prisma client in deps stage
+RUN npx prisma generate
+
+# Development stage
+FROM deps AS development
 
 # Copy source code
 COPY . .
 
-# Generate Prisma client
-RUN npx prisma generate
+# Expose port
+EXPOSE 3000
 
-# Build stage
-FROM base AS build
+# Development command
+CMD ["npm", "run", "start:dev"]
+
+# Build stage - only runs when needed
+FROM deps AS build
+
+# Copy source code
+COPY . .
 
 # Build the application
 RUN npm run build
 
-# Development stage
-FROM base AS development
-
-# Expose port
-EXPOSE 3000
-
-# Development command (will be overridden by docker-compose)
-CMD ["npm", "run", "start:dev"]
-
-# Production stage
+# Production stage - optimized and minimal
 FROM node:20-alpine AS production
 
 WORKDIR /app
+
+ENV NODE_ENV=production
 
 # Copy package files
 COPY package*.json ./
 COPY prisma ./prisma/
 
-# Install production dependencies and generate Prisma client
+# Install ONLY production dependencies
 RUN npm ci --only=production && \
     npx prisma generate && \
     npm cache clean --force
@@ -48,7 +56,10 @@ RUN npm ci --only=production && \
 # Copy built application from build stage
 COPY --from=build /app/dist ./dist
 
-# Create a non-root user
+# Install curl for healthchecks
+RUN apk add --no-cache curl
+
+# Create non-root user for security
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S nestjs -u 1001 && \
     chown -R nestjs:nodejs /app
@@ -58,5 +69,9 @@ USER nestjs
 # Expose port
 EXPOSE 3000
 
-# Production command
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+  CMD curl -f http://localhost:3000/health || exit 1
+
+# Production command - direct node for faster startup
 CMD ["node", "dist/main"]

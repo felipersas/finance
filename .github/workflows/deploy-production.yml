@@ -56,44 +56,30 @@ jobs:
             echo "📝 Checking .env file..."
             if [ -f .env ]; then
               echo "✅ .env file exists"
-              echo "Variables found:"
-              grep -E "^[A-Z_]+" .env | cut -d= -f1 | head -10
             else
               echo "❌ .env file not found!"
               exit 1
             fi
 
-            echo "🛑 Stopping existing containers..."
-            docker compose -f docker-compose.prod.yml down || true
-
-            echo "📦 Pulling latest images..."
-            docker compose -f docker-compose.prod.yml pull || true
-
-            echo "🏗️  Building images..."
-            docker compose -f docker-compose.prod.yml build --no-cache
+            echo "🏗️  Building images with cache..."
+            DOCKER_BUILDKIT=1 docker compose -f docker-compose.prod.yml build --parallel
 
             echo "🚀 Starting services..."
             docker compose -f docker-compose.prod.yml up -d --remove-orphans
 
-            echo "⏳ Waiting 10 seconds for containers to start..."
-            sleep 10
+            echo "⏳ Waiting 5 seconds for containers to initialize..."
+            sleep 5
 
             echo "📊 Container status:"
             docker compose -f docker-compose.prod.yml ps
-
-            echo "🔍 Checking container states..."
-            docker compose -f docker-compose.prod.yml ps --format json | jq -r '.[] | "\(.Name): \(.State)"'
-
-            echo "🧹 Cleaning up unused images..."
-            docker image prune -af
 
             echo "✅ Deployment completed!"
           ENDSSH
 
       - name: Health Check
         run: |
-          echo "⏳ Waiting 40 seconds for services to start..."
-          sleep 40
+          echo "⏳ Waiting 20 seconds for services to start..."
+          sleep 20
 
           ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'ENDSSH'
             cd ${{ env.DEPLOY_PATH }}
@@ -166,12 +152,6 @@ jobs:
             echo ""
             echo "=== Mastra Logs ==="
             docker logs --tail=50 codyn-mastra-prod || true
-            echo ""
-            echo "=== Environment Check ==="
-            ls -la .env || echo ".env file not found"
-            echo ""
-            echo "=== Docker Compose Config ==="
-            docker compose -f docker-compose.prod.yml config || true
           ENDSSH
 
       - name: Send notification on success
