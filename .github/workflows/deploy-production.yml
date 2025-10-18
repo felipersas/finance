@@ -116,20 +116,25 @@ jobs:
 
             echo "🏥 Checking service health..."
 
-            # Check container states
-            echo "📊 Container states:"
-            docker compose -f docker-compose.prod.yml ps
+            echo "📊 Service states:"
+            docker stack services mcp
 
             echo ""
-            echo "✅ All containers are running (status check passed)"
+            echo "📊 Running tasks:"
+            docker stack ps mcp --no-trunc
+
+            # Get container IDs
+            DB_CONTAINER=$(docker ps -q --filter "label=com.docker.swarm.service.name=mcp_db")
+            API_CONTAINER=$(docker ps -q --filter "label=com.docker.swarm.service.name=mcp_mcp-api")
+            MASTRA_CONTAINER=$(docker ps -q --filter "label=com.docker.swarm.service.name=mcp_codyn-mastra")
 
             # Check database health
             echo "Checking database..."
-            if docker exec pgvector-db-prod pg_isready -U mcpuser -d extrato_db 2>/dev/null; then
+            if [ -n "$DB_CONTAINER" ] && docker exec $DB_CONTAINER pg_isready -U mcpuser -d extrato_db 2>/dev/null; then
               echo "✅ Database is healthy"
             else
               echo "❌ Database health check failed"
-              docker logs --tail=50 pgvector-db-prod
+              [ -n "$DB_CONTAINER" ] && docker logs --tail=50 $DB_CONTAINER
               exit 1
             fi
 
@@ -137,31 +142,33 @@ jobs:
             echo "Checking API..."
             RETRY=0
             MAX_RETRIES=30
-            until docker exec mcp-api-prod curl -sf http://localhost:3000/ >/dev/null 2>&1; do
+            until [ -n "$API_CONTAINER" ] && docker exec $API_CONTAINER curl -sf http://localhost:3000/health >/dev/null 2>&1; do
               RETRY=$((RETRY+1))
               if [ $RETRY -ge $MAX_RETRIES ]; then
                 echo "❌ API health check failed after $MAX_RETRIES attempts"
                 echo "=== API Logs ==="
-                docker logs --tail=100 mcp-api-prod
+                [ -n "$API_CONTAINER" ] && docker logs --tail=100 $API_CONTAINER
                 exit 1
               fi
               echo "Waiting for API... ($RETRY/$MAX_RETRIES)"
               sleep 2
+              API_CONTAINER=$(docker ps -q --filter "label=com.docker.swarm.service.name=mcp_mcp-api")
             done
             echo "✅ API is healthy"
 
             # Check Mastra health
             echo "Checking Mastra..."
             RETRY=0
-            until docker exec codyn-mastra-prod curl -sf http://localhost:4111/health >/dev/null 2>&1; do
+            until [ -n "$MASTRA_CONTAINER" ] && docker exec $MASTRA_CONTAINER curl -sf http://localhost:4111/health >/dev/null 2>&1; do
               RETRY=$((RETRY+1))
               if [ $RETRY -ge $MAX_RETRIES ]; then
                 echo "⚠️  Mastra health check failed (non-critical)"
-                docker logs --tail=50 codyn-mastra-prod || true
+                [ -n "$MASTRA_CONTAINER" ] && docker logs --tail=50 $MASTRA_CONTAINER || true
                 break
               fi
               echo "Waiting for Mastra... ($RETRY/$MAX_RETRIES)"
               sleep 2
+              MASTRA_CONTAINER=$(docker ps -q --filter "label=com.docker.swarm.service.name=mcp_codyn-mastra")
             done
 
             if [ $RETRY -lt $MAX_RETRIES ]; then
@@ -178,26 +185,19 @@ jobs:
             cd ${{ env.DEPLOY_PATH }}
             echo "📋 Showing logs for debugging..."
             echo ""
-            echo "=== Container Status ==="
-            docker compose -f docker-compose.prod.yml ps -a
+            echo "=== Stack Services ==="
+            docker stack services mcp
             echo ""
-            echo "=== All Docker Containers ==="
-            docker ps -a
+            echo "=== Stack Tasks ==="
+            docker stack ps mcp --no-trunc
+            echo ""
+            echo "=== Service Logs ==="
+            docker service logs mcp_db --tail=50 2>&1 || echo "Service not found"
+            docker service logs mcp_mcp-api --tail=50 2>&1 || echo "Service not found"
+            docker service logs mcp_codyn-mastra --tail=50 2>&1 || echo "Service not found"
             echo ""
             echo "=== Networks ==="
             docker network ls
-            echo ""
-            echo "=== CodynNet Inspection ==="
-            docker network inspect CodynNet || echo "CodynNet not found"
-            echo ""
-            echo "=== Database Logs (last 100 lines) ==="
-            docker logs --tail=100 pgvector-db-prod 2>&1 || echo "Container not found"
-            echo ""
-            echo "=== API Logs (last 100 lines) ==="
-            docker logs --tail=100 mcp-api-prod 2>&1 || echo "Container not found"
-            echo ""
-            echo "=== Mastra Logs (last 100 lines) ==="
-            docker logs --tail=100 codyn-mastra-prod 2>&1 || echo "Container not found"
             echo ""
             echo "=== Disk Space ==="
             df -h

@@ -1,134 +1,123 @@
+version: "3.8"
+
 services:
   # PostgreSQL Database with pgvector for both mcp-api and mcp-server-extrato
   db:
     image: pgvector/pgvector:0.8.1-pg14-trixie
-    container_name: pgvector-db-prod
-    restart: always
+    hostname: db
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-extrato_db}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-    ports:
-      - "5432:5432"
     volumes:
       - pgdata_prod:/var/lib/postgresql/data
-      - ./postgres-init:/docker-entrypoint-initdb.d
     networks:
       - mcp-network-prod
-    mem_limit: 2g
-    cpus: 1.0
+      - CodynNet
+    deploy:
+      mode: replicated
+      replicas: 1
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1.0'
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB:-extrato_db}"]
       timeout: 10s
       retries: 5
       interval: 30s
       start_period: 30s
-    # Security improvements
     command: postgres -c shared_preload_libraries=vector -c max_connections=200
 
   # Mastra AI Service - Production (must start before API)
   codyn-mastra:
-    build:
-      context: ./codyn-mastra
-      dockerfile: Dockerfile
-      target: production
-    container_name: codyn-mastra-prod
-    restart: always
-    ports:
-      - "4111:4111"
+    image: mcp-codyn-mastra:latest
+    hostname: codyn-mastra
     environment:
       - NODE_ENV=production
       - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-extrato_db}
       - JWT_SECRET=${JWT_SECRET}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - GITHUB_TOKEN=${GITHUB_TOKEN}
-    depends_on:
-      db:
-        condition: service_healthy
     networks:
       - mcp-network-prod
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.codyn-mastra-prod.rule=Host(`${TRAEFIK_MASTRA_DOMAIN:-mastra.codyn.site}`)"
-      - "traefik.http.services.codyn-mastra-prod.loadbalancer.server.port=4111"
-      - "traefik.http.routers.codyn-mastra-prod.tls.certresolver=letsencryptresolver"
-      - "traefik.http.routers.codyn-mastra-prod.service=codyn-mastra-prod"
-      - "traefik.docker.network=CodynNet"
-      - "traefik.http.routers.codyn-mastra-prod.entrypoints=websecure"
-      - "traefik.http.routers.codyn-mastra-prod.priority=1"
+      - CodynNet
+    deploy:
+      mode: replicated
+      replicas: 1
+      resources:
+        limits:
+          memory: 1G
+          cpus: '0.5'
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.codyn-mastra-prod.rule=Host(`${TRAEFIK_MASTRA_DOMAIN:-mastra.codyn.site}`)"
+        - "traefik.http.services.codyn-mastra-prod.loadbalancer.server.port=4111"
+        - "traefik.http.routers.codyn-mastra-prod.tls.certresolver=letsencryptresolver"
+        - "traefik.http.routers.codyn-mastra-prod.service=codyn-mastra-prod"
+        - "traefik.docker.network=CodynNet"
+        - "traefik.http.routers.codyn-mastra-prod.entrypoints=websecure"
+        - "traefik.http.routers.codyn-mastra-prod.priority=1"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:4111/api || exit 1"]
+      test: ["CMD", "curl", "-f", "http://localhost:4111/health"]
       timeout: 10s
       retries: 5
       interval: 30s
       start_period: 60s
-    mem_limit: 1g
-    cpus: 0.5
 
   # NestJS API Service - Production
   mcp-api:
-    build:
-      context: ./mcp-api
-      dockerfile: Dockerfile
-      target: production
-    container_name: mcp-api-prod
-    restart: always
-    ports:
-      - "3000:3000"
+    image: mcp-mcp-api:latest
+    hostname: mcp-api
     environment:
       - NODE_ENV=production
       - PORT=3000
       - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-extrato_db}
       - JWT_SECRET=${JWT_SECRET}
       - JWT_EXPIRES_IN=${JWT_EXPIRES_IN:-7d}
-      - CHATBOT_URL=http://codyn-mastra-prod:4111
+      - CHATBOT_URL=http://codyn-mastra:4111
       - INTERNAL_API_TOKEN=${INTERNAL_API_TOKEN}
-    depends_on:
-      db:
-        condition: service_healthy
-      codyn-mastra:
-        condition: service_started
     networks:
       - mcp-network-prod
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.mcp-api.rule=Host(`${TRAEFIK_DOMAIN:-api.codyn.site}`)"
-      - "traefik.http.services.mcp-api.loadbalancer.server.port=3000"
-      - "traefik.http.routers.mcp-api.tls.certresolver=letsencryptresolver"
-      - "traefik.http.routers.mcp-api.service=mcp-api"
-      - "traefik.docker.network=CodynNet"
-      - "traefik.http.routers.mcp-api.entrypoints=websecure"
-      - "traefik.http.routers.mcp-api.priority=1"
+      - CodynNet
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.mcp-api.rule=Host(`${TRAEFIK_DOMAIN:-api.codyn.site}`)"
+        - "traefik.http.services.mcp-api.loadbalancer.server.port=3000"
+        - "traefik.http.routers.mcp-api.tls.certresolver=letsencryptresolver"
+        - "traefik.http.routers.mcp-api.service=mcp-api"
+        - "traefik.docker.network=CodynNet"
+        - "traefik.http.routers.mcp-api.entrypoints=websecure"
+        - "traefik.http.routers.mcp-api.priority=1"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/ || exit 1"]
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
       timeout: 10s
       retries: 5
       interval: 30s
       start_period: 30s
-    # Security improvements - removidas temporariamente para debug
-    # read_only: true
-    # tmpfs:
-    #   - /tmp
-    # cap_drop:
-    #   - ALL
-    # cap_add:
-    #   - CHOWN
-    #   - SETGID
-    #   - SETUID
-    # user: "1000:1000" # removido temporariamente
 
 volumes:
   pgdata_prod:
     driver: local
-  nginx_cache:
-    driver: local
-  nginx_logs:
-    driver: local
 
 networks:
   mcp-network-prod:
-    driver: bridge
-    internal: false
+    driver: overlay
+    attachable: true
   CodynNet:
     external: true
-    name: CodynNet
