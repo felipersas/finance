@@ -1,3 +1,3 @@
 export interface ChatbotServicePort {
-  chat(query: string, userId: string): Promise<any>;
+  chat(query: string, userId: string, token?: string): Promise<any>;
 }

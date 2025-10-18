@@ -1,25 +1,66 @@
 services:
-  # MySQL Database for both mcp-api and mcp-server-extrato
-  mysql:
-    image: mysql:8.0
-    container_name: mcp-mysql
+  # PostgreSQL Database with pgvector for both mcp-api and mcp-server-extrato
+  db:
+    image: pgvector/pgvector:0.8.1-pg14-trixie
+    container_name: pgvector-db
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: extrato_db
-      MYSQL_USER: mcpuser
-      MYSQL_PASSWORD: mcppassword
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_HOST_AUTH_METHOD: trust
     ports:
-      - "3306:3306"
+      - "${POSTGRES_HOST_PORT}:5432"
     volumes:
-      - mysql_data:/var/lib/mysql
-      - ./mysql-init:/docker-entrypoint-initdb.d
+      - pgdata:/var/lib/postgresql/data
+      - ./postgres-init:/docker-entrypoint-initdb.d
     networks:
       - mcp-network
+      - CodynNet
+    mem_limit: 1g
+    cpus: 0.33
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      timeout: 13s
-      retries: 10
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+
+
+  # Mastra AI Service
+  codyn-mastra:
+    build:
+      context: ./codyn-mastra
+      dockerfile: Dockerfile
+      target: development
+    container_name: codyn-mastra
+    restart: unless-stopped
+    ports:
+      - "${MASTRA_PORT}:4111"
+    environment:
+      - NODE_ENV=${NODE_ENV}
+      - DATABASE_URL=${DATABASE_URL}
+      - JWT_SECRET=${JWT_SECRET}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    volumes:
+      - ./codyn-mastra:/app
+      - /app/node_modules
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - mcp-network
+      - CodynNet
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.codyn-mastra.rule=Host(`${TRAEFIK_MASTRA_DOMAIN:-mastra.codyn.site}`)"
+      - "traefik.http.services.codyn-mastra.loadbalancer.server.port=4111"
+      - "traefik.http.routers.codyn-mastra.tls.certresolver=letsencryptresolver"
+      - "traefik.http.routers.codyn-mastra.service=codyn-mastra"
+      - "traefik.docker.network=CodynNet"
+      - "traefik.http.routers.codyn-mastra.entrypoints=websecure"
+      - "traefik.http.routers.codyn-mastra.priority=1"
+    command: npm run dev
 
   # NestJS API Service
   mcp-api:
@@ -30,98 +71,53 @@ services:
     container_name: mcp-api
     restart: unless-stopped
     ports:
-      - "3000:3000"
+      - "${API_PORT}:3333"
     environment:
-      - NODE_ENV=development
-      - PORT=3000
-      # - DATABASE_URL=mysql://root:rootpassword@mysql:3306/extrato_db
-      - DATABASE_URL=postgresql://postgres:86530e280a12a0493f1b658299258787@84.46.248.113:5432/postgres
-      - JWT_SECRET=slkdfklçsadkf0892i81uj2iojflkdsajfçlkasjfoiu78
-      - JWT_EXPIRES_IN=7d
-      - CHATBOT_URL=http://mcp-chatbot:3001
+      - NODE_ENV=${NODE_ENV}
+      - PORT=${API_PORT}
+      - DATABASE_URL=${DATABASE_URL}
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRES_IN=${JWT_EXPIRES_IN}
+      - CHATBOT_URL=${CHATBOT_URL}
       - INTERNAL_API_TOKEN=${INTERNAL_API_TOKEN}
     volumes:
       - ./mcp-api:/app
       - /app/node_modules
     depends_on:
-      mysql:
+      db:
         condition: service_healthy
     networks:
       - mcp-network
+      - CodynNet
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.mcp-api-dev.rule=Host(`${TRAEFIK_API_DOMAIN:-api.codyn.site}`)"
+      - "traefik.http.services.mcp-api-dev.loadbalancer.server.port=3333"
+      - "traefik.http.routers.mcp-api-dev.tls.certresolver=letsencryptresolver"
+      - "traefik.http.routers.mcp-api-dev.service=mcp-api-dev"
+      - "traefik.docker.network=CodynNet"
+      - "traefik.http.routers.mcp-api-dev.entrypoints=websecure"
+      - "traefik.http.routers.mcp-api-dev.priority=1"
     command: >
       sh -c "
         npx prisma generate &&
+        npx prisma migrate deploy &&
         npm run start:dev
       "
 
-  # MCP Server Extrato
-  mcp-server-extrato:
-    build:
-      context: ./mcp-server-extrato
-      dockerfile: Dockerfile
-    container_name: mcp-server-extrato
-    restart: unless-stopped
-    ports:
-      - "3002:3000"
-      - "3003:3001"
-    environment:
-      - NODE_ENV=development
-      - DB_HOST=mysql
-      - DB_PORT=3306
-      - DB_USER=root
-      - DB_PASSWORD=rootpassword
-      - DB_NAME=extrato_db
-    volumes:
-      - ./mcp-server-extrato:/app
-    depends_on:
-      mysql:
-        condition: service_healthy
-    networks:
-      - mcp-network
-    command: npm run start
 
-  # MCP Chatbot Service
-  mcp-chatbot:
-    build:
-      context: ./mcp-chatbot
-      dockerfile: Dockerfile
-    container_name: mcp-chatbot
-    restart: unless-stopped
-    # Porta removida - serviço acessível apenas internamente
-    # ports:
-    #   - "3001:3001"
-    expose:
-      - "3001"  # Expõe apenas para containers na mesma rede
-    environment:
-      - NODE_ENV=development
-      - PORT=3001
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - MCP_SERVER_PATH=/app/mcp-server-extrato/build/main.js
-      - INTERNAL_API_TOKEN=${INTERNAL_API_TOKEN}
-      - ALLOWED_ORIGINS=mcp-api
-    volumes:
-      - ./mcp-chatbot:/app
-      - ./mcp-server-extrato:/app/mcp-server-extrato
-    depends_on:
-      - mcp-server-extrato
-    networks:
-      - mcp-network
-    command: >
-      sh -c "
-        npm run build &&
-        node build/index.js /app/mcp-server-extrato/build/main.js
-      "
-
-  # React Native Development Server (Expo)
 
 volumes:
-  mysql_data:
+  pgdata:
 
 networks:
   mcp-network:
     driver: bridge
-    internal: false  # Permite acesso à internet (necessário para OpenAI)
+    internal: false
     ipam:
       config:
         - subnet: 172.20.0.0/16
           gateway: 172.20.0.1
+  CodynNet:
+    external: true
+    name: CodynNet

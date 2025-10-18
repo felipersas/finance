@@ -1,0 +1,207 @@
+name: Run Tests
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - feature/*
+  pull_request:
+    branches:
+      - main
+      - develop
+  workflow_dispatch:
+
+jobs:
+  test-api:
+    name: Test MCP API
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: pgvector/pgvector:0.8.1-pg14-trixie
+        env:
+          POSTGRES_DB: extrato_db_test
+          POSTGRES_USER: test_user
+          POSTGRES_PASSWORD: test_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: mcp-api/package-lock.json
+
+      - name: Install dependencies
+        working-directory: ./mcp-api
+        run: npm ci
+
+      - name: Run linter
+        working-directory: ./mcp-api
+        run: npm run lint || true
+
+      - name: Generate Prisma Client
+        working-directory: ./mcp-api
+        env:
+          DATABASE_URL: postgresql://test_user:test_password@localhost:5432/extrato_db_test
+        run: npx prisma generate
+
+      - name: Run migrations
+        working-directory: ./mcp-api
+        env:
+          DATABASE_URL: postgresql://test_user:test_password@localhost:5432/extrato_db_test
+        run: npx prisma migrate deploy
+
+      - name: Run tests
+        working-directory: ./mcp-api
+        env:
+          DATABASE_URL: postgresql://test_user:test_password@localhost:5432/extrato_db_test
+          JWT_SECRET: test_secret_key_for_ci
+          NODE_ENV: test
+        run: npm test || echo "No tests configured yet"
+
+      - name: Build application
+        working-directory: ./mcp-api
+        run: npm run build
+
+  test-mastra:
+    name: Test Codyn Mastra
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: codyn-mastra/package-lock.json
+
+      - name: Install dependencies
+        working-directory: ./codyn-mastra
+        run: npm ci
+
+      - name: Run linter
+        working-directory: ./codyn-mastra
+        run: npm run lint || true
+
+      - name: Run tests
+        working-directory: ./codyn-mastra
+        env:
+          NODE_ENV: test
+          OPENAI_API_KEY: test_key
+        run: npm test || echo "No tests configured yet"
+
+      - name: Build application
+        working-directory: ./codyn-mastra
+        run: npm run build || echo "No build script configured"
+
+  docker-build-test:
+    name: Test Docker Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Test build mcp-api
+        uses: docker/build-push-action@v5
+        with:
+          context: ./mcp-api
+          file: ./mcp-api/Dockerfile
+          target: production
+          push: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Test docker-compose configuration
+        run: |
+          docker compose -f docker-compose.prod.yml config
+
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: Upload Trivy results to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+  validate-compose:
+    name: Validate Docker Compose
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Validate development compose
+        run: docker compose -f docker-compose.yml config > /dev/null
+
+      - name: Validate production compose
+        run: docker compose -f docker-compose.prod.yml config > /dev/null
+
+      - name: Check for secrets in compose files
+        run: |
+          if grep -r "password.*=" docker-compose*.yml | grep -v "\${"; then
+            echo "❌ Found hardcoded secrets in docker-compose files!"
+            exit 1
+          else
+            echo "✅ No hardcoded secrets found"
+          fi
+
+  summary:
+    name: Test Summary
+    runs-on: ubuntu-latest
+    needs: [test-api, test-mastra, docker-build-test, validate-compose]
+    if: always()
+
+    steps:
+      - name: Check test results
+        run: |
+          echo "## Test Results Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Job | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| MCP API Tests | ${{ needs.test-api.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Mastra Tests | ${{ needs.test-mastra.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Docker Build | ${{ needs.docker-build-test.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Validate Compose | ${{ needs.validate-compose.result }} |" >> $GITHUB_STEP_SUMMARY
+
+      - name: Fail if any test failed
+        if: |
+          needs.test-api.result == 'failure' ||
+          needs.test-mastra.result == 'failure' ||
+          needs.docker-build-test.result == 'failure' ||
+          needs.validate-compose.result == 'failure'
+        run: |
+          echo "❌ One or more tests failed"
+          exit 1

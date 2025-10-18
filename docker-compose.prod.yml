@@ -1,30 +1,30 @@
 services:
-  # MySQL Database for both mcp-api and mcp-server-extrato
-  mysql:
-    image: mysql:8.0
-    container_name: mcp-mysql-prod
+  # PostgreSQL Database with pgvector for both mcp-api and mcp-server-extrato
+  db:
+    image: pgvector/pgvector:0.8.1-pg14-trixie
+    container_name: pgvector-db-prod
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-extrato_db}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
-      - "3306:3306"
+      - "5432:5432"
     volumes:
-      - mysql_data_prod:/var/lib/mysql
-      - ./mysql-init:/docker-entrypoint-initdb.d
+      - pgdata_prod:/var/lib/postgresql/data
+      - ./postgres-init:/docker-entrypoint-initdb.d
     networks:
-      mcp-network-prod:
-        ipv4_address: 172.21.0.2
+      - mcp-network-prod
+    mem_limit: 2g
+    cpus: 1.0
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB:-extrato_db}"]
       timeout: 10s
       retries: 5
       interval: 30s
       start_period: 30s
     # Security improvements
-    command: --default-authentication-plugin=mysql_native_password --skip-log-bin
+    command: postgres -c shared_preload_libraries=vector -c max_connections=200
 
   # NestJS API Service - Production
   mcp-api:
@@ -39,17 +39,26 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=3000
-      - DATABASE_URL=mysql://${MYSQL_USER}:${MYSQL_PASSWORD}@mysql:3306/${MYSQL_DATABASE:-extrato_db}
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-extrato_db}
       - JWT_SECRET=${JWT_SECRET}
       - JWT_EXPIRES_IN=${JWT_EXPIRES_IN:-7d}
-      - CHATBOT_URL=http://mcp-chatbot:3001
+
       - INTERNAL_API_TOKEN=${INTERNAL_API_TOKEN}
     depends_on:
-      mysql:
+      db:
         condition: service_healthy
     networks:
-      mcp-network-prod:
-        ipv4_address: 172.21.0.3
+      - mcp-network-prod
+      - CodynNet
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.mcp-api.rule=Host(`${TRAEFIK_DOMAIN:-api.mcp.codyn.site}`)"
+      - "traefik.http.services.mcp-api.loadbalancer.server.port=3000"
+      - "traefik.http.routers.mcp-api.tls.certresolver=letsencryptresolver"
+      - "traefik.http.routers.mcp-api.service=mcp-api"
+      - "traefik.docker.network=CodynNet"
+      - "traefik.http.routers.mcp-api.entrypoints=websecure"
+      - "traefik.http.routers.mcp-api.priority=1"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/health || exit 1"]
       timeout: 10s
@@ -68,120 +77,8 @@ services:
       - SETUID
     # user: "1000:1000" # removido temporariamente
 
-  # MCP Server Extrato - Production
-  mcp-server-extrato:
-    build:
-      context: ./mcp-server-extrato
-      dockerfile: Dockerfile
-    container_name: mcp-server-extrato-prod
-    restart: always
-    # Não expor portas para external access
-    expose:
-      - "3000"
-      - "3001"
-    environment:
-      - NODE_ENV=production
-      - DB_HOST=mysql
-      - DB_PORT=3306
-      - DB_USER=${MYSQL_USER}
-      - DB_PASSWORD=${MYSQL_PASSWORD}
-      - DB_NAME=${MYSQL_DATABASE:-extrato_db}
-    depends_on:
-      mysql:
-        condition: service_healthy
-    networks:
-      mcp-network-prod:
-        ipv4_address: 172.21.0.4
-    healthcheck:
-      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/health', (res) => process.exit(res.statusCode === 200 ? 0 : 1))"]
-      timeout: 10s
-      retries: 5
-      interval: 30s
-    # Security improvements - removidas temporariamente
-    # read_only: true
-    tmpfs:
-      - /tmp
-    cap_drop:
-      - ALL
-    # user: "1000:1000" # removido temporariamente
-
-  # MCP Chatbot Service - Production
-  mcp-chatbot:
-    build:
-      context: ./mcp-chatbot
-      dockerfile: Dockerfile
-    container_name: mcp-chatbot-prod
-    restart: always
-    # Serviço interno apenas
-    expose:
-      - "3001"
-    environment:
-      - NODE_ENV=production
-      - PORT=3001
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - MCP_SERVER_PATH=/app/mcp-server-extrato/build/main.js
-      - INTERNAL_API_TOKEN=${INTERNAL_API_TOKEN}
-      - ALLOWED_ORIGINS=mcp-api-prod,mcp-api,172.21.0.3
-      # Adicionar as variáveis de banco para o mcp-server-extrato que roda dentro do chatbot
-      - DB_HOST=mysql
-      - DB_PORT=3306
-      - DB_USER=${MYSQL_USER}
-      - DB_PASSWORD=${MYSQL_PASSWORD}
-      - DB_NAME=${MYSQL_DATABASE:-extrato_db}
-    volumes:
-      # Montar todo o projeto, não apenas o build
-      - ./mcp-server-extrato:/app/mcp-server-extrato:ro
-    depends_on:
-      - mcp-server-extrato
-    networks:
-      mcp-network-prod:
-        ipv4_address: 172.21.0.5
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3001/health || exit 1"]
-      timeout: 10s
-      retries: 5
-      interval: 30s
-    tmpfs:
-      - /tmp
-    cap_drop:
-      - ALL
-    # Criar um script que garante que as variáveis sejam passadas
-    command: >
-      sh -c "
-        npm run build &&
-        echo 'DB Variables Check:' &&
-        echo DB_USER: $$DB_USER &&
-        echo DB_PASSWORD: $$DB_PASSWORD &&
-        echo DB_HOST: $$DB_HOST &&
-        DB_HOST=mysql DB_PORT=3306 DB_USER=${MYSQL_USER} DB_PASSWORD=${MYSQL_PASSWORD} DB_NAME=${MYSQL_DATABASE:-extrato_db} node build/index.js /app/mcp-server-extrato/build/main.js
-      "
-
-  # Nginx Reverse Proxy (recommended for production)
-  nginx:
-    image: nginx:alpine
-    container_name: mcp-nginx-prod
-    restart: always
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./nginx/ssl:/etc/nginx/ssl:ro
-      - nginx_cache:/var/cache/nginx
-      - nginx_logs:/var/log/nginx
-    depends_on:
-      - mcp-api
-    networks:
-      mcp-network-prod:
-        ipv4_address: 172.21.0.6
-    healthcheck:
-      test: ["CMD", "nginx", "-t"]
-      timeout: 5s
-      retries: 3
-      interval: 30s
-
 volumes:
-  mysql_data_prod:
+  pgdata_prod:
     driver: local
   nginx_cache:
     driver: local
@@ -192,9 +89,6 @@ networks:
   mcp-network-prod:
     driver: bridge
     internal: false
-    ipam:
-      config:
-        - subnet: 172.21.0.0/16
-          gateway: 172.21.0.1
-    driver_opts:
-      com.docker.network.bridge.name: mcp-prod-bridge
+  CodynNet:
+    external: true
+    name: CodynNet
