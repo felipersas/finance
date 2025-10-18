@@ -50,15 +50,19 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/.mastra ./.mastra
 COPY --from=builder /app/src ./src
 
-# Install curl for healthchecks
-RUN apk add --no-cache curl
+# Install curl and netcat for healthchecks and db wait
+RUN apk add --no-cache curl netcat-openbsd
+
+# Copy entrypoint script
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 # Expose Mastra port
 EXPOSE 4111
 
 # Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
   CMD curl -f http://localhost:4111/health || exit 1
 
-# Start in production mode
-CMD ["npm", "run", "start"]
+# Use entrypoint script
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
