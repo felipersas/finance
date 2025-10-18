@@ -12,7 +12,6 @@ services:
     volumes:
       - pgdata_prod:/var/lib/postgresql/data
     networks:
-      - mcp-network-prod
       - CodynNet
     deploy:
       mode: replicated
@@ -44,7 +43,6 @@ services:
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - GITHUB_TOKEN=${GITHUB_TOKEN}
     networks:
-      - mcp-network-prod
       - CodynNet
     deploy:
       mode: replicated
@@ -86,7 +84,6 @@ services:
       - CHATBOT_URL=http://codyn-mastra:4111
       - INTERNAL_API_TOKEN=${INTERNAL_API_TOKEN}
     networks:
-      - mcp-network-prod
       - CodynNet
     deploy:
       mode: replicated
@@ -116,8 +113,5 @@ volumes:
     driver: local
 
 networks:
-  mcp-network-prod:
-    driver: overlay
-    attachable: true
   CodynNet:
     external: true
