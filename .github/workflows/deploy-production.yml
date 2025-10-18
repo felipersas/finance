@@ -79,7 +79,7 @@ jobs:
               sleep 10
 
               echo "🏗️  Building images with cache..."
-              timeout 600 docker compose -f docker-compose.prod.yml build --parallel || {
+              timeout 600 docker compose -f docker-compose.prod.yml build --no-cache --parallel || {
                 echo "❌ Build failed or timed out, trying without cache..."
                 docker compose -f docker-compose.prod.yml build --no-cache --parallel
               }
