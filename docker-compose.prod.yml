@@ -26,7 +26,7 @@ services:
     # Security improvements
     command: postgres -c shared_preload_libraries=vector -c max_connections=200
 
-  # Mastra AI Service - Production
+  # Mastra AI Service - Production (must start before API)
   codyn-mastra:
     build:
       context: ./codyn-mastra
@@ -87,6 +87,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      codyn-mastra:
+        condition: service_started
     networks:
       - mcp-network-prod
       - CodynNet
@@ -107,14 +109,14 @@ services:
       start_period: 30s
     # Security improvements - removidas temporariamente para debug
     # read_only: true
-    tmpfs:
-      - /tmp
-    cap_drop:
-      - ALL
-    cap_add:
-      - CHOWN
-      - SETGID
-      - SETUID
+    # tmpfs:
+    #   - /tmp
+    # cap_drop:
+    #   - ALL
+    # cap_add:
+    #   - CHOWN
+    #   - SETGID
+    #   - SETUID
     # user: "1000:1000" # removido temporariamente
 
 volumes:

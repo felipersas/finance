@@ -76,11 +76,26 @@ jobs:
             echo "🚀 Starting services..."
             docker compose -f docker-compose.prod.yml up -d --remove-orphans
 
-            echo "⏳ Waiting 5 seconds for containers to initialize..."
+            echo "⏳ Waiting 10 seconds for containers to initialize..."
             sleep 10
 
             echo "📊 Container status:"
             docker compose -f docker-compose.prod.yml ps
+
+            echo ""
+            echo "🔍 Detailed container inspection:"
+            for container in pgvector-db-prod mcp-api-prod codyn-mastra-prod; do
+              if docker ps -a --format '{{.Names}}' | grep -q "^${container}$"; then
+                STATUS=$(docker inspect -f '{{.State.Status}}' "$container" 2>/dev/null)
+                echo "  $container: $STATUS"
+                if [ "$STATUS" != "running" ]; then
+                  echo "    ⚠️  Container not running! Showing logs:"
+                  docker logs --tail=30 "$container" 2>&1 | sed 's/^/      /'
+                fi
+              else
+                echo "  $container: NOT FOUND"
+              fi
+            done
 
             echo "✅ Deployment completed!"
           ENDSSH
@@ -100,45 +115,77 @@ jobs:
             docker compose -f docker-compose.prod.yml ps
 
             # Check if containers are running
-            RUNNING_COUNT=$(docker compose -f docker-compose.prod.yml ps --format json | jq -r '.[] | select(.State == "running") | .Name' | wc -l)
-            TOTAL_COUNT=$(docker compose -f docker-compose.prod.yml ps --format json | jq -r '.[].Name' | wc -l)
+            echo "Checking container status..."
+            docker compose -f docker-compose.prod.yml ps -a
 
-            echo "Running: $RUNNING_COUNT / $TOTAL_COUNT containers"
+            # Count running containers
+            RUNNING_COUNT=$(docker ps --filter "name=mcp" --filter "status=running" | grep -c "mcp" || echo "0")
+            EXPECTED_COUNT=3
 
-            if [ "$RUNNING_COUNT" -eq "$TOTAL_COUNT" ]; then
-              echo "✅ All containers are running"
-            else
-              echo "❌ Not all containers are running"
-              echo "Checking logs of failed containers..."
-              docker compose -f docker-compose.prod.yml ps --format json | jq -r '.[] | select(.State != "running") | .Name' | while read container; do
-                echo "=== Logs for $container ==="
-                docker logs --tail=30 "$container" || true
-              done
+            echo "Running: $RUNNING_COUNT / $EXPECTED_COUNT containers"
+
+            # Show logs if not all running
+            if [ "$RUNNING_COUNT" -ne "$EXPECTED_COUNT" ]; then
+              echo "❌ Not all containers are running. Checking logs..."
+
+              echo "=== mcp-api logs ==="
+              docker logs --tail=50 mcp-api-prod 2>&1 || echo "Container not found"
+
+              echo "=== codyn-mastra logs ==="
+              docker logs --tail=50 codyn-mastra-prod 2>&1 || echo "Container not found"
+
+              echo "=== db logs ==="
+              docker logs --tail=50 pgvector-db-prod 2>&1 || echo "Container not found"
+
               exit 1
             fi
 
+            echo "✅ All containers are running"
+
             # Check database health
             echo "Checking database..."
-            docker exec pgvector-db-prod pg_isready -U mcpuser -d extrato_db || {
+            if docker exec pgvector-db-prod pg_isready -U mcpuser -d extrato_db 2>/dev/null; then
+              echo "✅ Database is healthy"
+            else
               echo "❌ Database health check failed"
-              docker logs --tail=30 pgvector-db-prod
+              docker logs --tail=50 pgvector-db-prod
               exit 1
-            }
+            fi
 
             # Check API health
             echo "Checking API..."
-            timeout 15 bash -c 'until docker exec mcp-api-prod curl -f http://localhost:3000/health 2>/dev/null; do echo "Waiting for API..."; sleep 2; done' || {
-              echo "❌ API health check failed"
-              docker logs --tail=30 mcp-api-prod
-              exit 1
-            }
+            RETRY=0
+            MAX_RETRIES=30
+            until docker exec mcp-api-prod curl -sf http://localhost:3000/health >/dev/null 2>&1; do
+              RETRY=$((RETRY+1))
+              if [ $RETRY -ge $MAX_RETRIES ]; then
+                echo "❌ API health check failed after $MAX_RETRIES attempts"
+                echo "=== API Logs ==="
+                docker logs --tail=100 mcp-api-prod
+                exit 1
+              fi
+              echo "Waiting for API... ($RETRY/$MAX_RETRIES)"
+              sleep 2
+            done
+            echo "✅ API is healthy"
 
             # Check Mastra health
             echo "Checking Mastra..."
-            timeout 15 bash -c 'until docker exec codyn-mastra-prod curl -f http://localhost:4111/health 2>/dev/null; do echo "Waiting for Mastra..."; sleep 2; done' || {
-              echo "⚠️  Mastra health check failed (non-critical)"
-              docker logs --tail=30 codyn-mastra-prod || true
-            }
+            RETRY=0
+            until docker exec codyn-mastra-prod curl -sf http://localhost:4111/health >/dev/null 2>&1; do
+              RETRY=$((RETRY+1))
+              if [ $RETRY -ge $MAX_RETRIES ]; then
+                echo "⚠️  Mastra health check failed (non-critical)"
+                docker logs --tail=50 codyn-mastra-prod || true
+                break
+              fi
+              echo "Waiting for Mastra... ($RETRY/$MAX_RETRIES)"
+              sleep 2
+            done
+
+            if [ $RETRY -lt $MAX_RETRIES ]; then
+              echo "✅ Mastra is healthy"
+            fi
 
             echo "✅ All health checks passed!"
           ENDSSH

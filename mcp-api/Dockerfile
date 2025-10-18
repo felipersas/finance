@@ -48,16 +48,18 @@ ENV NODE_ENV=production
 COPY package*.json ./
 COPY prisma ./prisma/
 
-# Install ONLY production dependencies
-RUN npm ci --only=production && \
+# Install ONLY production dependencies and postgresql-client for pg_isready
+RUN apk add --no-cache curl postgresql-client && \
+    npm ci --only=production && \
     npx prisma generate && \
     npm cache clean --force
 
 # Copy built application from build stage
 COPY --from=build /app/dist ./dist
 
-# Install curl for healthchecks
-RUN apk add --no-cache curl
+# Copy entrypoint script
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 # Create non-root user for security
 RUN addgroup -g 1001 -S nodejs && \
@@ -73,5 +75,5 @@ EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
   CMD curl -f http://localhost:3000/health || exit 1
 
-# Production command - direct node for faster startup
-CMD ["node", "dist/main"]
+# Use entrypoint script
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
