@@ -44,4 +44,5 @@ sleep 3
 
 # Start the Mastra application
 echo "🎯 Starting Mastra application..."
-exec npm run start
+# exec npm run start
+node --import=./.mastra/output/instrumentation.mjs .mastra/output/index.mjs
