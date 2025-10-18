@@ -32,7 +32,7 @@ EXPOSE 3000
 CMD ["npm", "run", "start:dev"]
 
 # Production stage
-FROM node:18-alpine AS production
+FROM node:20-alpine AS production
 
 WORKDIR /app
 
@@ -40,15 +40,23 @@ WORKDIR /app
 COPY package*.json ./
 COPY prisma ./prisma/
 
-# Install production dependencies only
-RUN npm ci --only=production && npm cache clean --force
+# Install production dependencies and generate Prisma client
+RUN npm ci --only=production && \
+    npx prisma generate && \
+    npm cache clean --force
 
 # Copy built application from build stage
 COPY --from=build /app/dist ./dist
-COPY --from=build /app/node_modules/.prisma ./node_modules/.prisma
+
+# Create a non-root user
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nestjs -u 1001 && \
+    chown -R nestjs:nodejs /app
+
+USER nestjs
 
 # Expose port
 EXPOSE 3000
 
 # Production command
-CMD ["npm", "run", "start:prod"]
+CMD ["node", "dist/main"]

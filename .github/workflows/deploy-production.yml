@@ -44,7 +44,6 @@ jobs:
             --exclude='pgdata_prod' \
             ./ ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:${{ env.DEPLOY_PATH }}/
 
-
       - name: Deploy with Docker Compose
         run: |
           ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'ENDSSH'
@@ -54,8 +53,21 @@ jobs:
             docker --version
             docker compose version
 
+            echo "📝 Checking .env file..."
+            if [ -f .env ]; then
+              echo "✅ .env file exists"
+              echo "Variables found:"
+              grep -E "^[A-Z_]+" .env | cut -d= -f1 | head -10
+            else
+              echo "❌ .env file not found!"
+              exit 1
+            fi
+
+            echo "🛑 Stopping existing containers..."
+            docker compose -f docker-compose.prod.yml down || true
+
             echo "📦 Pulling latest images..."
-            docker compose -f docker-compose.prod.yml pull
+            docker compose -f docker-compose.prod.yml pull || true
 
             echo "🏗️  Building images..."
             docker compose -f docker-compose.prod.yml build --no-cache
@@ -63,41 +75,75 @@ jobs:
             echo "🚀 Starting services..."
             docker compose -f docker-compose.prod.yml up -d --remove-orphans
 
+            echo "⏳ Waiting 10 seconds for containers to start..."
+            sleep 10
+
+            echo "📊 Container status:"
+            docker compose -f docker-compose.prod.yml ps
+
+            echo "🔍 Checking container states..."
+            docker compose -f docker-compose.prod.yml ps --format json | jq -r '.[] | "\(.Name): \(.State)"'
+
             echo "🧹 Cleaning up unused images..."
             docker image prune -af
 
             echo "✅ Deployment completed!"
-
-            echo "📊 Container status:"
-            docker compose -f docker-compose.prod.yml ps
           ENDSSH
 
       - name: Health Check
         run: |
-          echo "⏳ Waiting 30 seconds for services to start..."
-          sleep 30
+          echo "⏳ Waiting 40 seconds for services to start..."
+          sleep 40
 
           ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'ENDSSH'
             cd ${{ env.DEPLOY_PATH }}
 
             echo "🏥 Checking service health..."
 
+            # Check container states
+            echo "📊 Container states:"
+            docker compose -f docker-compose.prod.yml ps
+
             # Check if containers are running
-            if docker compose -f docker-compose.prod.yml ps | grep -q "Up"; then
-              echo "✅ Containers are running"
+            RUNNING_COUNT=$(docker compose -f docker-compose.prod.yml ps --format json | jq -r '.[] | select(.State == "running") | .Name' | wc -l)
+            TOTAL_COUNT=$(docker compose -f docker-compose.prod.yml ps --format json | jq -r '.[].Name' | wc -l)
+
+            echo "Running: $RUNNING_COUNT / $TOTAL_COUNT containers"
+
+            if [ "$RUNNING_COUNT" -eq "$TOTAL_COUNT" ]; then
+              echo "✅ All containers are running"
             else
-              echo "❌ Some containers are not running"
-              docker compose -f docker-compose.prod.yml ps
+              echo "❌ Not all containers are running"
+              echo "Checking logs of failed containers..."
+              docker compose -f docker-compose.prod.yml ps --format json | jq -r '.[] | select(.State != "running") | .Name' | while read container; do
+                echo "=== Logs for $container ==="
+                docker logs --tail=30 "$container" || true
+              done
               exit 1
             fi
 
             # Check database health
             echo "Checking database..."
-            docker exec pgvector-db-prod pg_isready -U mcpuser -d extrato_db || exit 1
+            docker exec pgvector-db-prod pg_isready -U mcpuser -d extrato_db || {
+              echo "❌ Database health check failed"
+              docker logs --tail=30 pgvector-db-prod
+              exit 1
+            }
 
             # Check API health
             echo "Checking API..."
-            timeout 10 bash -c 'until docker exec mcp-api-prod curl -f http://localhost:3000/health; do sleep 2; done' || exit 1
+            timeout 15 bash -c 'until docker exec mcp-api-prod curl -f http://localhost:3000/health 2>/dev/null; do echo "Waiting for API..."; sleep 2; done' || {
+              echo "❌ API health check failed"
+              docker logs --tail=30 mcp-api-prod
+              exit 1
+            }
+
+            # Check Mastra health
+            echo "Checking Mastra..."
+            timeout 15 bash -c 'until docker exec codyn-mastra-prod curl -f http://localhost:4111/health 2>/dev/null; do echo "Waiting for Mastra..."; sleep 2; done' || {
+              echo "⚠️  Mastra health check failed (non-critical)"
+              docker logs --tail=30 codyn-mastra-prod || true
+            }
 
             echo "✅ All health checks passed!"
           ENDSSH
@@ -108,7 +154,24 @@ jobs:
           ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'ENDSSH'
             cd ${{ env.DEPLOY_PATH }}
             echo "📋 Showing logs for debugging..."
-            docker compose -f docker-compose.prod.yml logs --tail=50
+            echo ""
+            echo "=== Container Status ==="
+            docker compose -f docker-compose.prod.yml ps
+            echo ""
+            echo "=== Database Logs ==="
+            docker logs --tail=50 pgvector-db-prod || true
+            echo ""
+            echo "=== API Logs ==="
+            docker logs --tail=50 mcp-api-prod || true
+            echo ""
+            echo "=== Mastra Logs ==="
+            docker logs --tail=50 codyn-mastra-prod || true
+            echo ""
+            echo "=== Environment Check ==="
+            ls -la .env || echo ".env file not found"
+            echo ""
+            echo "=== Docker Compose Config ==="
+            docker compose -f docker-compose.prod.yml config || true
           ENDSSH
 
       - name: Send notification on success
@@ -116,6 +179,7 @@ jobs:
         run: |
           echo "✅ Deployment to production completed successfully!"
           echo "🌐 API available at: https://api.mcp.codyn.site"
+          echo "🤖 Mastra available at: https://mastra.mcp.codyn.site"
 
       - name: Send notification on failure
         if: failure()
