@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e
 
-echo "🚀 Starting MCP API..."
+echo "🚀 Starting MCP API V2..."
 
 # Wait for database to be ready
 echo "⏳ Waiting for database..."
