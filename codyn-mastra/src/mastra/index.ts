@@ -28,8 +28,8 @@ export const mastra = new Mastra({
     },
   },
   server: {
-    // experimental_auth: new MastraJwtAuth({
-    //   secret: process.env.JWT_SECRET,
-    // }),
+    experimental_auth: new MastraJwtAuth({
+      secret: process.env.JWT_SECRET,
+    }),
   }
 });
