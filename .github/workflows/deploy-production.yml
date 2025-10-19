@@ -237,7 +237,7 @@ jobs:
             # Check Mastra health
             echo "Checking Mastra..."
             RETRY=0
-            until [ -n "$MASTRA_CONTAINER" ] && docker exec $MASTRA_CONTAINER curl -sf http://localhost:4111/ >/dev/null 2>&1; do
+            until [ -n "$MASTRA_CONTAINER" ] && docker exec $MASTRA_CONTAINER curl -sf http://localhost:4111/api >/dev/null 2>&1; do
               RETRY=$((RETRY+1))
               if [ $RETRY -ge $MAX_RETRIES ]; then
                 echo "⚠️  Mastra health check failed (non-critical)"
