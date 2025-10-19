@@ -40,6 +40,7 @@ export const executeSqlQueryTool = createTool({
     try {
       // Get authenticated user
       const user: User = runtimeContext.get('user');
+      console.log("user", user)
       if (!user) {
         throw new Error('User authentication required');
       }
