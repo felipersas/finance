@@ -70,12 +70,12 @@ services:
         - "traefik.docker.network=CodynNet"
         - "traefik.http.routers.codyn-mastra-prod.entrypoints=websecure"
         - "traefik.http.routers.codyn-mastra-prod.priority=1"
-    healthcheck:
-      test: ["CMD", "sh", "-c", "netcat -z localhost 4111 || exit 1"]
-      timeout: 10s
-      retries: 5
-      interval: 30s
-      start_period: 90s
+    # healthcheck:
+    #   test: ["CMD", "sh", "-c", "netcat -z localhost 4111 || exit 1"]
+    #   timeout: 5s
+    #   retries: 3
+    #   interval: 15s
+    #   start_period: 60s
 
   # NestJS API Service - Production
   mcp-api:
