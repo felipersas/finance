@@ -77,10 +77,6 @@ export const ChatPopup: React.FC<ChatPopupProps> = ({ visible, onClose }) => {
     try {
       const response = await chatMutation.mutateAsync({ query: messageText });
 
-      // if (response.data?.conversationId && !conversationId) {
-      //   setConversationId(response.data.conversationId);
-      // }
-
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
         text: response.data?.text ?? "",
