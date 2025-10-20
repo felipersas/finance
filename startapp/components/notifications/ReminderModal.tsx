@@ -1,16 +1,15 @@
-
-import { AppButton } from '@/components/AppButton';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
-import { DatePicker } from '@/components/ui/DatePicker';
-import Input from '@/components/ui/Input';
-import { Colors } from '@/constants/Colors';
-import { strings } from '@/constants/Strings';
-import { zodResolver } from '@hookform/resolvers/zod';
-import React from 'react';
-import { Controller, FormProvider, useForm } from 'react-hook-form';
-import { StyleSheet, View } from 'react-native';
-import { z } from 'zod';
+import { AppButton } from "@/components/common/AppButton";
+import { ThemedText } from "@/components/common/ThemedText";
+import { ThemedView } from "@/components/common/ThemedView";
+import { DatePicker } from "@/components/ui/DatePicker";
+import Input from "@/components/ui/Input";
+import { Colors } from "@/constants/Colors";
+import { strings } from "@/constants/Strings";
+import { zodResolver } from "@hookform/resolvers/zod";
+import React from "react";
+import { Controller, FormProvider, useForm } from "react-hook-form";
+import { StyleSheet, View } from "react-native";
+import { z } from "zod";
 
 interface ReminderModalProps {
   visible: boolean;
@@ -18,22 +17,22 @@ interface ReminderModalProps {
   onSave: (data: ReminderFormData) => void;
   onDelete: () => void;
   onCancel: () => void;
-  theme: 'light' | 'dark';
+  theme: "light" | "dark";
   initialValues?: ReminderFormData;
 }
-
-
 
 const ReminderSchema = z.object({
   title: z.string().min(1, { message: strings.validation.fieldRequired }),
   description: z.string().optional(),
-  date: z.string()
+  date: z
+    .string()
     .min(1, { message: strings.validation.fieldRequired })
-    .regex(/^\d{4}-\d{2}-\d{2}$/, { message: 'Formato: YYYY-MM-DD' }),
-  time: z.string()
-    .regex(/^([01]\d|2[0-3]):([0-5]\d)$/, { message: 'Formato: HH:mm' })
+    .regex(/^\d{4}-\d{2}-\d{2}$/, { message: "Formato: YYYY-MM-DD" }),
+  time: z
+    .string()
+    .regex(/^([01]\d|2[0-3]):([0-5]\d)$/, { message: "Formato: HH:mm" })
     .optional()
-    .or(z.literal('')),
+    .or(z.literal("")),
 });
 
 export type ReminderFormData = z.infer<typeof ReminderSchema>;
@@ -48,17 +47,21 @@ export const ReminderModal: React.FC<ReminderModalProps> = ({
   initialValues,
 }) => {
   const styles = createStyles(theme);
-  const defaultValues = React.useMemo(() => initialValues || {
-    title: '',
-    description: '',
-    date: '',
-    time: '',
-  }, [initialValues]);
+  const defaultValues = React.useMemo(
+    () =>
+      initialValues || {
+        title: "",
+        description: "",
+        date: "",
+        time: "",
+      },
+    [initialValues],
+  );
   const methods = useForm<z.infer<typeof ReminderSchema>>({
     defaultValues,
     resolver: zodResolver(ReminderSchema),
-    mode: 'onBlur',
-    reValidateMode: 'onChange',
+    mode: "onBlur",
+    reValidateMode: "onChange",
   });
   const { control, handleSubmit, reset } = methods;
 
@@ -72,14 +75,17 @@ export const ReminderModal: React.FC<ReminderModalProps> = ({
     <ThemedView style={styles.modalOverlay}>
       <ThemedView style={styles.modalCardMinimal}>
         <ThemedText type="subtitle" style={styles.modalTitleMinimal}>
-          {isEdit ? strings.common.edit + ' lembrete' : 'Criar lembrete'}
+          {isEdit ? strings.common.edit + " lembrete" : "Criar lembrete"}
         </ThemedText>
         <FormProvider {...methods}>
           <View style={styles.modalFormMinimal}>
             <Controller
               control={control}
               name="title"
-              render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
+              render={({
+                field: { onChange, onBlur, value },
+                fieldState: { error },
+              }) => (
                 <Input
                   label="Título"
                   placeholder="Título"
@@ -95,7 +101,10 @@ export const ReminderModal: React.FC<ReminderModalProps> = ({
             <Controller
               control={control}
               name="description"
-              render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
+              render={({
+                field: { onChange, onBlur, value },
+                fieldState: { error },
+              }) => (
                 <Input
                   label="Descrição"
                   placeholder="Descrição"
@@ -110,7 +119,10 @@ export const ReminderModal: React.FC<ReminderModalProps> = ({
             <Controller
               control={control}
               name="date"
-              render={({ field: { onChange, value }, fieldState: { error } }) => (
+              render={({
+                field: { onChange, value },
+                fieldState: { error },
+              }) => (
                 <DatePicker
                   theme={theme}
                   label="Data"
@@ -125,7 +137,10 @@ export const ReminderModal: React.FC<ReminderModalProps> = ({
             <Controller
               control={control}
               name="time"
-              render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
+              render={({
+                field: { onChange, onBlur, value },
+                fieldState: { error },
+              }) => (
                 <Input
                   label="Horário"
                   placeholder="HH:mm"
@@ -139,12 +154,20 @@ export const ReminderModal: React.FC<ReminderModalProps> = ({
               )}
             />
           </View>
-          <View style={isEdit ? styles.modalActionsEdit : styles.modalActionsCreate}>
+          <View
+            style={isEdit ? styles.modalActionsEdit : styles.modalActionsCreate}
+          >
             <AppButton
-              title={isEdit ? strings.common.save : 'Criar'}
+              title={isEdit ? strings.common.save : "Criar"}
               onPress={handleSubmit(onSave)}
-              style={isEdit ? styles.saveButtonMinimal : styles.saveButtonCreate}
-              textStyle={isEdit ? styles.saveButtonTextMinimal : styles.saveButtonTextCreate}
+              style={
+                isEdit ? styles.saveButtonMinimal : styles.saveButtonCreate
+              }
+              textStyle={
+                isEdit
+                  ? styles.saveButtonTextMinimal
+                  : styles.saveButtonTextCreate
+              }
             />
             {isEdit && (
               <AppButton
@@ -157,8 +180,14 @@ export const ReminderModal: React.FC<ReminderModalProps> = ({
             <AppButton
               title={strings.common.cancel}
               onPress={onCancel}
-              style={isEdit ? styles.cancelButtonMinimal : styles.cancelButtonCreate}
-              textStyle={isEdit ? styles.cancelButtonTextMinimal : styles.cancelButtonTextCreate}
+              style={
+                isEdit ? styles.cancelButtonMinimal : styles.cancelButtonCreate
+              }
+              textStyle={
+                isEdit
+                  ? styles.cancelButtonTextMinimal
+                  : styles.cancelButtonTextCreate
+              }
             />
           </View>
         </FormProvider>
@@ -167,41 +196,47 @@ export const ReminderModal: React.FC<ReminderModalProps> = ({
   );
 };
 
-const createStyles = (theme: 'light' | 'dark') => {
+const createStyles = (theme: "light" | "dark") => {
   const palette = Colors[theme];
   return StyleSheet.create({
     modalOverlay: {
-      position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-      justifyContent: 'center', alignItems: 'center', zIndex: 10,
-      backgroundColor: theme === 'dark' ? 'rgba(0,0,0,0.7)' : 'rgba(0,0,0,0.3)',
+      position: "absolute",
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      justifyContent: "center",
+      alignItems: "center",
+      zIndex: 10,
+      backgroundColor: theme === "dark" ? "rgba(0,0,0,0.7)" : "rgba(0,0,0,0.3)",
     },
     modalCardMinimal: {
       backgroundColor: palette.card,
       borderRadius: 20,
       padding: 20,
       maxWidth: 360,
-      width: '92%',
-      alignItems: 'stretch',
-      shadowColor: '#000',
+      width: "92%",
+      alignItems: "stretch",
+      shadowColor: "#000",
       shadowOffset: { width: 0, height: 1 },
       shadowOpacity: 0.08,
       shadowRadius: 6,
       elevation: 2,
     },
     modalTitleMinimal: {
-      fontWeight: '600',
+      fontWeight: "600",
       fontSize: 18,
       marginBottom: 16,
       color: palette.text,
-      textAlign: 'left',
+      textAlign: "left",
     },
     modalFormMinimal: {
-      width: '100%',
+      width: "100%",
       gap: 10,
       marginBottom: 18,
     },
     inputMinimal: {
-      width: '100%',
+      width: "100%",
       borderRadius: 10,
       padding: 12,
       fontSize: 15,
@@ -217,20 +252,20 @@ const createStyles = (theme: 'light' | 'dark') => {
     inputPlaceholder: { color: palette.muted },
     // Actions for edit mode
     modalActionsEdit: {
-      flexDirection: 'row',
+      flexDirection: "row",
       gap: 8,
-      justifyContent: 'flex-end',
-      alignItems: 'center',
-      width: '100%',
+      justifyContent: "flex-end",
+      alignItems: "center",
+      width: "100%",
       marginTop: 2,
     },
     // Actions for create mode (vertical, more clear)
     modalActionsCreate: {
-      flexDirection: 'column',
+      flexDirection: "column",
       gap: 10,
-      width: '100%',
+      width: "100%",
       marginTop: 2,
-      alignItems: 'stretch',
+      alignItems: "stretch",
     },
     saveButtonMinimal: {
       borderRadius: 10,
@@ -239,14 +274,14 @@ const createStyles = (theme: 'light' | 'dark') => {
       backgroundColor: Colors.success,
       minWidth: 90,
     },
-    saveButtonTextMinimal: { color: '#fff', fontWeight: '600', fontSize: 15 },
+    saveButtonTextMinimal: { color: "#fff", fontWeight: "600", fontSize: 15 },
     saveButtonCreate: {
       borderRadius: 12,
       paddingVertical: 14,
       backgroundColor: Colors.success,
       marginBottom: 4,
     },
-    saveButtonTextCreate: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
+    saveButtonTextCreate: { color: "#fff", fontWeight: "bold", fontSize: 16 },
     deleteButtonMinimal: {
       borderRadius: 10,
       paddingVertical: 10,
@@ -254,7 +289,7 @@ const createStyles = (theme: 'light' | 'dark') => {
       backgroundColor: Colors.error,
       minWidth: 90,
     },
-    deleteButtonTextMinimal: { color: '#fff', fontWeight: '600', fontSize: 15 },
+    deleteButtonTextMinimal: { color: "#fff", fontWeight: "600", fontSize: 15 },
     cancelButtonMinimal: {
       borderRadius: 10,
       paddingVertical: 10,

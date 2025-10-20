@@ -1,24 +1,29 @@
-import { useThemeColor } from '@/hooks/useThemeColor';
-import React, { forwardRef, useState } from 'react';
+import { useThemeColor } from "@/hooks/useThemeColor";
+import React, { forwardRef, useState } from "react";
 import {
-  StyleSheet,
   Text,
   TextInput,
   TextInputProps,
   TextStyle,
   View,
   ViewStyle,
-} from 'react-native';
+} from "react-native";
 
-interface InputProps extends Omit<TextInputProps, 'style'> {
+interface InputProps extends Omit<TextInputProps, "style"> {
   label?: string;
   placeholder?: string;
   errorMessage?: string;
   description?: string;
-  variant?: 'flat' | 'bordered' | 'faded' | 'underlined';
-  color?: 'default' | 'primary' | 'secondary' | 'success' | 'warning' | 'danger';
-  size?: 'sm' | 'md' | 'lg';
-  radius?: 'none' | 'sm' | 'md' | 'lg' | 'full';
+  variant?: "flat" | "bordered" | "faded" | "underlined";
+  color?:
+    | "default"
+    | "primary"
+    | "secondary"
+    | "success"
+    | "warning"
+    | "danger";
+  size?: "sm" | "md" | "lg";
+  radius?: "none" | "sm" | "md" | "lg" | "full";
   isDisabled?: boolean;
   isReadOnly?: boolean;
   isRequired?: boolean;
@@ -26,6 +31,10 @@ interface InputProps extends Omit<TextInputProps, 'style'> {
   fullWidth?: boolean;
   startContent?: React.ReactNode;
   endContent?: React.ReactNode;
+  className?: string;
+  inputClassName?: string;
+  labelClassName?: string;
+  wrapperClassName?: string;
   classNames?: {
     base?: ViewStyle;
     inputWrapper?: ViewStyle;
@@ -37,258 +46,171 @@ interface InputProps extends Omit<TextInputProps, 'style'> {
   onValueChange?: (value: string) => void;
 }
 
-const Input = forwardRef<TextInput, InputProps>(({
-  label,
-  placeholder,
-  errorMessage,
-  description,
-  variant = 'flat',
-  color = 'default',
-  size = 'md',
-  radius = 'md',
-  isDisabled = false,
-  isReadOnly = false,
-  isRequired = false,
-  isInvalid = false,
-  fullWidth = true,
-  startContent,
-  endContent,
-  classNames,
-  onValueChange,
-  value,
-  onChangeText,
-  ...props
-}, ref) => {
-  const [isFocused, setIsFocused] = useState(false);
+const Input = forwardRef<TextInput, InputProps>(
+  (
+    {
+      label,
+      placeholder,
+      errorMessage,
+      description,
+      variant = "flat",
+      color = "default",
+      size = "md",
+      radius = "md",
+      isDisabled = false,
+      isReadOnly = false,
+      isRequired = false,
+      isInvalid = false,
+      fullWidth = true,
+      startContent,
+      endContent,
+      className = "",
+      inputClassName = "",
+      labelClassName = "",
+      wrapperClassName = "",
+      classNames,
+      onValueChange,
+      value,
+      onChangeText,
+      ...props
+    },
+    ref,
+  ) => {
+    const [isFocused, setIsFocused] = useState(false);
 
-  // Theme colors
-  const textColor = useThemeColor({ light: '#000000', dark: '#ffffff' }, 'text');
-  const borderColor = useThemeColor({ light: '#e4e4e7', dark: '#3f3f46' }, 'tabIconDefault');
-  const placeholderColor = useThemeColor({ light: '#71717a', dark: '#a1a1aa' }, 'tabIconDefault');
-  const flatBgColor = useThemeColor({ light: '#f4f4f5', dark: '#27272a' }, 'background');
-  const fadedBgColor = useThemeColor({ light: '#fafafa', dark: '#18181b' }, 'background');
+    // Theme colors for dynamic placeholders
+    const placeholderColor = useThemeColor(
+      { light: "#71717a", dark: "#a1a1aa" },
+      "tabIconDefault",
+    );
 
-  // Color variants
-  const getColorStyles = () => {
-    const colorMap = {
-      default: { border: borderColor, focus: '#3b82f6' },
-      primary: { border: '#3b82f6', focus: '#2563eb' },
-      secondary: { border: '#8b5cf6', focus: '#7c3aed' },
-      success: { border: '#10b981', focus: '#059669' },
-      warning: { border: '#f59e0b', focus: '#d97706' },
-      danger: { border: '#ef4444', focus: '#dc2626' },
+    // Size classes
+    const sizeClasses = {
+      sm: "h-8 text-sm px-3",
+      md: "h-10 text-base px-4",
+      lg: "h-12 text-lg px-5",
     };
-    return colorMap[color];
-  };
 
-  // Size styles
-  const getSizeStyles = () => {
-    const sizeMap = {
-      sm: { height: 32, fontSize: 14, paddingHorizontal: 12, labelSize: 12 },
-      md: { height: 40, fontSize: 16, paddingHorizontal: 16, labelSize: 14 },
-      lg: { height: 48, fontSize: 18, paddingHorizontal: 20, labelSize: 16 },
+    const labelSizeClasses = {
+      sm: "text-xs",
+      md: "text-sm",
+      lg: "text-base",
     };
-    return sizeMap[size];
-  };
 
-  // Radius styles
-  const getRadiusStyles = () => {
-    const radiusMap = {
-      none: 0,
-      sm: 4,
-      md: 8,
-      lg: 12,
-      full: 999,
+    // Radius classes
+    const radiusClasses = {
+      none: "rounded-none",
+      sm: "rounded",
+      md: "rounded-lg",
+      lg: "rounded-xl",
+      full: "rounded-full",
     };
-    return radiusMap[radius];
-  };
 
-  // Variant styles
-  const getVariantStyles = () => {
-    const colors = getColorStyles();
-    const variantMap = {
-      flat: {
-        backgroundColor: flatBgColor,
-        borderWidth: 0,
-        borderColor: 'transparent',
-      },
-      bordered: {
-        backgroundColor: 'transparent',
-        borderWidth: 1,
-        borderColor: isInvalid ? '#ef4444' : isFocused ? colors.focus : colors.border,
-      },
-      faded: {
-        backgroundColor: fadedBgColor,
-        borderWidth: 1,
-        borderColor: isInvalid ? '#ef4444' : isFocused ? colors.focus : 'transparent',
-      },
-      underlined: {
-        backgroundColor: 'transparent',
-        borderWidth: 0,
-        borderBottomWidth: 2,
-        borderBottomColor: isInvalid ? '#ef4444' : isFocused ? colors.focus : colors.border,
-        borderRadius: 0,
-      },
+    // Color classes for focus states
+    const colorFocusClasses = {
+      default: "border-blue-500",
+      primary: "border-blue-500",
+      secondary: "border-purple-500",
+      success: "border-green-500",
+      warning: "border-yellow-500",
+      danger: "border-red-500",
     };
-    return variantMap[variant];
-  };
 
-  const sizeStyles = getSizeStyles();
-  const radiusStyles = getRadiusStyles();
-  const variantStyles = getVariantStyles();
+    const colorBorderClasses = {
+      default: "border-light-tabIconDefault dark:border-dark-tabIconDefault",
+      primary: "border-blue-500",
+      secondary: "border-purple-500",
+      success: "border-green-500",
+      warning: "border-yellow-500",
+      danger: "border-red-500",
+    };
 
-  const handleChangeText = (text: string) => {
-    onChangeText?.(text);
-    onValueChange?.(text);
-  };
+    // Variant classes
+    const variantClasses = {
+      flat: `bg-light-muted dark:bg-dark-muted border-0`,
+      bordered: `bg-transparent border ${isInvalid ? "border-red-500" : isFocused ? colorFocusClasses[color] : colorBorderClasses[color]}`,
+      faded: `bg-light-background dark:bg-dark-background border ${isInvalid ? "border-red-500" : isFocused ? colorFocusClasses[color] : "border-transparent"}`,
+      underlined: `bg-transparent border-0 border-b-2 rounded-none ${isInvalid ? "border-red-500" : isFocused ? colorFocusClasses[color] : colorBorderClasses[color]}`,
+    };
 
-  return (
-    <View style={[styles.base, fullWidth && styles.fullWidth, classNames?.base]}>
-      {label && (
-        <Text style={[
-          styles.label,
-          { fontSize: sizeStyles.labelSize, color: textColor },
-          isInvalid && styles.labelError,
-          classNames?.label
-        ]}>
-          {label}
-          {isRequired && <Text style={styles.required}> *</Text>}
-        </Text>
-      )}
+    // Base container classes
+    const baseClasses = `mb-1 ${fullWidth ? "w-full" : ""} ${className}`;
 
-      <View style={[
-        styles.inputWrapper,
-        {
-          height: sizeStyles.height,
-          borderRadius: variant === 'underlined' ? 0 : radiusStyles,
-        },
-        variantStyles,
-        isDisabled && styles.disabled,
-        isFocused && styles.focused,
-        isInvalid && styles.invalid,
-        classNames?.inputWrapper
-      ]}>
-        {startContent && (
-          <View style={styles.startContent}>{startContent}</View>
+    // Label classes
+    const baseLabelClasses = `font-medium mb-1.5 text-light-text dark:text-dark-text ${labelSizeClasses[size]} ${isInvalid ? "text-red-500" : ""} ${labelClassName}`;
+
+    // Wrapper classes
+    const baseWrapperClasses = `flex-row items-center ${sizeClasses[size]} ${variantClasses[variant]} ${variant !== "underlined" ? radiusClasses[radius] : ""} ${isDisabled ? "opacity-50" : ""} ${wrapperClassName}`;
+
+    // Input classes
+    const baseInputClasses = `flex-1 h-full py-0 text-light-text dark:text-dark-text ${inputClassName} ${startContent ? "pl-2" : ""} ${endContent ? "pr-2" : ""}`;
+
+    const handleChangeText = (text: string) => {
+      onChangeText?.(text);
+      onValueChange?.(text);
+    };
+
+    return (
+      <View className={baseClasses} style={classNames?.base}>
+        {label && (
+          <Text className={baseLabelClasses} style={classNames?.label}>
+            {label}
+            {isRequired && <Text className="text-red-500"> *</Text>}
+          </Text>
         )}
 
-        <TextInput
-          ref={ref}
-          style={[
-            styles.input,
-            {
-              fontSize: sizeStyles.fontSize,
-              paddingHorizontal: sizeStyles.paddingHorizontal,
-              color: textColor,
-            },
-            startContent ? styles.inputWithStartContent : null,
-            endContent ? styles.inputWithEndContent : null,
-            classNames?.input
-          ]}
-          placeholder={placeholder}
-          placeholderTextColor={placeholderColor}
-          value={value}
-          onChangeText={handleChangeText}
-          onFocus={(e) => {
-            setIsFocused(true);
-            props.onFocus?.(e);
-          }}
-          onBlur={(e) => {
-            setIsFocused(false);
-            props.onBlur?.(e);
-          }}
-          editable={!isDisabled && !isReadOnly}
-          {...props}
-        />
+        <View className={baseWrapperClasses} style={classNames?.inputWrapper}>
+          {startContent && (
+            <View className="pl-3 justify-center">{startContent}</View>
+          )}
 
-        {endContent && (
-          <View style={styles.endContent}>{endContent}</View>
+          <TextInput
+            ref={ref}
+            className={baseInputClasses}
+            style={classNames?.input}
+            placeholder={placeholder}
+            placeholderTextColor={placeholderColor}
+            value={value}
+            onChangeText={handleChangeText}
+            onFocus={(e) => {
+              setIsFocused(true);
+              props.onFocus?.(e);
+            }}
+            onBlur={(e) => {
+              setIsFocused(false);
+              props.onBlur?.(e);
+            }}
+            editable={!isDisabled && !isReadOnly}
+            {...props}
+          />
+
+          {endContent && (
+            <View className="pr-3 justify-center">{endContent}</View>
+          )}
+        </View>
+
+        {description && !errorMessage && (
+          <Text
+            className="text-xs mt-1 text-light-tabIconDefault dark:text-dark-tabIconDefault opacity-70"
+            style={classNames?.description}
+          >
+            {description}
+          </Text>
+        )}
+
+        {errorMessage && (
+          <Text
+            className="text-xs text-red-500 mt-1"
+            style={classNames?.errorMessage}
+          >
+            {errorMessage}
+          </Text>
         )}
       </View>
+    );
+  },
+);
 
-      {description && !errorMessage && (
-        <Text style={[
-          styles.description,
-          { color: placeholderColor },
-          classNames?.description
-        ]}>
-          {description}
-        </Text>
-      )}
-
-      {errorMessage && (
-        <Text style={[
-          styles.errorMessage,
-          classNames?.errorMessage
-        ]}>
-          {errorMessage}
-        </Text>
-      )}
-    </View>
-  );
-});
-
-Input.displayName = 'Input';
-
-const styles = StyleSheet.create({
-  base: {
-    marginBottom: 4,
-  },
-  fullWidth: {
-    width: '100%',
-  },
-  label: {
-    fontWeight: '500',
-    marginBottom: 6,
-  },
-  labelError: {
-    color: '#ef4444',
-  },
-  required: {
-    color: '#ef4444',
-  },
-  inputWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    position: 'relative',
-  },
-  input: {
-    flex: 1,
-    height: '100%',
-    paddingVertical: 0,
-  },
-  inputWithStartContent: {
-    paddingLeft: 8,
-  },
-  inputWithEndContent: {
-    paddingRight: 8,
-  },
-  startContent: {
-    paddingLeft: 12,
-    justifyContent: 'center',
-  },
-  endContent: {
-    paddingRight: 12,
-    justifyContent: 'center',
-  },
-  focused: {
-    // Additional focus styles can be added here
-  },
-  disabled: {
-    opacity: 0.5,
-  },
-  invalid: {
-    borderColor: '#ef4444',
-  },
-  description: {
-    fontSize: 12,
-    marginTop: 4,
-  },
-  errorMessage: {
-    fontSize: 12,
-    color: '#ef4444',
-    marginTop: 4,
-  },
-});
+Input.displayName = "Input";
 
 export default Input;

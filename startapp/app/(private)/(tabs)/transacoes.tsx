@@ -1,19 +1,11 @@
-import { ExtractList } from '@/components/ExtractList';
-import { ThemedView } from '@/components/ThemedView';
-import React from 'react';
-import { StyleSheet } from 'react-native';
+import { ExtractList } from "@/components/transactions";
+import { ThemedView } from "@/components/common";
+import React from "react";
 
 export default function Transacoes() {
   return (
-    <ThemedView style={styles.container}>
+    <ThemedView className="flex-1 bg-transparent">
       <ExtractList />
     </ThemedView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: 'transparent',
-  },
-});
