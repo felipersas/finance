@@ -15,9 +15,12 @@ const memory = new Memory({
 });
 
 export const sqlAgent = new Agent({
-  name: 'Finance Assistant',
+  name: 'SQL Financial Assistant',
   instructions: prompt,
-  model: openai('gpt-4.1'),
+  model: openai('gpt-4o'),
+  defaultGenerateOptions: {
+    maxTokens: 4096,
+  },
   memory,
   tools: {
     executeSqlQuery: executeSqlQueryTool,
