@@ -4,9 +4,12 @@ import { openai } from '@ai-sdk/openai';
 import { prompt } from '../prompts/sql-agent';
 
 export const sqlAgent = new Agent({
-  name: 'Finance Assistant',
+  name: 'SQL Financial Assistant',
   instructions: prompt,
-  model: openai('gpt-4.1'),
+  model: openai('gpt-4o'),
+  defaultGenerateOptions: {
+    maxTokens: 4096,
+  },
   tools: {
     executeSqlQuery: executeSqlQueryTool,
   },
