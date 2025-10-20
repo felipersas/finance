@@ -6,21 +6,21 @@
   "build": {
     "development": {
       "env": {
-        "EXPO_PUBLIC_API_URL": "http://84.46.248.113"
+        "EXPO_PUBLIC_API_URL": "https://api.codyn.site"
       },
       "developmentClient": true,
       "distribution": "internal"
     },
     "preview": {
       "env": {
-        "EXPO_PUBLIC_API_URL": "http://84.46.248.113"
+        "EXPO_PUBLIC_API_URL": "https://api.codyn.site"
       },
       "distribution": "internal"
     },
     "production": {
       "autoIncrement": true,
       "env": {
-        "EXPO_PUBLIC_API_URL": "http://84.46.248.113"
+        "EXPO_PUBLIC_API_URL": "https://api.codyn.site"
       }
     }
   },
