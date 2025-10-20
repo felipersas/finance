@@ -154,6 +154,7 @@ export default function Home() {
               fontSize: 10,
               opacity: 0.6,
               textAlign: "center",
+              color: "white",
             }}
             maxValue={
               chartData.reduce(
