@@ -61,8 +61,8 @@ RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 EXPOSE 4111
 
 # Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-  CMD curl -f http://localhost:4111/health || exit 1
+# HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+#   CMD curl -f http://localhost:4111/health || exit 1
 
 # Use entrypoint script
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
