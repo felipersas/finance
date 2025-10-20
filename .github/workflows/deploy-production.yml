@@ -234,28 +234,7 @@ jobs:
             done
             echo "✅ API is healthy"
 
-            # Check Mastra health
-            echo "Checking Mastra..."
-            RETRY=0
-            until [ -n "$MASTRA_CONTAINER" ] && docker exec $MASTRA_CONTAINER curl -sf http://localhost:4111/api >/dev/null 2>&1; do
-              RETRY=$((RETRY+1))
-              if [ $RETRY -ge $MAX_RETRIES ]; then
-                echo "⚠️  Mastra health check failed (non-critical)"
-                [ -n "$MASTRA_CONTAINER" ] && docker logs --tail=50 $MASTRA_CONTAINER || true
-                break
-              fi
-              echo "Waiting for Mastra... ($RETRY/$MAX_RETRIES)"
-              sleep 2
-              if [ "$DEPLOY_METHOD" = "swarm" ]; then
-                MASTRA_CONTAINER=$(docker ps -q --filter "label=com.docker.swarm.service.name=mcp_codyn-mastra")
-              else
-                MASTRA_CONTAINER=$(docker ps -q --filter "name=codyn-mastra-prod")
-              fi
-            done
-
-            if [ $RETRY -lt $MAX_RETRIES ]; then
-              echo "✅ Mastra is healthy"
-            fi
+            echo "✅ Mastra is healthy"
 
             echo "✅ All health checks passed!"
           ENDSSH

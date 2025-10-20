@@ -164,6 +164,7 @@ export class ExternalHttpService {
         throw new NotFound(`${serviceName} not found`);
       }
 
+      console.log('error', error);
       throw new Error(`Failed to communicate with ${serviceName}`);
     }
   }
