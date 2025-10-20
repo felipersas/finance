@@ -61,15 +61,16 @@ services:
         delay: 10s
         max_attempts: 5
       endpoint_mode: vip
-      labels:
-        - "traefik.enable=true"
-        - "traefik.http.routers.codyn-mastra-prod.rule=Host(`${TRAEFIK_MASTRA_DOMAIN:-mastra.codyn.site}`)"
-        - "traefik.http.services.codyn-mastra-prod.loadbalancer.server.port=4111"
-        - "traefik.http.routers.codyn-mastra-prod.tls.certresolver=letsencryptresolver"
-        - "traefik.http.routers.codyn-mastra-prod.service=codyn-mastra-prod"
-        - "traefik.docker.network=CodynNet"
-        - "traefik.http.routers.codyn-mastra-prod.entrypoints=websecure"
-        - "traefik.http.routers.codyn-mastra-prod.priority=1"
+      # ative essas linhas de labels para expor o mastra externamente
+      # labels:
+      #   - "traefik.enable=true"
+      #   - "traefik.http.routers.codyn-mastra-prod.rule=Host(`${TRAEFIK_MASTRA_DOMAIN:-mastra.codyn.site}`)"
+      #   - "traefik.http.services.codyn-mastra-prod.loadbalancer.server.port=4111"
+      #   - "traefik.http.routers.codyn-mastra-prod.tls.certresolver=letsencryptresolver"
+      #   - "traefik.http.routers.codyn-mastra-prod.service=codyn-mastra-prod"
+      #   - "traefik.docker.network=CodynNet"
+      #   - "traefik.http.routers.codyn-mastra-prod.entrypoints=websecure"
+      #   - "traefik.http.routers.codyn-mastra-prod.priority=1"
     # healthcheck:
     #   test: ["CMD", "sh", "-c", "netcat -z localhost 4111 || exit 1"]
     #   timeout: 5s
