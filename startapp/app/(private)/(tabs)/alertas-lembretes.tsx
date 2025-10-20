@@ -1,48 +1,59 @@
-import { NotificationList } from '@/components/notifications/NotificationList';
-import { ReminderFormData, ReminderModal } from '@/components/notifications/ReminderModal';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
-import { Colors } from '@/constants/Colors';
-import { useCreateNotification, useDeleteNotification, useMarkNotificationAsRead, useNotifications, useUpdateNotification } from '@/hooks/useNotifications';
-import { useTheme } from '@/hooks/useTheme';
-import { NotificationType } from '@/types/notification';
-import { Ionicons } from '@expo/vector-icons';
-import React, { useState } from 'react';
-import { StyleSheet, TextInput, TouchableOpacity } from 'react-native';
+import { NotificationList } from "@/components/notifications/NotificationList";
+import {
+  ReminderFormData,
+  ReminderModal,
+} from "@/components/notifications/ReminderModal";
+import { ThemedText } from "@/components/common/ThemedText";
+import { ThemedView } from "@/components/common/ThemedView";
+import { Colors } from "@/constants/Colors";
+import {
+  useCreateNotification,
+  useDeleteNotification,
+  useMarkNotificationAsRead,
+  useNotifications,
+  useUpdateNotification,
+} from "@/hooks/useNotifications";
+import { useTheme } from "@/hooks/useTheme";
+import { NotificationType } from "@/types/notification";
+import { Ionicons } from "@expo/vector-icons";
+import React, { useState } from "react";
+import { StyleSheet, TextInput, TouchableOpacity } from "react-native";
 
 const tipos = [
-  { label: 'Todos', value: 'all' },
-  { label: 'Financeiro', value: 'financeiro' },
-  { label: 'Estoque', value: 'estoque' },
-  { label: 'Fiscal', value: 'fiscal' },
-  { label: 'Contrato', value: 'contrato' },
-  { label: 'Lembrete', value: 'lembrete' },
+  { label: "Todos", value: "all" },
+  { label: "Financeiro", value: "financeiro" },
+  { label: "Estoque", value: "estoque" },
+  { label: "Fiscal", value: "fiscal" },
+  { label: "Contrato", value: "contrato" },
+  { label: "Lembrete", value: "lembrete" },
 ];
 
 export default function AlertasLembretesScreen() {
   const theme = useTheme();
-  const [tipo, setTipo] = useState('all');
+  const [tipo, setTipo] = useState("all");
   const styles = createStyles(theme, tipo);
   const { data: notifications = [], refetch } = useNotifications();
   const createMutation = useCreateNotification();
   const updateMutation = useUpdateNotification();
   const deleteMutation = useDeleteNotification();
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState("");
   const [modalVisible, setModalVisible] = useState(false);
   const [editReminder, setEditReminder] = useState<any>(null);
   const markAsReadMutation = useMarkNotificationAsRead();
 
   // Filtro
-  const filtered = notifications.filter(n => {
-    const matchTipo = tipo === 'all' || n.type === tipo;
-    const matchSearch = !search || n.title.toLowerCase().includes(search.toLowerCase()) || n.description.toLowerCase().includes(search.toLowerCase());
+  const filtered = notifications.filter((n) => {
+    const matchTipo = tipo === "all" || n.type === tipo;
+    const matchSearch =
+      !search ||
+      n.title.toLowerCase().includes(search.toLowerCase()) ||
+      n.description.toLowerCase().includes(search.toLowerCase());
     return matchTipo && matchSearch;
   });
 
-
   // Modal open handler
   const handleOpenForm = (reminder?: any) => {
-    if (reminder && typeof reminder === 'object' && reminder.id) {
+    if (reminder && typeof reminder === "object" && reminder.id) {
       setEditReminder(reminder);
     } else {
       setEditReminder(null);
@@ -54,14 +65,17 @@ export default function AlertasLembretesScreen() {
   const handleSaveReminder = async (data: ReminderFormData) => {
     const newReminder = {
       title: data.title,
-      description: data.description ?? '',
-      type: 'lembrete' as NotificationType,
+      description: data.description ?? "",
+      type: "lembrete" as NotificationType,
       date: data.date,
-      time: data.time ?? '',
+      time: data.time ?? "",
       isReminder: true,
     };
     if (editReminder) {
-      await updateMutation.mutateAsync({ id: editReminder.id, input: newReminder });
+      await updateMutation.mutateAsync({
+        id: editReminder.id,
+        input: newReminder,
+      });
     } else {
       await createMutation.mutateAsync(newReminder);
     }
@@ -86,39 +100,58 @@ export default function AlertasLembretesScreen() {
           onChangeText={setSearch}
           placeholderTextColor={styles.searchInputPlaceholder.color}
         />
-        <TouchableOpacity style={styles.addButtonMinimal} onPress={handleOpenForm} activeOpacity={0.85}>
+        <TouchableOpacity
+          style={styles.addButtonMinimal}
+          onPress={handleOpenForm}
+          activeOpacity={0.85}
+        >
           <Ionicons name="add" size={28} color={Colors[theme].background} />
         </TouchableOpacity>
       </ThemedView>
       <ThemedView style={styles.tipoTabsMinimal}>
-        {tipos.map(t => (
+        {tipos.map((t) => (
           <TouchableOpacity
             key={t.value}
-            style={[styles.getTipoTab(t.value), { marginRight: 10, marginBottom: 4 }]}
+            style={[
+              styles.getTipoTab(t.value),
+              { marginRight: 10, marginBottom: 4 },
+            ]}
             onPress={() => setTipo(t.value)}
           >
-            <ThemedText style={styles.getTipoTabText(t.value)}>{t.label}</ThemedText>
+            <ThemedText style={styles.getTipoTabText(t.value)}>
+              {t.label}
+            </ThemedText>
           </TouchableOpacity>
         ))}
       </ThemedView>
       <NotificationList
         data={filtered}
-        onPressItem={item => {
+        onPressItem={(item) => {
           if (!item.read) {
             markAsReadMutation.mutate(item.id);
           }
         }}
-        onLongPressItem={item => item.isReminder ? handleOpenForm(item) : undefined}
+        onLongPressItem={(item) =>
+          item.isReminder ? handleOpenForm(item) : undefined
+        }
       />
       <ReminderModal
         visible={modalVisible}
-        editReminder={editReminder && typeof editReminder === 'object' && editReminder.id ? editReminder : null}
-        initialValues={editReminder && typeof editReminder === 'object' && editReminder.id ? {
-          title: editReminder.title || '',
-          description: editReminder.description || '',
-          date: editReminder.date ? editReminder.date.slice(0, 10) : '',
-          time: editReminder.time || '',
-        } : undefined}
+        editReminder={
+          editReminder && typeof editReminder === "object" && editReminder.id
+            ? editReminder
+            : null
+        }
+        initialValues={
+          editReminder && typeof editReminder === "object" && editReminder.id
+            ? {
+                title: editReminder.title || "",
+                description: editReminder.description || "",
+                date: editReminder.date ? editReminder.date.slice(0, 10) : "",
+                time: editReminder.time || "",
+              }
+            : undefined
+        }
         onSave={handleSaveReminder}
         onDelete={handleDeleteReminder}
         onCancel={() => setModalVisible(false)}
@@ -136,28 +169,28 @@ const createStyles = (theme: "light" | "dark", selectedTipo?: string) => {
       borderRadius: 20,
       padding: 20,
       maxWidth: 360,
-      width: '92%',
-      alignItems: 'stretch',
-      shadowColor: '#000',
+      width: "92%",
+      alignItems: "stretch",
+      shadowColor: "#000",
       shadowOffset: { width: 0, height: 1 },
       shadowOpacity: 0.08,
       shadowRadius: 6,
       elevation: 2,
     },
     modalTitleMinimal: {
-      fontWeight: '600',
+      fontWeight: "600",
       fontSize: 18,
       marginBottom: 16,
       color: palette.text,
-      textAlign: 'left',
+      textAlign: "left",
     },
     modalFormMinimal: {
-      width: '100%',
+      width: "100%",
       gap: 10,
       marginBottom: 18,
     },
     inputMinimal: {
-      width: '100%',
+      width: "100%",
       borderRadius: 10,
       padding: 12,
       fontSize: 15,
@@ -171,11 +204,11 @@ const createStyles = (theme: "light" | "dark", selectedTipo?: string) => {
       elevation: 1,
     },
     modalActionsMinimal: {
-      flexDirection: 'row',
+      flexDirection: "row",
       gap: 8,
-      justifyContent: 'flex-end',
-      alignItems: 'center',
-      width: '100%',
+      justifyContent: "flex-end",
+      alignItems: "center",
+      width: "100%",
       marginTop: 2,
     },
     saveButtonMinimal: {
@@ -185,7 +218,7 @@ const createStyles = (theme: "light" | "dark", selectedTipo?: string) => {
       backgroundColor: Colors.success,
       minWidth: 90,
     },
-    saveButtonTextMinimal: { color: '#fff', fontWeight: '600', fontSize: 15 },
+    saveButtonTextMinimal: { color: "#fff", fontWeight: "600", fontSize: 15 },
     deleteButtonMinimal: {
       borderRadius: 10,
       paddingVertical: 10,
@@ -193,7 +226,7 @@ const createStyles = (theme: "light" | "dark", selectedTipo?: string) => {
       backgroundColor: Colors.error,
       minWidth: 90,
     },
-    deleteButtonTextMinimal: { color: '#fff', fontWeight: '600', fontSize: 15 },
+    deleteButtonTextMinimal: { color: "#fff", fontWeight: "600", fontSize: 15 },
     cancelButtonMinimal: {
       borderRadius: 10,
       paddingVertical: 10,
@@ -208,9 +241,9 @@ const createStyles = (theme: "light" | "dark", selectedTipo?: string) => {
   const staticStyles = StyleSheet.create({
     container: { flex: 1, marginHorizontal: 12 },
     topBarMinimal: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
       paddingTop: 18,
       paddingBottom: 8,
     },
@@ -229,67 +262,112 @@ const createStyles = (theme: "light" | "dark", selectedTipo?: string) => {
       height: 40,
       borderRadius: 20,
       backgroundColor: palette.tint,
-      alignItems: 'center',
-      justifyContent: 'center',
+      alignItems: "center",
+      justifyContent: "center",
       shadowColor: palette.tint,
       shadowOpacity: 0.12,
       shadowRadius: 4,
       elevation: 2,
     },
     tipoTabsMinimal: {
-      flexDirection: 'row',
-      flexWrap: 'wrap',
-      alignItems: 'center',
+      flexDirection: "row",
+      flexWrap: "wrap",
+      alignItems: "center",
       marginLeft: 4,
       marginBottom: 8,
       marginTop: 4,
     },
     badge: {
-      position: 'absolute', top: -6, right: -12, borderRadius: 8, minWidth: 16, height: 16,
-      alignItems: 'center', justifyContent: 'center', paddingHorizontal: 3,
+      position: "absolute",
+      top: -6,
+      right: -12,
+      borderRadius: 8,
+      minWidth: 16,
+      height: 16,
+      alignItems: "center",
+      justifyContent: "center",
+      paddingHorizontal: 3,
       backgroundColor: palette.tint,
     },
-    badgeText: { fontSize: 11, fontWeight: 'bold', color: '#fff' },
-    filterRow: { flexDirection: 'column', gap: 8, paddingHorizontal: 18, marginBottom: 8 },
-    searchInput: {
-      borderRadius: 8, padding: 10, fontSize: 15, marginBottom: 8, borderWidth: 1,
-      backgroundColor: palette.card, color: palette.text, borderColor: palette.muted,
+    badgeText: { fontSize: 11, fontWeight: "bold", color: "#fff" },
+    filterRow: {
+      flexDirection: "column",
+      gap: 8,
+      paddingHorizontal: 18,
+      marginBottom: 8,
     },
-    tipoTabs: { flexDirection: 'row', gap: 6, flexWrap: 'wrap' },
+    searchInput: {
+      borderRadius: 8,
+      padding: 10,
+      fontSize: 15,
+      marginBottom: 8,
+      borderWidth: 1,
+      backgroundColor: palette.card,
+      color: palette.text,
+      borderColor: palette.muted,
+    },
+    tipoTabs: { flexDirection: "row", gap: 6, flexWrap: "wrap" },
     modalOverlay: {
-      position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-      backgroundColor: theme === 'dark' ? 'rgba(0,0,0,0.7)' : 'rgba(0,0,0,0.3)', justifyContent: 'center', alignItems: 'center', zIndex: 10,
+      position: "absolute",
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: theme === "dark" ? "rgba(0,0,0,0.7)" : "rgba(0,0,0,0.3)",
+      justifyContent: "center",
+      alignItems: "center",
+      zIndex: 10,
     },
     modalCard: {
       backgroundColor: palette.card,
       borderRadius: 16,
       padding: 24,
       maxWidth: 400,
-      width: '90%',
-      alignItems: 'center',
-      shadowColor: '#000',
+      width: "90%",
+      alignItems: "center",
+      shadowColor: "#000",
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.15,
       shadowRadius: 8,
       elevation: 6,
     },
-    modalTitle: { fontWeight: 'bold', fontSize: 20, marginBottom: 18, color: palette.text, textAlign: 'center' },
-    modalForm: { width: '100%', gap: 12, marginBottom: 18 },
+    modalTitle: {
+      fontWeight: "bold",
+      fontSize: 20,
+      marginBottom: 18,
+      color: palette.text,
+      textAlign: "center",
+    },
+    modalForm: { width: "100%", gap: 12, marginBottom: 18 },
     input: {
-      width: '100%', borderRadius: 10, padding: 12, fontSize: 16, borderWidth: 1,
-      backgroundColor: palette.background, color: palette.text, borderColor: palette.muted,
+      width: "100%",
+      borderRadius: 10,
+      padding: 12,
+      fontSize: 16,
+      borderWidth: 1,
+      backgroundColor: palette.background,
+      color: palette.text,
+      borderColor: palette.muted,
     },
-    modalActions: { flexDirection: 'column', gap: 10, width: '100%' },
+    modalActions: { flexDirection: "column", gap: 10, width: "100%" },
     saveButton: {
-      borderRadius: 12, paddingVertical: 14, backgroundColor: Colors.success, marginBottom: 4,
+      borderRadius: 12,
+      paddingVertical: 14,
+      backgroundColor: Colors.success,
+      marginBottom: 4,
     },
-    saveButtonText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
+    saveButtonText: { color: "#fff", fontWeight: "bold", fontSize: 16 },
     deleteButton: {
-      borderRadius: 12, paddingVertical: 14, backgroundColor: Colors.error, marginBottom: 4,
+      borderRadius: 12,
+      paddingVertical: 14,
+      backgroundColor: Colors.error,
+      marginBottom: 4,
     },
-    deleteButtonText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
+    deleteButtonText: { color: "#fff", fontWeight: "bold", fontSize: 16 },
     cancelButton: {
-      borderRadius: 12, paddingVertical: 14, backgroundColor: palette.muted,
+      borderRadius: 12,
+      paddingVertical: 14,
+      backgroundColor: palette.muted,
     },
     cancelButtonText: { fontSize: 16, color: palette.text },
   });
@@ -298,15 +376,21 @@ const createStyles = (theme: "light" | "dark", selectedTipo?: string) => {
   const searchInputPlaceholder = { color: palette.muted };
   const inputPlaceholder = { color: palette.muted };
   const getTipoTab = (value: string) => ({
-    paddingVertical: 6, paddingHorizontal: 14, borderRadius: 16, borderWidth: 1, marginVertical: 6,
-    backgroundColor: selectedTipo === value ? palette.tint + '22' : palette.card,
+    paddingVertical: 6,
+    paddingHorizontal: 14,
+    borderRadius: 16,
+    borderWidth: 1,
+    marginVertical: 6,
+    backgroundColor:
+      selectedTipo === value ? palette.tint + "22" : palette.card,
     borderColor: selectedTipo === value ? palette.tint : palette.muted,
   });
-  const getTipoTabText = (value: string) => ({
-    fontSize: 14,
-    color: selectedTipo === value ? palette.tint : palette.text,
-    fontWeight: selectedTipo === value ? 'bold' : 'normal',
-  } as const);
+  const getTipoTabText = (value: string) =>
+    ({
+      fontSize: 14,
+      color: selectedTipo === value ? palette.tint : palette.text,
+      fontWeight: selectedTipo === value ? "bold" : "normal",
+    }) as const;
   return {
     ...staticStyles,
     ...staticStylesMinimal,

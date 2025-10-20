@@ -1,32 +1,36 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import * as SystemUI from 'expo-system-ui';
-import { ActivityIndicator, Platform, StyleSheet, View } from 'react-native';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import "../globals.css";
+import {
+  DarkTheme,
+  DefaultTheme,
+  ThemeProvider,
+} from "@react-navigation/native";
+import { useFonts } from "expo-font";
+import { Stack } from "expo-router";
+import { StatusBar } from "expo-status-bar";
+import * as SystemUI from "expo-system-ui";
+import { ActivityIndicator, Platform, View } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
-
-import { ThemedView } from '@/components/ThemedView';
-import toastConfig from '@/config/ToastConfig';
-import { useColorScheme } from '@/hooks/useColorScheme';
-import { useThemeColor } from '@/hooks/useThemeColor';
-import { QueryProvider } from '@/providers/QueryProvider';
-import { SessionProvider, useSession } from '@/providers/SessionProvider';
-import { useEffect } from 'react';
-import { LogLevel, OneSignal } from 'react-native-onesignal';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { Toast } from 'react-native-toast-message/lib/src/Toast';
-import { SplashScreenController } from './splash';
+import { ThemedView } from "@/components/common";
+import toastConfig from "@/config/ToastConfig";
+import { useColorScheme } from "@/hooks/useColorScheme";
+import { useThemeColor } from "@/hooks/useThemeColor";
+import { QueryProvider } from "@/providers/QueryProvider";
+import { SessionProvider, useSession } from "@/providers/SessionProvider";
+import { useEffect } from "react";
+import { LogLevel, OneSignal } from "react-native-onesignal";
+import { SafeAreaProvider } from "react-native-safe-area-context";
+import { Toast } from "react-native-toast-message/lib/src/Toast";
+import { SplashScreenController } from "./splash";
 
 function RootNavigator() {
   const { session, isLoading } = useSession();
   const colorScheme = useColorScheme();
-  const tint = useThemeColor({}, 'tint');
-  const backgroundColor = useThemeColor({}, 'background');
+  const tint = useThemeColor({}, "tint");
+  const backgroundColor = useThemeColor({}, "background");
 
   useEffect(() => {
-    if (Platform.OS === 'android') {
+    if (Platform.OS === "android") {
       SystemUI.setBackgroundColorAsync(backgroundColor);
     }
   }, [colorScheme, backgroundColor]);
@@ -34,20 +38,20 @@ function RootNavigator() {
   // Mostra loading enquanto verifica a sessão
   if (isLoading) {
     return (
-      <ThemedView style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <ThemedView className="flex-1 justify-center items-center">
         <ActivityIndicator size="large" color={tint} />
       </ThemedView>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <View className="flex-1">
       <Stack
         screenOptions={{
           headerShown: false,
           contentStyle: {
-            backgroundColor: colorScheme === 'dark' ? '#151718' : '#fff'
-          }
+            backgroundColor: colorScheme === "dark" ? "#151718" : "#fff",
+          },
         }}
       >
         <Stack.Protected guard={!!session}>
@@ -56,8 +60,8 @@ function RootNavigator() {
             options={{
               headerShown: false,
               contentStyle: {
-                backgroundColor: colorScheme === 'dark' ? '#151718' : '#fff'
-              }
+                backgroundColor: colorScheme === "dark" ? "#151718" : "#fff",
+              },
             }}
           />
           <Stack.Screen name="index" />
@@ -76,16 +80,15 @@ function RootNavigator() {
 export default function RootLayout() {
   const colorScheme = useColorScheme();
   const [loaded] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
+    SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
   });
 
-
-    // Initialize OneSignal in useEffect to ensure it runs only once
-    useEffect(() => {
+  // Initialize OneSignal in useEffect to ensure it runs only once
+  useEffect(() => {
     // Enable verbose logging for debugging (remove in production)
     OneSignal.Debug.setLogLevel(LogLevel.Verbose);
     // Initialize with your OneSignal App ID
-    OneSignal.initialize('4b694497-60fc-46fa-abf5-911e4db927ca');
+    OneSignal.initialize("4b694497-60fc-46fa-abf5-911e4db927ca");
     // Use this method to prompt for push notifications.
     // We recommend removing this method after testing and instead use In-App Messages to prompt for notification permission.
     OneSignal.Notifications.requestPermission(true);
@@ -95,12 +98,13 @@ export default function RootLayout() {
     return null;
   }
 
-
   return (
     <QueryProvider>
       <SessionProvider>
         <SafeAreaProvider>
-          <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+          <ThemeProvider
+            value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
+          >
             <SplashScreenController />
             <GestureHandlerRootView>
               <RootNavigator />
@@ -112,9 +116,3 @@ export default function RootLayout() {
     </QueryProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-});

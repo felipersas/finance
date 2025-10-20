@@ -1,28 +1,22 @@
-import { KeyboardAvoidingView, Platform, StyleSheet } from 'react-native';
+import { KeyboardAvoidingView, Platform } from "react-native";
 
-import { AppButton } from '@/components/AppButton';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
-import Input from '@/components/ui/Input';
-import { strings } from '@/constants/Strings';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Controller, FormProvider, useForm } from 'react-hook-form';
-import { useSession } from '@/providers/SessionProvider';
-import { useRouter } from 'expo-router';
-import { SignUpData, SignUpSchema } from '@/validators/auth/sign-up';
-import { useTheme } from '@/hooks/useTheme';
-import { Colors } from '@/constants/Colors';
+import { AppButton, ThemedText, ThemedView } from "@/components/common";
+import { Input } from "@/components/ui";
+import { strings } from "@/constants/Strings";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Controller, FormProvider, useForm } from "react-hook-form";
+import { useSession } from "@/providers/SessionProvider";
+import { useRouter } from "expo-router";
+import { SignUpData, SignUpSchema } from "@/validators/auth/sign-up";
 
 export default function SignUpScreen() {
   const { signUp } = useSession();
   const router = useRouter();
-  const theme = useTheme()
-  const styles = createStyles(theme);
 
   const methods = useForm<SignUpData>({
-    reValidateMode: 'onChange',
-    mode: 'onBlur',
-    defaultValues: { email: '', password: '', name: '' , confirmPassword: '' },
+    reValidateMode: "onChange",
+    mode: "onBlur",
+    defaultValues: { email: "", password: "", name: "", confirmPassword: "" },
     resolver: zodResolver(SignUpSchema),
   });
 
@@ -30,27 +24,34 @@ export default function SignUpScreen() {
 
   const onSubmit = async (data: SignUpData) => {
     await signUp(data);
-    router.replace('/(private)/(tabs)');
+    router.replace("/(private)/(tabs)");
   };
 
   return (
     <KeyboardAvoidingView
-      style={{ flex: 1 }}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+      className="flex-1"
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
     >
-      <ThemedView style={styles.container}>
-        <ThemedView style={styles.content}>
-          <ThemedView style={styles.header}>
-            <ThemedText type="title" style={styles.title}>Criar Conta</ThemedText>
-            <ThemedText style={styles.subtitle}>Crie sua conta para continuar</ThemedText>
+      <ThemedView className="flex-1">
+        <ThemedView className="flex-1 justify-center px-8 max-w-[400px] self-center w-full">
+          <ThemedView className="items-center mb-8">
+            <ThemedText type="title" className="text-[28px] font-bold mb-2">
+              Criar Conta
+            </ThemedText>
+            <ThemedText className="text-base">
+              Crie sua conta para continuar
+            </ThemedText>
           </ThemedView>
-          <ThemedView style={styles.form}>
+          <ThemedView className="gap-3">
             <FormProvider {...methods}>
               <Controller
                 control={control}
                 name="name"
-                render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
+                render={({
+                  field: { onChange, onBlur, value },
+                  fieldState: { error },
+                }) => (
                   <Input
                     label={"Nome"}
                     placeholder={"Digite seu nome"}
@@ -67,7 +68,10 @@ export default function SignUpScreen() {
               <Controller
                 control={control}
                 name="email"
-                render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
+                render={({
+                  field: { onChange, onBlur, value },
+                  fieldState: { error },
+                }) => (
                   <Input
                     label={strings.auth.email}
                     placeholder={strings.auth.enterYourEmail}
@@ -85,7 +89,10 @@ export default function SignUpScreen() {
               <Controller
                 control={control}
                 name="password"
-                render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
+                render={({
+                  field: { onChange, onBlur, value },
+                  fieldState: { error },
+                }) => (
                   <Input
                     label={strings.auth.password}
                     placeholder={strings.auth.enterYourPassword}
@@ -102,7 +109,10 @@ export default function SignUpScreen() {
               <Controller
                 control={control}
                 name="confirmPassword"
-                render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
+                render={({
+                  field: { onChange, onBlur, value },
+                  fieldState: { error },
+                }) => (
                   <Input
                     label={"Confirmar Senha"}
                     placeholder={strings.auth.enterYourPassword}
@@ -119,7 +129,8 @@ export default function SignUpScreen() {
               <AppButton
                 title={"Criar Conta"}
                 onPress={handleSubmit(onSubmit)}
-                style={[styles.signUpButton]}
+                className="mt-4 py-4 rounded-xl bg-tint"
+                textClassName="text-onyx"
               />
             </FormProvider>
           </ThemedView>
@@ -128,40 +139,3 @@ export default function SignUpScreen() {
     </KeyboardAvoidingView>
   );
 }
-
-const createStyles = (theme: 'light' | 'dark') =>
-  StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  content: {
-    flex: 1,
-    justifyContent: 'center',
-    paddingHorizontal: 32,
-    maxWidth: 400,
-    alignSelf: 'center',
-    width: '100%',
-  },
-  header: {
-    alignItems: 'center',
-    marginBottom: 32,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: '700',
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    fontWeight: '400',
-  },
-  form: {
-    gap: 12,
-  },
-  signUpButton: {
-    marginTop: 16,
-    paddingVertical: 16,
-    borderRadius: 12,
-    backgroundColor: Colors[theme].tint,
-  },
-});

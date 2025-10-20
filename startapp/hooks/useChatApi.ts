@@ -8,8 +8,7 @@ interface ChatRequest {
 }
 
 interface ChatResponse {
-  response: string;
-  conversationId: string;
+  text: string;
 }
 
 const sendChatMessage = async (message: ChatRequest): Promise<ApiResponse<ChatResponse>> => {

@@ -1,104 +1,28 @@
-import { ThemedView } from '@/components/ThemedView';
-import { Colors } from '@/constants/Colors';
-import { useGetAnalytics } from '@/hooks/useAnalytics';
-import { useTheme } from '@/hooks/useTheme';
-import { formatMoneyView } from '@/utils/formatters/format-money';
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { ThemedView } from "@/components/common";
+import { useGetAnalytics } from "@/hooks/useAnalytics";
+import { formatMoneyView } from "@/utils/formatters/format-money";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 
-import React, { useState } from 'react';
-import { ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
-import { LineChart } from 'react-native-gifted-charts';
-
-const createStyles = (theme: 'light' | 'dark') => StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: 'transparent',
-  },
-  scrollContent: {
-    paddingVertical: 24,
-    paddingHorizontal: 12,
-    gap: 24,
-  },
-  saldoContainer: {
-    alignItems: 'center' as const,
-    marginBottom: 12,
-  },
-  saldoLabel: {
-    fontSize: 16,
-    color: Colors[theme].text,
-    opacity: 0.7,
-  },
-  saldoValor: {
-    fontSize: 32,
-    fontWeight: '700' as const,
-    color: Colors[theme].tint,
-  },
-  graficoContainer: {
-    backgroundColor: Colors[theme].card,
-    borderRadius: 16,
-    padding: 20,
-    paddingLeft: 0,
-    paddingRight: 0,
-    elevation: 2,
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06,
-    shadowRadius: 2,
-    alignItems: 'center' as const,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600' as const,
-    marginBottom: 8,
-    color: Colors[theme].text,
-  },
-  categoriasContainer: {
-    backgroundColor: Colors[theme].card,
-    borderRadius: 16,
-    padding: 16,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06,
-    shadowRadius: 2,
-  },
-  categoriaItem: {
-    flexDirection: 'row' as const,
-    justifyContent: 'space-between' as const,
-    paddingVertical: 6,
-  },
-  categoriaNome: {
-    fontSize: 16,
-    color: Colors[theme].text,
-    opacity: 0.8,
-  },
-  categoriaValor: {
-    fontSize: 16,
-    fontWeight: '700' as const,
-    color: Colors[theme].tint,
-  },
-});
-
-
-
+import React, { useState } from "react";
+import { ScrollView, Text, View, useWindowDimensions } from "react-native";
+import { LineChart } from "react-native-gifted-charts";
 
 export default function Home() {
-  const theme = useTheme();
-  const styles = createStyles(theme);
   const { width } = useWindowDimensions();
   const { response, isLoading } = useGetAnalytics();
-  const [chartType, setChartType] = useState<'total' | 'empresa' | 'pessoal'>('total');
+  const [chartType, setChartType] = useState<"total" | "empresa" | "pessoal">(
+    "total",
+  );
 
   const analytics = response?.data;
 
-  const weekDays = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
+  const weekDays = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
 
   const gastosPorDia = analytics?.gastosPorDia ?? [];
 
   function normalizeLabel(label: string): string {
-    if (!label) return '';
-    const clean = label.replace('.', '').toLowerCase();
+    if (!label) return "";
+    const clean = label.replace(".", "").toLowerCase();
     return clean.charAt(0).toUpperCase() + clean.slice(1);
   }
 
@@ -116,95 +40,101 @@ export default function Home() {
     return {
       label,
       value: Math.abs(
-        chartType === 'total'
-          ? item?.total ?? 0
-          : chartType === 'empresa'
-          ? item?.totalEmpresa ?? 0
-          : item?.totalPessoal ?? 0
+        chartType === "total"
+          ? (item?.total ?? 0)
+          : chartType === "empresa"
+            ? (item?.totalEmpresa ?? 0)
+            : (item?.totalPessoal ?? 0),
       ),
     };
   });
 
   return (
-    <ThemedView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+    <ThemedView className="flex-1 bg-transparent">
+      <ScrollView
+        className="py-6 px-3 gap-6"
+        contentContainerStyle={{ gap: 24 }}
+      >
         {/* Card de saldo total com empresa e pessoal lado a lado */}
-        <View
-          style={{
-            backgroundColor: Colors[theme].card,
-            borderRadius: 16,
-            padding: 20,
-            marginBottom: 12,
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 1 },
-            shadowOpacity: 0.06,
-            shadowRadius: 2,
-            elevation: 2,
-            minWidth: 280,
-          }}
-        >
-          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
-            <Text style={[styles.saldoLabel, { flex: 1 }]}>Saldo total</Text>
+        <View className="bg-light-card dark:bg-dark-card rounded-2xl p-5 mb-3 shadow-sm min-w-[280px]">
+          <View className="flex-row items-center mb-2">
+            <Text className="flex-1 text-base text-light-text dark:text-dark-text opacity-70">
+              Saldo total
+            </Text>
             {/* Ícone de carteira */}
             <View>
-              <MaterialIcons name="account-balance-wallet" size={28} color={Colors[theme].tint} />
+              <MaterialIcons
+                name="account-balance-wallet"
+                size={28}
+                color="#b4da4aff"
+              />
             </View>
           </View>
-          <Text style={[styles.saldoValor, { fontSize: 32, marginBottom: 12 }]}>
-            {isLoading ? '...' : formatMoneyView((analytics?.saldoTotal ?? 0).toString())}
+          <Text className="text-[32px] font-bold text-tint mb-3">
+            {isLoading
+              ? "..."
+              : formatMoneyView((analytics?.saldoTotal ?? 0).toString())}
           </Text>
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+          <View className="flex-row items-center justify-between">
             {/* Empresa */}
-            <View style={{ flex: 1, alignItems: 'center' }}>
-              <Text style={[styles.saldoLabel, { fontSize: 14, marginBottom: 2 }]}>Empresa</Text>
-              <Text style={[styles.saldoValor, { fontSize: 16 }]}>
-                {isLoading ? '...' : formatMoneyView((analytics?.saldoEmpresa ?? 0).toString())}
+            <View className="flex-1 items-center">
+              <Text className="text-sm text-light-text dark:text-dark-text opacity-70 mb-0.5">
+                Empresa
+              </Text>
+              <Text className="text-base font-bold text-tint">
+                {isLoading
+                  ? "..."
+                  : formatMoneyView((analytics?.saldoEmpresa ?? 0).toString())}
               </Text>
             </View>
             {/* Linha vertical separadora */}
-            <View style={{ width: 1, height: 32, backgroundColor: Colors[theme].muted, marginHorizontal: 12, opacity: 0.4 }} />
+            <View className="w-px h-8 bg-light-muted dark:bg-dark-muted mx-3 opacity-40" />
             {/* Pessoal */}
-            <View style={{ flex: 1, alignItems: 'center' }}>
-              <Text style={[styles.saldoLabel, { fontSize: 14, marginBottom: 2 }]}>Pessoal</Text>
-              <Text style={[styles.saldoValor, { fontSize: 16 }]}>
-                {isLoading ? '...' : formatMoneyView((analytics?.saldoPessoal ?? 0).toString())}
+            <View className="flex-1 items-center">
+              <Text className="text-sm text-light-text dark:text-dark-text opacity-70 mb-0.5">
+                Pessoal
+              </Text>
+              <Text className="text-base font-bold text-tint">
+                {isLoading
+                  ? "..."
+                  : formatMoneyView((analytics?.saldoPessoal ?? 0).toString())}
               </Text>
             </View>
           </View>
         </View>
-        <View style={styles.graficoContainer}>
-          <Text style={styles.sectionTitle}>Gastos últimos 7 dias</Text>
-          <View style={{ flexDirection: 'row', justifyContent: 'center', marginBottom: 12 }}>
+
+        <View className="bg-light-card dark:bg-dark-card rounded-2xl p-5 pl-0 pr-0 mb-3 shadow-sm items-center">
+          <Text className="text-lg font-semibold mb-2 text-light-text dark:text-dark-text">
+            Gastos últimos 7 dias
+          </Text>
+          <View className="flex-row justify-center mb-3">
             <Text
-              style={{
-                marginHorizontal: 8,
-                color: chartType === 'total' ? Colors[theme].tint : Colors[theme].text,
-                fontWeight: chartType === 'total' ? 'bold' : 'normal',
-                textDecorationLine: chartType === 'total' ? 'underline' : 'none',
-              }}
-              onPress={() => setChartType('total')}
+              className={`mx-2 ${
+                chartType === "total"
+                  ? "text-tint font-bold underline"
+                  : "text-light-text dark:text-dark-text"
+              }`}
+              onPress={() => setChartType("total")}
             >
               Total
             </Text>
             <Text
-              style={{
-                marginHorizontal: 8,
-                color: chartType === 'empresa' ? Colors[theme].tint : Colors[theme].text,
-                fontWeight: chartType === 'empresa' ? 'bold' : 'normal',
-                textDecorationLine: chartType === 'empresa' ? 'underline' : 'none',
-              }}
-              onPress={() => setChartType('empresa')}
+              className={`mx-2 ${
+                chartType === "empresa"
+                  ? "text-tint font-bold underline"
+                  : "text-light-text dark:text-dark-text"
+              }`}
+              onPress={() => setChartType("empresa")}
             >
               Empresa
             </Text>
             <Text
-              style={{
-                marginHorizontal: 8,
-                color: chartType === 'pessoal' ? Colors[theme].tint : Colors[theme].text,
-                fontWeight: chartType === 'pessoal' ? 'bold' : 'normal',
-                textDecorationLine: chartType === 'pessoal' ? 'underline' : 'none',
-              }}
-              onPress={() => setChartType('pessoal')}
+              className={`mx-2 ${
+                chartType === "pessoal"
+                  ? "text-tint font-bold underline"
+                  : "text-light-text dark:text-dark-text"
+              }`}
+              onPress={() => setChartType("pessoal")}
             >
               Pessoal
             </Text>
@@ -213,15 +143,25 @@ export default function Home() {
             data={chartData}
             height={160}
             width={width}
-            color={Colors[theme].tint}
-            startFillColor={Colors[theme].tint}
-            endFillColor={Colors[theme].tint}
+            color="#b4da4aff"
+            startFillColor="#b4da4aff"
+            endFillColor="#b4da4aff"
             hideRules
             hideYAxisText
             hideDataPoints
             areaChart
-            xAxisLabelTextStyle={{ color: Colors[theme].text, fontSize: 10, opacity: 0.6, textAlign: 'center' }}
-            maxValue={chartData.reduce((max, item) => (item.value > max ? item.value : max), 0) * 1.4 || 100}
+            xAxisLabelTextStyle={{
+              fontSize: 10,
+              opacity: 0.6,
+              textAlign: "center",
+              color: "white",
+            }}
+            maxValue={
+              chartData.reduce(
+                (max, item) => (item.value > max ? item.value : max),
+                0,
+              ) * 1.4 || 100
+            }
             spacing={50}
             isAnimated
             lineGradient
@@ -245,42 +185,21 @@ export default function Home() {
             pointerConfig={{
               pointerStripUptoDataPoint: true,
               pointerStripHeight: 160,
-              pointerStripColor: Colors[theme].text,
+              pointerStripColor: "currentColor",
               pointerStripWidth: 2,
-              pointerColor: 'transparent',
+              pointerColor: "transparent",
               radius: 4,
               pointerLabelWidth: 110,
               pointerLabelHeight: 90,
               pointerLabelComponent: (items: any[]) => {
                 const item = items[0];
                 return (
-                  <View
-                    style={{
-                      position: 'absolute',
-                      top: 10,
-                      left: 0,
-                      right: 0,
-                      alignSelf: 'center',
-                      height: 60,
-                      width: 110,
-                      backgroundColor: theme === 'dark' ? '#23272a' : '#fff',
-                      borderRadius: 8,
-                      shadowColor: '#000',
-                      shadowOpacity: 0.08,
-                      shadowRadius: 4,
-                      elevation: 4,
-                      borderWidth: 1,
-                      borderColor: Colors[theme].muted,
-                      zIndex: 10,
-                      marginLeft: -40,
-                      marginTop: -30,
-                    }}
-                  >
-                    <Text style={{ color: Colors[theme].text, fontSize: 12, opacity: 0.7, textAlign: 'center' }}>
+                  <View className="absolute top-2.5 left-0 right-0 self-center h-[60px] w-[110px] bg-light-card dark:bg-dark-card rounded-lg shadow-md border border-light-muted dark:border-dark-muted z-10 -ml-10 -mt-7.5">
+                    <Text className="text-light-text dark:text-dark-text text-xs opacity-70 text-center">
                       {item?.label}
                     </Text>
-                    <Text style={{ color: Colors[theme].tint, fontWeight: 'bold', fontSize: 16, textAlign: 'center' }}>
-                      {formatMoneyView(item?.value?.toString() ?? '0')}
+                    <Text className="text-tint font-bold text-base text-center">
+                      {formatMoneyView(item?.value?.toString() ?? "0")}
                     </Text>
                   </View>
                 );

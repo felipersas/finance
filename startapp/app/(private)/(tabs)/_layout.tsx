@@ -1,20 +1,25 @@
-import { Tabs } from 'expo-router';
-import React from 'react';
-import { Animated, Platform, StyleSheet, TouchableOpacity, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Tabs } from "expo-router";
+import React from "react";
+import {
+  Animated,
+  Platform,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { AuthGuard } from '@/components/AuthGuard';
-import { ChatFAB } from '@/components/ChatFAB';
-import { Drawer } from '@/components/Drawer';
-import { HapticTab } from '@/components/HapticTab';
-import { ThemedView } from '@/components/ThemedView';
-import { IconSymbol } from '@/components/ui/IconSymbol';
-import TabBarBackground from '@/components/ui/TabBarBackground';
-import { Colors } from '@/constants/Colors';
-import { useTheme } from '@/hooks/useTheme';
-import { useSession } from '@/providers/SessionProvider';
-import { Ionicons } from '@expo/vector-icons';
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { AuthGuard } from "@/components/auth";
+import { ChatFAB } from "@/components/chat";
+import { Drawer, HapticTab } from "@/components/layout";
+import { ThemedView } from "@/components/common";
+import { IconSymbol } from "@/components/ui/IconSymbol";
+import TabBarBackground from "@/components/ui/TabBarBackground";
+import { Colors } from "@/constants/Colors";
+import { useTheme } from "@/hooks/useTheme";
+import { useSession } from "@/providers/SessionProvider";
+import { Ionicons } from "@expo/vector-icons";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 
 export default function TabLayout() {
   const theme = useTheme();
@@ -41,18 +46,23 @@ export default function TabLayout() {
 
   return (
     <AuthGuard requireAuth={true}>
-      <ThemedView style={[
-        styles.container,
-        {
-          backgroundColor: Colors[theme].background,
-          paddingTop: insets.top,
-          paddingLeft: insets.left,
-          paddingRight: insets.right,
-        }
-      ]}>
+      <ThemedView
+        style={[
+          styles.container,
+          {
+            backgroundColor: Colors[theme].background,
+            paddingTop: insets.top,
+            paddingLeft: insets.left,
+            paddingRight: insets.right,
+          },
+        ]}
+      >
         {/* Minimalist top bar with hamburger icon */}
         <View style={styles.topBarMinimal}>
-          <TouchableOpacity onPress={() => setDrawerOpen(true)} style={styles.hamburgerButton}>
+          <TouchableOpacity
+            onPress={() => setDrawerOpen(true)}
+            style={styles.hamburgerButton}
+          >
             <Ionicons name="menu" size={28} color={Colors[theme].text} />
           </TouchableOpacity>
         </View>
@@ -73,7 +83,7 @@ export default function TabLayout() {
             tabBarBackground: TabBarBackground,
             tabBarStyle: Platform.select({
               ios: {
-                position: 'absolute',
+                position: "absolute",
                 backgroundColor: Colors[theme].background,
                 height: 84 + insets.bottom,
                 paddingBottom: insets.bottom + 8,
@@ -91,37 +101,48 @@ export default function TabLayout() {
             },
             tabBarLabelStyle: {
               fontSize: 12,
-              fontWeight: '500',
+              fontWeight: "500",
               marginTop: 4,
             },
             sceneStyle: {
               backgroundColor: Colors[theme].background,
             },
-          }}>
+          }}
+        >
           <Tabs.Screen
             name="index"
             options={{
               title: "Home",
-              tabBarIcon: ({ color }) => <IconSymbol size={24} name="house.fill" color={color} />,
+              tabBarIcon: ({ color }) => (
+                <IconSymbol size={24} name="house.fill" color={color} />
+              ),
             }}
           />
           <Tabs.Screen
             name="transacoes"
             options={{
-              title: 'Transações',
-              tabBarIcon: ({ color }) => <MaterialIcons size={24} name="list" color={color} />,
+              title: "Transações",
+              tabBarIcon: ({ color }) => (
+                <MaterialIcons size={24} name="list" color={color} />
+              ),
             }}
           />
           <Tabs.Screen
             name="alertas-lembretes"
             options={{
-              title: 'Alertas',
-              tabBarIcon: ({ color }) => <MaterialIcons size={24} name="notifications-active" color={color} />,
+              title: "Alertas",
+              tabBarIcon: ({ color }) => (
+                <MaterialIcons
+                  size={24}
+                  name="notifications-active"
+                  color={color}
+                />
+              ),
             }}
           />
         </Tabs>
         <ChatFAB
-          bottom={Platform.OS === 'ios' ? insets.bottom + 100 : 110}
+          bottom={Platform.OS === "ios" ? insets.bottom + 100 : 110}
           right={20}
         />
       </ThemedView>
@@ -134,9 +155,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   topBarMinimal: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'flex-start',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "flex-start",
     paddingHorizontal: 18,
     paddingTop: 18,
     paddingBottom: 8,

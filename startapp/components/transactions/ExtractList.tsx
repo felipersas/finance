@@ -4,23 +4,30 @@ import { ListExtractItem, useListExtract } from "@/hooks/useListExtract";
 import { useTheme } from "@/hooks/useTheme";
 import { capitalizeEachWord } from "@/utils/formatters/capitalize-each-word";
 import { formatMoneyView } from "@/utils/formatters/format-money";
-import Feather from '@expo/vector-icons/Feather';
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import Feather from "@expo/vector-icons/Feather";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import React, { useState } from "react";
-import { FlatList, Modal, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import Swipeable from 'react-native-gesture-handler/Swipeable';
-import { SwipeAction } from './SwipeAction';
-import { ThemedView } from "./ThemedView";
-import UploadCsvButton from "./UploadCsvButton";
+import {
+  FlatList,
+  Modal,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import Swipeable from "react-native-gesture-handler/Swipeable";
+import { SwipeAction } from "./SwipeAction";
+import { ThemedView } from "../common/ThemedView";
+import { UploadCsvButton } from "./UploadCsvButton";
 
-type OrderDirection = 'asc' | 'desc';
-
+type OrderDirection = "asc" | "desc";
 
 export const ExtractList = () => {
   const theme = useTheme();
   const styles = createStyles(theme);
   const [currentPage, setCurrentPage] = React.useState(1);
-  const [orderDirection, setOrderDirection] = React.useState<OrderDirection>('desc');
+  const [orderDirection, setOrderDirection] =
+    React.useState<OrderDirection>("desc");
   const { response, isLoading, error, isFetching } = useListExtract({
     perPage: 5,
     page: currentPage,
@@ -29,12 +36,13 @@ export const ExtractList = () => {
   const updateTipoMutation = useUpdateTipoExtract();
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [selectedTipo, setSelectedTipo] = useState<'Pessoal' | 'Empresa'>('Pessoal');
+  const [selectedTipo, setSelectedTipo] = useState<"Pessoal" | "Empresa">(
+    "Pessoal",
+  );
   const totalPages = response?.data?.pages || 1;
   const totalResults = response?.data?.items || 0;
-  const toggleOrder = () => setOrderDirection(prev => prev === 'asc' ? 'desc' : 'asc');
-
-
+  const toggleOrder = () =>
+    setOrderDirection((prev) => (prev === "asc" ? "desc" : "asc"));
 
   const handleDelete = (item: ListExtractItem) => {
     alert(`Excluir lançamento: ${item.remetenteDestinatario || item.id}`);
@@ -51,7 +59,7 @@ export const ExtractList = () => {
   );
 
   const handleOpenTipoModal = (id: string) => {
-    const item = response?.data?.data?.find(i => i.id === id);
+    const item = response?.data?.data?.find((i) => i.id === id);
     if (item) {
       setSelectedId(id);
       setSelectedTipo(item.tipo);
@@ -59,16 +67,15 @@ export const ExtractList = () => {
     }
   };
 
-  const handleChangeTipo = async (tipo: 'Pessoal' | 'Empresa') => {
+  const handleChangeTipo = async (tipo: "Pessoal" | "Empresa") => {
     if (!selectedId) return;
     await updateTipoMutation.mutateAsync(
       { id: selectedId, tipo },
       {
         onSuccess: () => setModalVisible(false),
         onSettled: () => setSelectedTipo(tipo),
-      }
+      },
     );
-
   };
 
   const renderItem = ({ item }: { item: ListExtractItem }) => (
@@ -88,45 +95,56 @@ export const ExtractList = () => {
             {item.data ? new Date(item.data).toLocaleDateString("pt-BR") : ""}
           </Text>
         </View>
-          <View style={styles.modernItemRight}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end' }}>
-              <Text style={styles.modernItemValue} numberOfLines={1}>
-                {formatMoneyView(Math.abs(item.valor).toString())}
-              </Text>
-              <View style={styles.modernArrowCircle}>
-                <Feather
-                  name={item.valor >= 0 ? "arrow-down-left" : "arrow-up-right"}
-                  size={18}
-                  color={item.valor >= 0 ? Colors.success : Colors.error}
-                />
-              </View>
+        <View style={styles.modernItemRight}>
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "flex-end",
+            }}
+          >
+            <Text style={styles.modernItemValue} numberOfLines={1}>
+              {formatMoneyView(Math.abs(item.valor).toString())}
+            </Text>
+            <View style={styles.modernArrowCircle}>
+              <Feather
+                name={item.valor >= 0 ? "arrow-down-left" : "arrow-up-right"}
+                size={18}
+                color={item.valor >= 0 ? Colors.success : Colors.error}
+              />
             </View>
-            <TouchableOpacity
-              activeOpacity={0.7}
-              onPress={() => handleOpenTipoModal(item.id)}
-              style={[
-                styles.categoryBadge,
-                item.tipo === 'Empresa'
-                  ? styles.categoryEmpresa
-                  : styles.categoryPessoal,
-                { alignSelf: 'flex-end', marginTop: 8 }
-              ]}
-              accessibilityLabel={item.tipo === 'Empresa' ? 'Categoria empresa' : 'Categoria pessoal'}
-            >
-              <Text style={[
-                styles.categoryBadgeText,
-                item.tipo === 'Empresa'
-                  ? styles.categoryEmpresaText
-                  : styles.categoryPessoalText
-              ]}>
-                {item.tipo === 'Empresa' ? 'EMP' : 'PES'}
-              </Text>
-            </TouchableOpacity>
           </View>
+          <TouchableOpacity
+            activeOpacity={0.7}
+            onPress={() => handleOpenTipoModal(item.id)}
+            style={[
+              styles.categoryBadge,
+              item.tipo === "Empresa"
+                ? styles.categoryEmpresa
+                : styles.categoryPessoal,
+              { alignSelf: "flex-end", marginTop: 8 },
+            ]}
+            accessibilityLabel={
+              item.tipo === "Empresa"
+                ? "Categoria empresa"
+                : "Categoria pessoal"
+            }
+          >
+            <Text
+              style={[
+                styles.categoryBadgeText,
+                item.tipo === "Empresa"
+                  ? styles.categoryEmpresaText
+                  : styles.categoryPessoalText,
+              ]}
+            >
+              {item.tipo === "Empresa" ? "EMP" : "PES"}
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </Swipeable>
   );
-
 
   const SKELETON_COUNT = 4;
   const renderSkeleton = () =>
@@ -165,36 +183,45 @@ export const ExtractList = () => {
         <View style={styles.pagination}>
           <View style={styles.paginationIcon}>
             <TouchableOpacity
-              onPress={() => setCurrentPage(p => Math.max(1, p - 1))}
+              onPress={() => setCurrentPage((p) => Math.max(1, p - 1))}
               disabled={currentPage === 1 || isLoading}
               style={[
                 styles.pageIconButton,
-                (currentPage === 1 || isLoading) && styles.disabledButton
+                (currentPage === 1 || isLoading) && styles.disabledButton,
               ]}
               accessibilityLabel="Página anterior"
             >
-              <MaterialIcons name="chevron-left" size={32} color={Colors[theme].text} />
+              <MaterialIcons
+                name="chevron-left"
+                size={32}
+                color={Colors[theme].text}
+              />
             </TouchableOpacity>
             <TouchableOpacity
-              onPress={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              onPress={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
               disabled={currentPage === totalPages || isLoading}
               style={[
                 styles.pageIconButton,
-                (currentPage === totalPages || isLoading) && styles.disabledButton
+                (currentPage === totalPages || isLoading) &&
+                  styles.disabledButton,
               ]}
               accessibilityLabel="Próxima página"
             >
-              <MaterialIcons name="chevron-right" size={32} color={Colors[theme].text} />
+              <MaterialIcons
+                name="chevron-right"
+                size={32}
+                color={Colors[theme].text}
+              />
             </TouchableOpacity>
           </View>
-          {typeof totalResults === 'number' && totalResults > 0 && (
+          {typeof totalResults === "number" && totalResults > 0 && (
             <Text style={styles.totalResultsText}>
               {totalResults} resultados
             </Text>
           )}
         </View>
         <View style={{ flex: 1 }}>
-          {(isLoading || isFetching) ? (
+          {isLoading || isFetching ? (
             renderSkeleton()
           ) : error ? (
             <Text style={styles.emptyText}>Erro ao carregar dados.</Text>
@@ -202,7 +229,9 @@ export const ExtractList = () => {
             <FlatList
               data={response.data.data}
               renderItem={renderItem}
-              keyExtractor={item => item.id?.toString() || Math.random().toString()}
+              keyExtractor={(item) =>
+                item.id?.toString() || Math.random().toString()
+              }
               contentContainerStyle={styles.scrollContent}
               style={styles.scrollView}
             />
@@ -223,24 +252,31 @@ export const ExtractList = () => {
             <TouchableOpacity
               style={[
                 styles.tipoButton,
-                selectedTipo === 'Pessoal' ? styles.tipoButtonPessoal : styles.tipoButtonDefault
+                selectedTipo === "Pessoal"
+                  ? styles.tipoButtonPessoal
+                  : styles.tipoButtonDefault,
               ]}
-              onPress={() => handleChangeTipo('Pessoal')}
+              onPress={() => handleChangeTipo("Pessoal")}
             >
               <Text style={styles.tipoTextPessoal}>Pessoal</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={[
                 styles.tipoButton,
-                selectedTipo === 'Empresa' ? styles.tipoButtonEmpresa : styles.tipoButtonDefault
+                selectedTipo === "Empresa"
+                  ? styles.tipoButtonEmpresa
+                  : styles.tipoButtonDefault,
               ]}
-              onPress={() => handleChangeTipo('Empresa')}
+              onPress={() => handleChangeTipo("Empresa")}
             >
               <Text style={styles.tipoTextEmpresa}>Empresa</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.cancelButton}>
+            <TouchableOpacity
+              onPress={() => setModalVisible(false)}
+              style={styles.cancelButton}
+            >
               <Text style={styles.cancelText}>Cancelar</Text>
-              </TouchableOpacity>
+            </TouchableOpacity>
           </View>
         </View>
       </Modal>
@@ -255,10 +291,10 @@ const createStyles = (theme: "light" | "dark") =>
       height: 22,
       borderRadius: 11,
       paddingHorizontal: 10,
-      justifyContent: 'center',
-      alignItems: 'center',
+      justifyContent: "center",
+      alignItems: "center",
       borderWidth: 1.5,
-      backgroundColor: 'transparent',
+      backgroundColor: "transparent",
       marginLeft: 0,
     },
     categoryEmpresa: {
@@ -268,7 +304,7 @@ const createStyles = (theme: "light" | "dark") =>
       borderColor: Colors.success,
     },
     categoryBadgeText: {
-      fontWeight: 'bold',
+      fontWeight: "bold",
       fontSize: 11,
       letterSpacing: 0.5,
     },
@@ -280,27 +316,27 @@ const createStyles = (theme: "light" | "dark") =>
     },
     cardContainer: {
       flex: 1,
-      backgroundColor: Colors[theme].card || '#fff',
+      backgroundColor: Colors[theme].card || "#fff",
       borderTopLeftRadius: 32,
       borderTopRightRadius: 32,
       paddingTop: 8,
       paddingHorizontal: 12,
 
-      shadowColor: '#000',
+      shadowColor: "#000",
       shadowOffset: { width: 0, height: -4 },
-      shadowOpacity: 0.10,
+      shadowOpacity: 0.1,
       shadowRadius: 12,
 
       elevation: 10,
-      overflow: 'hidden',
+      overflow: "hidden",
     },
     scrollView: {
       flex: 1,
     },
-  swipeableContainer: {
-    marginBottom: 14,
-  },
-  container: { flex: 1, backgroundColor: Colors[theme].background },
+    swipeableContainer: {
+      marginBottom: 14,
+    },
+    container: { flex: 1, backgroundColor: Colors[theme].background },
     header: {
       flexDirection: "row",
       justifyContent: "space-between",
@@ -322,15 +358,15 @@ const createStyles = (theme: "light" | "dark") =>
       fontSize: 14,
       color: Colors[theme].text,
     },
-  listContainer: { flex: 1 },
+    listContainer: { flex: 1 },
     fixedListHeight: {},
     scrollContent: { flexGrow: 1 },
     loader: { marginTop: 32 },
 
     modernItemContainer: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
       backgroundColor: Colors[theme].card,
       borderRadius: 16,
       paddingVertical: 18,
@@ -341,7 +377,7 @@ const createStyles = (theme: "light" | "dark") =>
       minWidth: 0,
     },
     modernItemTitle: {
-      fontWeight: '600',
+      fontWeight: "600",
       fontSize: 16,
       color: Colors[theme].text,
       marginBottom: 2,
@@ -354,27 +390,27 @@ const createStyles = (theme: "light" | "dark") =>
       letterSpacing: 0.2,
     },
     modernItemRight: {
-      flexDirection: 'column',
-      alignItems: 'center',
+      flexDirection: "column",
+      alignItems: "center",
       marginLeft: 16,
       gap: 8,
     },
     modernItemValue: {
-      fontWeight: '700',
+      fontWeight: "700",
       fontSize: 16,
       color: Colors[theme].text,
       marginRight: 8,
       minWidth: 80,
-      textAlign: 'right',
+      textAlign: "right",
     },
     modernArrowCircle: {
       width: 32,
       height: 32,
       borderRadius: 16,
       backgroundColor: Colors[theme].background,
-      alignItems: 'center',
-      justifyContent: 'center',
-      shadowColor: '#000',
+      alignItems: "center",
+      justifyContent: "center",
+      shadowColor: "#000",
       shadowOffset: { width: 0, height: 1 },
       shadowOpacity: 0.06,
       shadowRadius: 2,
@@ -427,7 +463,7 @@ const createStyles = (theme: "light" | "dark") =>
       color: Colors[theme].text,
       fontSize: 14,
       padding: 0,
-      backgroundColor: 'transparent',
+      backgroundColor: "transparent",
     },
     totalResultsText: {
       marginLeft: 10,
@@ -439,18 +475,18 @@ const createStyles = (theme: "light" | "dark") =>
     skeletonItem: {
       backgroundColor: Colors[theme].muted,
       opacity: 0.7,
-      overflow: 'hidden',
+      overflow: "hidden",
     },
 
     skeletonTitle: {
-      width: '60%',
+      width: "60%",
       height: 18,
       borderRadius: 6,
       backgroundColor: Colors[theme].background,
       marginBottom: 8,
     },
     skeletonSubtitle: {
-      width: '40%',
+      width: "40%",
       height: 12,
       borderRadius: 6,
       backgroundColor: Colors[theme].background,
@@ -478,24 +514,24 @@ const createStyles = (theme: "light" | "dark") =>
     orderIcon: { marginRight: 4 },
     modalOverlay: {
       flex: 1,
-      backgroundColor: theme === 'dark' ? 'rgba(0,0,0,0.7)' : 'rgba(0,0,0,0.3)',
-      justifyContent: 'center',
-      alignItems: 'center',
+      backgroundColor: theme === "dark" ? "rgba(0,0,0,0.7)" : "rgba(0,0,0,0.3)",
+      justifyContent: "center",
+      alignItems: "center",
     },
     modalContainer: {
       backgroundColor: Colors[theme].card,
       borderRadius: 16,
       padding: 24,
       minWidth: 260,
-      alignItems: 'center',
-      shadowColor: '#000',
+      alignItems: "center",
+      shadowColor: "#000",
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.15,
       shadowRadius: 8,
       elevation: 6,
     },
     modalTitle: {
-      fontWeight: 'bold',
+      fontWeight: "bold",
       fontSize: 16,
       marginBottom: 16,
       color: Colors[theme].text,
@@ -505,31 +541,31 @@ const createStyles = (theme: "light" | "dark") =>
       padding: 12,
       marginBottom: 12,
       width: 180,
-      alignItems: 'center',
+      alignItems: "center",
     },
     tipoButtonPessoal: {
       borderWidth: 2,
       borderColor: Colors.success,
-      backgroundColor: Colors.success + '22',
+      backgroundColor: Colors.success + "22",
     },
     tipoButtonEmpresa: {
       borderWidth: 2,
       borderColor: Colors[theme].tint,
-      backgroundColor: Colors[theme].tint + '22',
+      backgroundColor: Colors[theme].tint + "22",
     },
     tipoButtonDefault: {
       borderWidth: 1,
-      borderColor: '#ccc',
+      borderColor: "#ccc",
       backgroundColor: Colors[theme].background,
     },
     tipoTextPessoal: {
       color: Colors.success,
-      fontWeight: 'bold',
+      fontWeight: "bold",
       fontSize: 15,
     },
     tipoTextEmpresa: {
       color: Colors[theme].tint,
-      fontWeight: 'bold',
+      fontWeight: "bold",
       fontSize: 15,
     },
     cancelButton: {
@@ -541,4 +577,3 @@ const createStyles = (theme: "light" | "dark") =>
       fontSize: 15,
     },
   });
-
