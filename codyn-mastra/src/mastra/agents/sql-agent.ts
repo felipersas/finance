@@ -1,6 +1,17 @@
 import { Agent } from '@mastra/core/agent';
 import { executeSqlQueryTool } from '../tools/execute-sql-query';
 import { openai } from '@ai-sdk/openai';
+import { LibSQLStore } from '@mastra/libsql';
+import { Memory } from '@mastra/memory';
+
+const memory = new Memory({
+  storage: new LibSQLStore({
+    url: ":memory:",
+  }),
+  options: {
+    lastMessages: 4,
+  }
+});
 
 export const sqlAgent = new Agent({
   name: 'Finance Assistant',
@@ -34,6 +45,7 @@ You: Use execute-sql-query tool → "Você gastou R$ 245,80 com iFood no total."
 
 Be fast, friendly, and helpful!`,
   model: openai('gpt-4.1'),
+  memory,
   tools: {
     executeSqlQuery: executeSqlQueryTool,
   },
