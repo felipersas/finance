@@ -23,6 +23,7 @@ export const sqlAgent = new Agent({
   workflows: {
    databaseQueryWorkflow,
   },
+  memory,
   tools: {
     executeSqlQuery: executeSqlQueryTool,
   },
