@@ -22,6 +22,8 @@ FROM deps AS development
 # Copy source code
 COPY . .
 
+RUN npm install -g @nestjs/cli
+
 # Expose port
 EXPOSE 3000
 

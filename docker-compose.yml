@@ -16,7 +16,6 @@ services:
       - ./postgres-init:/docker-entrypoint-initdb.d
     networks:
       - mcp-network
-      - CodynNet
     mem_limit: 1g
     cpus: 0.33
     healthcheck:
@@ -50,16 +49,6 @@ services:
         condition: service_healthy
     networks:
       - mcp-network
-      - CodynNet
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.codyn-mastra.rule=Host(`${TRAEFIK_MASTRA_DOMAIN:-mastra.codyn.site}`)"
-      - "traefik.http.services.codyn-mastra.loadbalancer.server.port=4111"
-      - "traefik.http.routers.codyn-mastra.tls.certresolver=letsencryptresolver"
-      - "traefik.http.routers.codyn-mastra.service=codyn-mastra"
-      - "traefik.docker.network=CodynNet"
-      - "traefik.http.routers.codyn-mastra.entrypoints=websecure"
-      - "traefik.http.routers.codyn-mastra.priority=1"
     command: npm run dev
 
   # NestJS API Service
@@ -88,25 +77,10 @@ services:
         condition: service_healthy
     networks:
       - mcp-network
-      - CodynNet
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.mcp-api-dev.rule=Host(`${TRAEFIK_API_DOMAIN:-api.codyn.site}`)"
-      - "traefik.http.services.mcp-api-dev.loadbalancer.server.port=3333"
-      - "traefik.http.routers.mcp-api-dev.tls.certresolver=letsencryptresolver"
-      - "traefik.http.routers.mcp-api-dev.service=mcp-api-dev"
-      - "traefik.docker.network=CodynNet"
-      - "traefik.http.routers.mcp-api-dev.entrypoints=websecure"
-      - "traefik.http.routers.mcp-api-dev.priority=1"
     command: >
       sh -c "
-        npx prisma generate &&
-        npx prisma migrate deploy &&
         npm run start:dev
       "
-
-
-
 volumes:
   pgdata:
 
@@ -114,10 +88,3 @@ networks:
   mcp-network:
     driver: bridge
     internal: false
-    ipam:
-      config:
-        - subnet: 172.20.0.0/16
-          gateway: 172.20.0.1
-  CodynNet:
-    external: true
-    name: CodynNet

@@ -23,47 +23,39 @@ export class ChatbotService implements ChatbotServicePort {
       headers['Authorization'] = `Bearer ${token}`;
     }
 
-    // Build the payload according to Mastra API spec
-    const payload: {
-      messages: Array<{
-        role: string;
-        content: Array<{ type: string; text: string }>;
-      }>;
-      runId?: string;
-      structuredOutput?: any;
-      tracingOptions?: any;
-    } = {
-      messages: [{ role: 'user', content: [{ type: 'text', text: query }] }],
-      // No resourceId/threadId since agent has no memory configured
-      // Optional: uncomment to add custom runId
-      // runId: `run-${Date.now()}`,
-      // Optional: uncomment to enable structured output
-      // structuredOutput: {
-      //   schema: {},
-      //   model: 'gpt-4o-mini',
-      //   instructions: 'Return structured data',
-      //   errorStrategy: 'strict',
-      // },
-      // Optional: uncomment to add tracing metadata
-      // tracingOptions: {
-      //   metadata: {
-      //     userId: userId,
-      //   },
-      // },
+    const payload = {
+      messages: [
+        {
+          role: 'user',
+          content: [
+            {
+              type: 'text',
+              text: query,
+            },
+          ],
+        },
+      ],
+      runId: 'sqlAgent',
+      maxSteps: 2,
+      modelSettings: {
+        maxRetries: 2,
+        maxOutputTokens: 4096,
+        temperature: 0,
+      },
+      threadId: userId,
+      resourceId: 'sqlAgent',
     };
 
-    // Use generate endpoint instead of stream to get only final response
-    const response: any = await this.externalHttpService.post(
+    const response: { text: string } = await this.externalHttpService.post(
       `${this.apiURL}/api/agents/sqlAgent/generate`,
       payload,
       {
         serviceName: 'chatbot-service',
-        timeout: 300000, // 5 minutes for generation
+        timeout: 300000,
         additionalHeaders: headers,
       },
     );
 
-    // Return the raw response from the external API without any processing
     return {
       text: response.text,
     };
