@@ -19,9 +19,6 @@ export const mastra = new Mastra({
   storage: new LibSQLStore({
       url: "file:./mastra.db",
   }),
-  telemetry: {
-      enabled: true,
-  },
   observability: {
     default: {
       enabled: true,

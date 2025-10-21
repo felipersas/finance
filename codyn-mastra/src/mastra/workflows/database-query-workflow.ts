@@ -7,7 +7,7 @@ import { executeSqlQueryTool } from '../tools/execute-sql-query';
 const executeQueryStep = createStep({
   id: 'execute-query',
   inputSchema: z.object({
-    naturalLanguageQuery: z.string(),
+    query: z.string(),
   }),
   outputSchema: z.object({
     success: z.boolean(),
@@ -18,7 +18,7 @@ const executeQueryStep = createStep({
     error: z.string().optional(),
   }),
   execute: async ({ inputData, runtimeContext }) => {
-    const { naturalLanguageQuery } = inputData;
+    const { query } = inputData;
 
     try {
       if (!executeSqlQueryTool.execute) {
@@ -27,7 +27,7 @@ const executeQueryStep = createStep({
 
       const result = await executeSqlQueryTool.execute({
         context: {
-          naturalLanguageQuery,
+          query,
         },
         runtimeContext: runtimeContext || new RuntimeContext(),
       });
@@ -46,7 +46,7 @@ const executeQueryStep = createStep({
 export const databaseQueryWorkflow = createWorkflow({
   id: 'database-query-workflow',
   inputSchema: z.object({
-    naturalLanguageQuery: z.string(),
+    query: z.string(),
   }),
   outputSchema: z.object({
     success: z.boolean(),
