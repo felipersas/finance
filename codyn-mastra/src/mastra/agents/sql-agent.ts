@@ -9,6 +9,7 @@ export const sqlAgent = new Agent({
   model: openai('gpt-4o'),
   defaultGenerateOptions: {
     maxTokens: 4096,
+    temperature: 0.0,
   },
   tools: {
     executeSqlQuery: executeSqlQueryTool,
