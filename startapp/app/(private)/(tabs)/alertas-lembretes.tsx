@@ -1,9 +1,5 @@
 import { NotificationList } from "@/components/notifications/NotificationList";
-import {
-  ReminderFormData,
-  ReminderModal,
-} from "@/components/notifications/ReminderModal";
-import { ThemedText } from "@/components/common/ThemedText";
+import { ReminderModal } from "@/components/notifications/ReminderModal";
 import { Colors } from "@/constants/Colors";
 import {
   useCreateNotification,
@@ -17,6 +13,7 @@ import { NotificationType } from "@/types/notification";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";
 import { TextInput, TouchableOpacity, View, Text } from "react-native";
+import { ReminderFormData } from "@/validators/notifications/remider-schema";
 
 const tipos = [
   { label: "Todos", value: "all" },
