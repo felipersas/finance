@@ -18,21 +18,29 @@ export function useMarkNotificationAsRead() {
     onMutate: async (id: string) => {
       await queryClient.cancelQueries({ queryKey: ['notifications'] });
 
-      // Snapshot previous value
-      const previousNotifications = queryClient.getQueryData<ApiResponse<PaginatedResponse<Notification>>>(['notifications']);
+      // Get all notification queries
+      const queries = queryClient.getQueriesData({ queryKey: ['notifications'] });
 
-      // Optimistically update to mark as read
-      queryClient.setQueryData<ApiResponse<PaginatedResponse<Notification>>>(['notifications'], old => {
-        if (!old?.data?.data) return old;
-        return {
-          ...old,
-          data: {
-            ...old.data,
-            data: old.data.data.map(n =>
-              n.id === id ? { ...n, read: true } : n
-            ),
-          },
-        };
+      // Snapshot previous values
+      const previousNotifications = queries.map(([queryKey, data]) => ({
+        queryKey,
+        data,
+      }));
+
+      // Optimistically update all matching queries
+      queries.forEach(([queryKey, data]) => {
+        queryClient.setQueryData(queryKey, (old: ApiResponse<PaginatedResponse<Notification>> | undefined) => {
+          if (!old?.data?.data) return old;
+          return {
+            ...old,
+            data: {
+              ...old.data,
+              data: old.data.data.map(n =>
+                n.id === id ? { ...n, read: true } : n
+              ),
+            },
+          };
+        });
       });
 
       return { previousNotifications };
@@ -40,11 +48,10 @@ export function useMarkNotificationAsRead() {
     onError: (_err, _id, context) => {
       // Rollback on error
       if (context?.previousNotifications) {
-        queryClient.setQueryData(['notifications'], context.previousNotifications);
+        context.previousNotifications.forEach(({ queryKey, data }) => {
+          queryClient.setQueryData(queryKey, data);
+        });
       }
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['notifications'] });
     },
   });
 }

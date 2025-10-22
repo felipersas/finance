@@ -28,8 +28,8 @@ const tipos = [
 export default function AlertasLembretesScreen() {
   const theme = useTheme();
   const [tipo, setTipo] = useState("all");
-  const { data, refetch } = useNotifications();
-  const notifications = data?.data || [];
+  const { response, isLoading, isFetching, refetch } = useNotifications();
+  const notifications = response?.data?.data || [];
   const createMutation = useCreateNotification();
   const updateMutation = useUpdateNotification();
   const deleteMutation = useDeleteNotification();
@@ -133,6 +133,7 @@ export default function AlertasLembretesScreen() {
         onLongPressItem={(item) =>
           item.isReminder ? handleOpenForm(item) : undefined
         }
+        isLoading={isLoading || isFetching}
       />
       {/* Reminder Modal */}
       <ReminderModal

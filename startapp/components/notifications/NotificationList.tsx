@@ -2,10 +2,21 @@ import React from "react";
 import { FlatList, Text, View } from "react-native";
 import { NotificationItem } from "./NotificationItem";
 import { Skeleton } from "../ui/skeleton";
-import { useNotifications } from "@/hooks/useNotifications";
+import { Notification } from "@/types/notification";
 
-export const NotificationList: React.FC = () => {
-  const { response, isLoading, isFetching } = useNotifications();
+interface NotificationListProps {
+  data: Notification[];
+  onPressItem: (item: Notification) => void;
+  onLongPressItem: (item: Notification) => void;
+  isLoading?: boolean;
+}
+
+export const NotificationList: React.FC<NotificationListProps> = ({
+  data,
+  onPressItem,
+  onLongPressItem,
+  isLoading = false,
+}) => {
   const SKELETON_COUNT = 4;
 
   const renderSkeleton = () =>
@@ -22,12 +33,11 @@ export const NotificationList: React.FC = () => {
       </View>
     ));
 
-  if (isLoading || isFetching) {
-    // if (true) {
+  if (isLoading) {
     return <View className="flex-1">{renderSkeleton()}</View>;
   }
 
-  if (!response?.data?.data?.length) {
+  if (!data?.length) {
     return (
       <View className="flex-1 items-center justify-center py-12 px-4 bg-background rounded-xl">
         <Text className="text-textSecondary text-center font-medium">
@@ -39,9 +49,15 @@ export const NotificationList: React.FC = () => {
 
   return (
     <FlatList
-      data={response.data.data}
+      data={data}
       keyExtractor={(item) => item.id}
-      renderItem={({ item }) => <NotificationItem notification={item} />}
+      renderItem={({ item }) => (
+        <NotificationItem
+          notification={item}
+          onPress={() => onPressItem(item)}
+          onLongPress={() => onLongPressItem(item)}
+        />
+      )}
       contentContainerStyle={{ paddingBottom: 32 }}
     />
   );

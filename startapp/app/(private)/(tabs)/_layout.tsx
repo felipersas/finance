@@ -142,7 +142,7 @@ export default function TabLayout() {
           />
         </Tabs>
         <ChatFAB
-          bottom={Platform.OS === "ios" ? insets.bottom + 100 : 110}
+          bottom={Platform.OS === "ios" ? insets.bottom + 130 : 150}
           right={20}
         />
       </ThemedView>
