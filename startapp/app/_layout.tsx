@@ -5,7 +5,7 @@ import {
   ThemeProvider,
 } from "@react-navigation/native";
 import { useFonts } from "expo-font";
-import { Stack } from "expo-router";
+import { Stack, router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import * as SystemUI from "expo-system-ui";
 import { ActivityIndicator, Platform, View } from "react-native";
@@ -15,6 +15,7 @@ import { ThemedView } from "@/components/common";
 import toastConfig from "@/config/ToastConfig";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { useThemeColor } from "@/hooks/useThemeColor";
+
 import { QueryProvider } from "@/providers/QueryProvider";
 import { SessionProvider, useSession } from "@/providers/SessionProvider";
 import { useEffect } from "react";
@@ -92,6 +93,22 @@ export default function RootLayout() {
     // Use this method to prompt for push notifications.
     // We recommend removing this method after testing and instead use In-App Messages to prompt for notification permission.
     OneSignal.Notifications.requestPermission(true);
+
+    // Add event listeners for notifications
+    OneSignal.Notifications.addEventListener("click", (event) => {
+      console.log("OneSignal: notification clicked:", event);
+      // Navigate to alerts/reminders screen
+      router.push("/alertas-lembretes");
+    });
+
+    OneSignal.Notifications.addEventListener(
+      "foregroundWillDisplay",
+      (event) => {
+        console.log("OneSignal: notification will display:", event);
+        // You can modify the notification here if needed
+        // event.notification
+      },
+    );
   }, []); // Ensure this only runs once on app mount
 
   if (!loaded) {

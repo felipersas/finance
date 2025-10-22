@@ -20,27 +20,15 @@ module.exports = {
         error: "#B3261E",
         success: "#b4da4aff",
 
-        // Light mode
-        light: {
-          card: "#fff",
-          text: "#181A1B",
-          background: "#f7f8fa",
-          icon: "#b4da4aff",
-          tabIconDefault: "#d1d5db",
-          tabIconSelected: "#b4da4aff",
-          muted: "#e5e7eb",
-        },
-
         // Dark mode
-        dark: {
-          card: "#23272a",
-          text: "#fff",
-          background: "#181A1B",
-          icon: "#b4da4aff",
-          tabIconDefault: "#23272a",
-          tabIconSelected: "#b4da4aff",
-          muted: "#23272a",
-        },
+        card: "#23272a",
+        text: "#fff",
+        background: "#181A1B",
+        icon: "#b4da4aff",
+        tabIconDefault: "#23272a",
+        textSecondary: "#8c8c8c",
+        tabIconSelected: "#b4da4aff",
+        muted: "#23272a",
       },
     },
   },

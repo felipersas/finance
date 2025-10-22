@@ -5,10 +5,14 @@ import { DatePicker } from "@/components/ui/DatePicker";
 import Input from "@/components/ui/Input";
 import { Colors } from "@/constants/Colors";
 import { strings } from "@/constants/Strings";
+import {
+  ReminderFormData,
+  ReminderSchema,
+} from "@/validators/notifications/remider-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import React from "react";
 import { Controller, FormProvider, useForm } from "react-hook-form";
-import { StyleSheet, View } from "react-native";
+import { ActivityIndicator, View } from "react-native";
 import { z } from "zod";
 
 interface ReminderModalProps {
@@ -19,23 +23,9 @@ interface ReminderModalProps {
   onCancel: () => void;
   theme: "light" | "dark";
   initialValues?: ReminderFormData;
+  isSaving?: boolean;
+  isDeleting?: boolean;
 }
-
-const ReminderSchema = z.object({
-  title: z.string().min(1, { message: strings.validation.fieldRequired }),
-  description: z.string().optional(),
-  date: z
-    .string()
-    .min(1, { message: strings.validation.fieldRequired })
-    .regex(/^\d{4}-\d{2}-\d{2}$/, { message: "Formato: YYYY-MM-DD" }),
-  time: z
-    .string()
-    .regex(/^([01]\d|2[0-3]):([0-5]\d)$/, { message: "Formato: HH:mm" })
-    .optional()
-    .or(z.literal("")),
-});
-
-export type ReminderFormData = z.infer<typeof ReminderSchema>;
 
 export const ReminderModal: React.FC<ReminderModalProps> = ({
   visible,
@@ -45,8 +35,9 @@ export const ReminderModal: React.FC<ReminderModalProps> = ({
   onCancel,
   theme,
   initialValues,
+  isSaving = false,
+  isDeleting = false,
 }) => {
-  const styles = createStyles(theme);
   const defaultValues = React.useMemo(
     () =>
       initialValues || {
@@ -72,13 +63,16 @@ export const ReminderModal: React.FC<ReminderModalProps> = ({
   if (!visible) return null;
   const isEdit = !!editReminder;
   return (
-    <ThemedView style={styles.modalOverlay}>
-      <ThemedView style={styles.modalCardMinimal}>
-        <ThemedText type="subtitle" style={styles.modalTitleMinimal}>
+    <View className="absolute top-0 left-0 right-0 bottom-0 justify-center items-center z-10  bg-black/70">
+      <View className="bg-card rounded-2xl px-6 py-7 max-w-[380px] w-[95%] items-stretch shadow-lg">
+        <ThemedText
+          type="subtitle"
+          className="font-semibold text-xl mb-5 text-text text-left"
+        >
           {isEdit ? strings.common.edit + " lembrete" : "Criar lembrete"}
         </ThemedText>
         <FormProvider {...methods}>
-          <View style={styles.modalFormMinimal}>
+          <View className="w-full mb-6">
             <Controller
               control={control}
               name="title"
@@ -89,11 +83,13 @@ export const ReminderModal: React.FC<ReminderModalProps> = ({
                 <Input
                   label="Título"
                   placeholder="Título"
+                  size="lg"
                   value={value}
                   onValueChange={onChange}
                   onBlur={onBlur}
                   isRequired={true}
                   isInvalid={!!error}
+                  className="mb-3"
                   errorMessage={error?.message}
                 />
               )}
@@ -107,6 +103,7 @@ export const ReminderModal: React.FC<ReminderModalProps> = ({
               }) => (
                 <Input
                   label="Descrição"
+                  size="lg"
                   placeholder="Descrição"
                   value={value}
                   onValueChange={onChange}
@@ -143,168 +140,80 @@ export const ReminderModal: React.FC<ReminderModalProps> = ({
               }) => (
                 <Input
                   label="Horário"
+                  size="lg"
                   placeholder="HH:mm"
                   value={value}
                   onValueChange={onChange}
                   onBlur={onBlur}
                   isInvalid={!!error}
                   errorMessage={error?.message}
-                  keyboardType="numeric"
+                  keyboardType="numbers-and-punctuation"
                 />
               )}
             />
           </View>
           <View
-            style={isEdit ? styles.modalActionsEdit : styles.modalActionsCreate}
+            className={
+              isEdit
+                ? "flex-row space-x-3 justify-end items-center w-full mt-1"
+                : "flex-col space-y-3 w-full mt-1 items-stretch"
+            }
           >
-            <AppButton
-              title={isEdit ? strings.common.save : "Criar"}
-              onPress={handleSubmit(onSave)}
-              style={
-                isEdit ? styles.saveButtonMinimal : styles.saveButtonCreate
-              }
-              textStyle={
-                isEdit
-                  ? styles.saveButtonTextMinimal
-                  : styles.saveButtonTextCreate
-              }
-            />
-            {isEdit && (
+            <View className="relative">
               <AppButton
-                title={strings.common.delete}
-                onPress={onDelete}
-                style={styles.deleteButtonMinimal}
-                textStyle={styles.deleteButtonTextMinimal}
+                title={isSaving ? "" : isEdit ? strings.common.save : "Criar"}
+                onPress={handleSubmit(onSave)}
+                disabled={isSaving}
+                className={
+                  isEdit
+                    ? "rounded-xl py-3 px-6 bg-success min-w-[100px] flex-row justify-center items-center"
+                    : "rounded-xl py-4 bg-success mb-1 flex-row justify-center items-center"
+                }
+                textClassName={
+                  isEdit
+                    ? "text-white font-semibold text-base"
+                    : "text-white font-bold text-lg"
+                }
               />
+              {isSaving && (
+                <View className="absolute left-0 right-0 top-0 bottom-0 flex-row justify-center items-center">
+                  <ActivityIndicator size="small" color="#fff" />
+                </View>
+              )}
+            </View>
+            {isEdit && (
+              <View className="relative">
+                <AppButton
+                  title={isDeleting ? "" : strings.common.delete}
+                  onPress={onDelete}
+                  disabled={isDeleting}
+                  className="rounded-xl py-3 px-6 bg-error min-w-[100px] flex-row justify-center items-center"
+                  textClassName="text-white font-semibold text-base"
+                />
+                {isDeleting && (
+                  <View className="absolute left-0 right-0 top-0 bottom-0 flex-row justify-center items-center">
+                    <ActivityIndicator size="small" color="#fff" />
+                  </View>
+                )}
+              </View>
             )}
             <AppButton
               title={strings.common.cancel}
               onPress={onCancel}
-              style={
-                isEdit ? styles.cancelButtonMinimal : styles.cancelButtonCreate
-              }
-              textStyle={
+              className={
                 isEdit
-                  ? styles.cancelButtonTextMinimal
-                  : styles.cancelButtonTextCreate
+                  ? "rounded-xl py-3 px-6 bg-card border border-muted min-w-[100px]"
+                  : "rounded-xl py-4 bg-muted"
+              }
+              textClassName={
+                isEdit ? "text-base text-text" : "text-lg text-text"
               }
             />
           </View>
         </FormProvider>
-      </ThemedView>
-    </ThemedView>
+      </View>
+    </View>
   );
 };
 
-const createStyles = (theme: "light" | "dark") => {
-  const palette = Colors[theme];
-  return StyleSheet.create({
-    modalOverlay: {
-      position: "absolute",
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      justifyContent: "center",
-      alignItems: "center",
-      zIndex: 10,
-      backgroundColor: theme === "dark" ? "rgba(0,0,0,0.7)" : "rgba(0,0,0,0.3)",
-    },
-    modalCardMinimal: {
-      backgroundColor: palette.card,
-      borderRadius: 20,
-      padding: 20,
-      maxWidth: 360,
-      width: "92%",
-      alignItems: "stretch",
-      shadowColor: "#000",
-      shadowOffset: { width: 0, height: 1 },
-      shadowOpacity: 0.08,
-      shadowRadius: 6,
-      elevation: 2,
-    },
-    modalTitleMinimal: {
-      fontWeight: "600",
-      fontSize: 18,
-      marginBottom: 16,
-      color: palette.text,
-      textAlign: "left",
-    },
-    modalFormMinimal: {
-      width: "100%",
-      gap: 10,
-      marginBottom: 18,
-    },
-    inputMinimal: {
-      width: "100%",
-      borderRadius: 10,
-      padding: 12,
-      fontSize: 15,
-      borderWidth: 0,
-      backgroundColor: palette.background,
-      color: palette.text,
-      marginBottom: 2,
-      shadowColor: palette.muted,
-      shadowOpacity: 0.04,
-      shadowRadius: 2,
-      elevation: 1,
-    },
-    inputPlaceholder: { color: palette.muted },
-    // Actions for edit mode
-    modalActionsEdit: {
-      flexDirection: "row",
-      gap: 8,
-      justifyContent: "flex-end",
-      alignItems: "center",
-      width: "100%",
-      marginTop: 2,
-    },
-    // Actions for create mode (vertical, more clear)
-    modalActionsCreate: {
-      flexDirection: "column",
-      gap: 10,
-      width: "100%",
-      marginTop: 2,
-      alignItems: "stretch",
-    },
-    saveButtonMinimal: {
-      borderRadius: 10,
-      paddingVertical: 10,
-      paddingHorizontal: 18,
-      backgroundColor: Colors.success,
-      minWidth: 90,
-    },
-    saveButtonTextMinimal: { color: "#fff", fontWeight: "600", fontSize: 15 },
-    saveButtonCreate: {
-      borderRadius: 12,
-      paddingVertical: 14,
-      backgroundColor: Colors.success,
-      marginBottom: 4,
-    },
-    saveButtonTextCreate: { color: "#fff", fontWeight: "bold", fontSize: 16 },
-    deleteButtonMinimal: {
-      borderRadius: 10,
-      paddingVertical: 10,
-      paddingHorizontal: 18,
-      backgroundColor: Colors.error,
-      minWidth: 90,
-    },
-    deleteButtonTextMinimal: { color: "#fff", fontWeight: "600", fontSize: 15 },
-    cancelButtonMinimal: {
-      borderRadius: 10,
-      paddingVertical: 10,
-      paddingHorizontal: 18,
-      backgroundColor: palette.card,
-      borderWidth: 1,
-      borderColor: palette.muted,
-      minWidth: 90,
-    },
-    cancelButtonTextMinimal: { fontSize: 15, color: palette.text },
-    cancelButtonCreate: {
-      borderRadius: 12,
-      paddingVertical: 14,
-      backgroundColor: palette.muted,
-    },
-    cancelButtonTextCreate: { fontSize: 16, color: palette.text },
-  });
-};
+/* NativeWind migration: StyleSheet removed */

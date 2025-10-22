@@ -4,7 +4,6 @@ import {
   ReminderModal,
 } from "@/components/notifications/ReminderModal";
 import { ThemedText } from "@/components/common/ThemedText";
-import { ThemedView } from "@/components/common/ThemedView";
 import { Colors } from "@/constants/Colors";
 import {
   useCreateNotification,
@@ -17,7 +16,7 @@ import { useTheme } from "@/hooks/useTheme";
 import { NotificationType } from "@/types/notification";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";
-import { StyleSheet, TextInput, TouchableOpacity } from "react-native";
+import { TextInput, TouchableOpacity, View, Text } from "react-native";
 
 const tipos = [
   { label: "Todos", value: "all" },
@@ -31,8 +30,8 @@ const tipos = [
 export default function AlertasLembretesScreen() {
   const theme = useTheme();
   const [tipo, setTipo] = useState("all");
-  const styles = createStyles(theme, tipo);
-  const { data: notifications = [], refetch } = useNotifications();
+  const { data, refetch } = useNotifications();
+  const notifications = data?.data || [];
   const createMutation = useCreateNotification();
   const updateMutation = useUpdateNotification();
   const deleteMutation = useDeleteNotification();
@@ -40,16 +39,6 @@ export default function AlertasLembretesScreen() {
   const [modalVisible, setModalVisible] = useState(false);
   const [editReminder, setEditReminder] = useState<any>(null);
   const markAsReadMutation = useMarkNotificationAsRead();
-
-  // Filtro
-  const filtered = notifications.filter((n) => {
-    const matchTipo = tipo === "all" || n.type === tipo;
-    const matchSearch =
-      !search ||
-      n.title.toLowerCase().includes(search.toLowerCase()) ||
-      n.description.toLowerCase().includes(search.toLowerCase());
-    return matchTipo && matchSearch;
-  });
 
   // Modal open handler
   const handleOpenForm = (reminder?: any) => {
@@ -91,41 +80,52 @@ export default function AlertasLembretesScreen() {
   };
 
   return (
-    <ThemedView style={styles.container}>
-      <ThemedView style={styles.topBarMinimal}>
+    <View className="flex-1 px-4 bg-background">
+      {/* Top Bar */}
+      <View className="flex-row items-center justify-between pt-5 pb-3">
         <TextInput
-          style={styles.searchInputMinimal}
+          className="flex-1 rounded-xl px-4 py-3 text-text bg-card mr-3"
           placeholder="Pesquisar..."
           value={search}
           onChangeText={setSearch}
-          placeholderTextColor={styles.searchInputPlaceholder.color}
+          placeholderTextColor={Colors[theme].muted}
         />
         <TouchableOpacity
-          style={styles.addButtonMinimal}
+          className="w-11 h-11 rounded-full bg-tint items-center justify-center shadow-lg"
           onPress={handleOpenForm}
           activeOpacity={0.85}
         >
           <Ionicons name="add" size={28} color={Colors[theme].background} />
         </TouchableOpacity>
-      </ThemedView>
-      <ThemedView style={styles.tipoTabsMinimal}>
+      </View>
+      {/* Tipo Tabs */}
+      <View className="flex-row flex-wrap items-center mb-4 mt-2">
         {tipos.map((t) => (
           <TouchableOpacity
             key={t.value}
-            style={[
-              styles.getTipoTab(t.value),
-              { marginRight: 10, marginBottom: 4 },
-            ]}
+            className={[
+              "py-2 px-5 rounded-full border mr-2 mb-2",
+              tipo === t.value
+                ? "bg-tint/20 border-tint"
+                : "bg-card border-text/20 ",
+            ].join(" ")}
             onPress={() => setTipo(t.value)}
+            activeOpacity={0.85}
           >
-            <ThemedText style={styles.getTipoTabText(t.value)}>
+            <Text
+              className={[
+                "text-base",
+                tipo === t.value ? "text-tint font-bold" : "text-text",
+              ].join(" ")}
+            >
               {t.label}
-            </ThemedText>
+            </Text>
           </TouchableOpacity>
         ))}
-      </ThemedView>
+      </View>
+      {/* Notification List */}
       <NotificationList
-        data={filtered}
+        data={notifications}
         onPressItem={(item) => {
           if (!item.read) {
             markAsReadMutation.mutate(item.id);
@@ -135,6 +135,7 @@ export default function AlertasLembretesScreen() {
           item.isReminder ? handleOpenForm(item) : undefined
         }
       />
+      {/* Reminder Modal */}
       <ReminderModal
         visible={modalVisible}
         editReminder={
@@ -156,248 +157,11 @@ export default function AlertasLembretesScreen() {
         onDelete={handleDeleteReminder}
         onCancel={() => setModalVisible(false)}
         theme={theme}
+        isSaving={createMutation.isPending || updateMutation.isPending}
+        isDeleting={deleteMutation.isPending}
       />
-    </ThemedView>
+    </View>
   );
 }
 
-const createStyles = (theme: "light" | "dark", selectedTipo?: string) => {
-  const palette = Colors[theme];
-  const staticStylesMinimal = StyleSheet.create({
-    modalCardMinimal: {
-      backgroundColor: palette.card,
-      borderRadius: 20,
-      padding: 20,
-      maxWidth: 360,
-      width: "92%",
-      alignItems: "stretch",
-      shadowColor: "#000",
-      shadowOffset: { width: 0, height: 1 },
-      shadowOpacity: 0.08,
-      shadowRadius: 6,
-      elevation: 2,
-    },
-    modalTitleMinimal: {
-      fontWeight: "600",
-      fontSize: 18,
-      marginBottom: 16,
-      color: palette.text,
-      textAlign: "left",
-    },
-    modalFormMinimal: {
-      width: "100%",
-      gap: 10,
-      marginBottom: 18,
-    },
-    inputMinimal: {
-      width: "100%",
-      borderRadius: 10,
-      padding: 12,
-      fontSize: 15,
-      borderWidth: 0,
-      backgroundColor: palette.background,
-      color: palette.text,
-      marginBottom: 2,
-      shadowColor: palette.muted,
-      shadowOpacity: 0.04,
-      shadowRadius: 2,
-      elevation: 1,
-    },
-    modalActionsMinimal: {
-      flexDirection: "row",
-      gap: 8,
-      justifyContent: "flex-end",
-      alignItems: "center",
-      width: "100%",
-      marginTop: 2,
-    },
-    saveButtonMinimal: {
-      borderRadius: 10,
-      paddingVertical: 10,
-      paddingHorizontal: 18,
-      backgroundColor: Colors.success,
-      minWidth: 90,
-    },
-    saveButtonTextMinimal: { color: "#fff", fontWeight: "600", fontSize: 15 },
-    deleteButtonMinimal: {
-      borderRadius: 10,
-      paddingVertical: 10,
-      paddingHorizontal: 18,
-      backgroundColor: Colors.error,
-      minWidth: 90,
-    },
-    deleteButtonTextMinimal: { color: "#fff", fontWeight: "600", fontSize: 15 },
-    cancelButtonMinimal: {
-      borderRadius: 10,
-      paddingVertical: 10,
-      paddingHorizontal: 18,
-      backgroundColor: palette.card,
-      borderWidth: 1,
-      borderColor: palette.muted,
-      minWidth: 90,
-    },
-    cancelButtonTextMinimal: { fontSize: 15, color: palette.text },
-  });
-  const staticStyles = StyleSheet.create({
-    container: { flex: 1, marginHorizontal: 12 },
-    topBarMinimal: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "space-between",
-      paddingTop: 18,
-      paddingBottom: 8,
-    },
-    searchInputMinimal: {
-      flex: 1,
-      borderRadius: 16,
-      padding: 10,
-      fontSize: 15,
-      backgroundColor: palette.card,
-      color: palette.text,
-      borderWidth: 0,
-      marginRight: 8,
-    },
-    addButtonMinimal: {
-      width: 40,
-      height: 40,
-      borderRadius: 20,
-      backgroundColor: palette.tint,
-      alignItems: "center",
-      justifyContent: "center",
-      shadowColor: palette.tint,
-      shadowOpacity: 0.12,
-      shadowRadius: 4,
-      elevation: 2,
-    },
-    tipoTabsMinimal: {
-      flexDirection: "row",
-      flexWrap: "wrap",
-      alignItems: "center",
-      marginLeft: 4,
-      marginBottom: 8,
-      marginTop: 4,
-    },
-    badge: {
-      position: "absolute",
-      top: -6,
-      right: -12,
-      borderRadius: 8,
-      minWidth: 16,
-      height: 16,
-      alignItems: "center",
-      justifyContent: "center",
-      paddingHorizontal: 3,
-      backgroundColor: palette.tint,
-    },
-    badgeText: { fontSize: 11, fontWeight: "bold", color: "#fff" },
-    filterRow: {
-      flexDirection: "column",
-      gap: 8,
-      paddingHorizontal: 18,
-      marginBottom: 8,
-    },
-    searchInput: {
-      borderRadius: 8,
-      padding: 10,
-      fontSize: 15,
-      marginBottom: 8,
-      borderWidth: 1,
-      backgroundColor: palette.card,
-      color: palette.text,
-      borderColor: palette.muted,
-    },
-    tipoTabs: { flexDirection: "row", gap: 6, flexWrap: "wrap" },
-    modalOverlay: {
-      position: "absolute",
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      backgroundColor: theme === "dark" ? "rgba(0,0,0,0.7)" : "rgba(0,0,0,0.3)",
-      justifyContent: "center",
-      alignItems: "center",
-      zIndex: 10,
-    },
-    modalCard: {
-      backgroundColor: palette.card,
-      borderRadius: 16,
-      padding: 24,
-      maxWidth: 400,
-      width: "90%",
-      alignItems: "center",
-      shadowColor: "#000",
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.15,
-      shadowRadius: 8,
-      elevation: 6,
-    },
-    modalTitle: {
-      fontWeight: "bold",
-      fontSize: 20,
-      marginBottom: 18,
-      color: palette.text,
-      textAlign: "center",
-    },
-    modalForm: { width: "100%", gap: 12, marginBottom: 18 },
-    input: {
-      width: "100%",
-      borderRadius: 10,
-      padding: 12,
-      fontSize: 16,
-      borderWidth: 1,
-      backgroundColor: palette.background,
-      color: palette.text,
-      borderColor: palette.muted,
-    },
-    modalActions: { flexDirection: "column", gap: 10, width: "100%" },
-    saveButton: {
-      borderRadius: 12,
-      paddingVertical: 14,
-      backgroundColor: Colors.success,
-      marginBottom: 4,
-    },
-    saveButtonText: { color: "#fff", fontWeight: "bold", fontSize: 16 },
-    deleteButton: {
-      borderRadius: 12,
-      paddingVertical: 14,
-      backgroundColor: Colors.error,
-      marginBottom: 4,
-    },
-    deleteButtonText: { color: "#fff", fontWeight: "bold", fontSize: 16 },
-    cancelButton: {
-      borderRadius: 12,
-      paddingVertical: 14,
-      backgroundColor: palette.muted,
-    },
-    cancelButtonText: { fontSize: 16, color: palette.text },
-  });
-  // Dynamic helpers
-  const icon = { color: palette.tint };
-  const searchInputPlaceholder = { color: palette.muted };
-  const inputPlaceholder = { color: palette.muted };
-  const getTipoTab = (value: string) => ({
-    paddingVertical: 6,
-    paddingHorizontal: 14,
-    borderRadius: 16,
-    borderWidth: 1,
-    marginVertical: 6,
-    backgroundColor:
-      selectedTipo === value ? palette.tint + "22" : palette.card,
-    borderColor: selectedTipo === value ? palette.tint : palette.muted,
-  });
-  const getTipoTabText = (value: string) =>
-    ({
-      fontSize: 14,
-      color: selectedTipo === value ? palette.tint : palette.text,
-      fontWeight: selectedTipo === value ? "bold" : "normal",
-    }) as const;
-  return {
-    ...staticStyles,
-    ...staticStylesMinimal,
-    icon,
-    searchInputPlaceholder,
-    inputPlaceholder,
-    getTipoTab,
-    getTipoTabText,
-  };
-};
+// NativeWind migration: StyleSheet and createStyles removed

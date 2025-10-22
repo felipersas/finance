@@ -23,7 +23,6 @@ model ExtratoRecord {
   conta                 String?                @db.VarChar(50)
   tipo                  ExtratoType?
   createdAt             DateTime               @default(now()) @map("created_at")
-  embedding             Unsupported("vector")?
   user                  User?                  @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([data], map: "idx_data")
@@ -34,14 +33,32 @@ model ExtratoRecord {
   @@map("extrato_records")
 }
 
+model Notification {
+  id          String            @id @default(uuid())
+  title       String
+  description String?
+  type        NotificationType
+  date        DateTime
+  time        String?
+  read        Boolean           @default(false)
+  isReminder  Boolean           @default(false)
+  userId      String?
+  user        User?             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  @@map("notifications")
+}
+
 model User {
-  id        String          @id @default(uuid())
-  name      String
-  email     String          @unique
-  password  String
-  createdAt DateTime        @default(now())
-  updatedAt DateTime        @updatedAt
-  records   ExtratoRecord[]
+  id            String          @id @default(uuid())
+  name          String
+  email         String          @unique
+  password      String
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  records       ExtratoRecord[]
+  notifications Notification[]
 
   @@map("user")
 }
@@ -49,4 +66,12 @@ model User {
 enum ExtratoType {
   Empresa
   Pessoal
+}
+
+enum NotificationType {
+  financeiro
+  estoque
+  fiscal
+  contrato
+  lembrete
 }

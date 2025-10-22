@@ -124,7 +124,7 @@ export const ChatPopup: React.FC<ChatPopupProps> = ({ visible, onClose }) => {
       onRequestClose={handleClose}
     >
       <KeyboardAvoidingView
-        className="flex-1 bg-light-background dark:bg-dark-background"
+        className="flex-1 bg-background"
         style={{
           paddingBottom: insets.bottom,
           paddingTop: insets.top,
@@ -133,9 +133,9 @@ export const ChatPopup: React.FC<ChatPopupProps> = ({ visible, onClose }) => {
         keyboardVerticalOffset={Platform.OS === "ios" ? 0 : -40}
       >
         <ThemedView
-          className={`flex-row items-center justify-between px-4 py-4 border-b border-light-tabIconDefault dark:border-[#38383A] ${Platform.OS === "ios" ? "pt-[60px]" : "pt-4"}`}
+          className={`flex-row items-center justify-between px-4 py-4 border-b border-light-tabIconDefault border-[#38383A] ${Platform.OS === "ios" ? "pt-[60px]" : "pt-4"}`}
         >
-          <ThemedText type="defaultSemiBold" className="text-lg">
+          <ThemedText type="defaultSemiBold" className="text-lg text-text">
             {strings.chat.aiAssistant}
           </ThemedText>
           <TouchableOpacity
@@ -172,11 +172,11 @@ export const ChatPopup: React.FC<ChatPopupProps> = ({ visible, onClose }) => {
         )}
 
         <View
-          className={`px-4 py-4 border-t border-light-tabIconDefault dark:border-[#38383A] ${Platform.OS === "ios" ? "pb-[34px]" : "pb-[50px]"}`}
+          className={`px-4 py-4 border-t border-light-tabIconDefault border-[#38383A] ${Platform.OS === "ios" ? "pb-[34px]" : "pb-[50px]"}`}
         >
-          <View className="flex-row items-end bg-[#F2F2F7] dark:bg-[#1C1C1E] rounded-[20px] px-4 py-2 min-h-[40px]">
+          <View className="flex-row items-end  bg-[#1C1C1E] rounded-[20px] px-4 py-2 min-h-[40px]">
             <TextInput
-              className="flex-1 text-base leading-5 max-h-[100px] py-2 text-light-text dark:text-dark-text"
+              className="flex-1 text-base leading-5 max-h-[100px] py-2 text-text"
               style={{ color: textColor }}
               value={inputText}
               onChangeText={setInputText}

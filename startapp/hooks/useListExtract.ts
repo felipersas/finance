@@ -2,6 +2,7 @@ import { api } from "@/services/api"
 import { ApiResponse } from "@/types/api-response"
 import { PaginatedParams } from "@/types/paginated-params"
 import { PaginatedResponse } from "@/types/paginated-response"
+import { requestHandler } from "@/utils/functions/request-handler"
 
 import { useQuery } from "@tanstack/react-query"
 
@@ -34,9 +35,7 @@ export const useListExtract = (params: PaginatedParams) => {
 }
 
 async function getListExtract(params: PaginatedParams): Promise<ApiResponse<PaginatedResponse<ListExtractItem>>> {
-  const res = await api.get<ApiResponse<PaginatedResponse<ListExtractItem>>>("/extracts", {
-    params
-  })
-
-  return res.data
+  return requestHandler(
+    api.get<ApiResponse<PaginatedResponse<ListExtractItem>>>("/extracts", { params })
+  );
 }

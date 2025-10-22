@@ -117,7 +117,7 @@ const Input = forwardRef<TextInput, InputProps>(
     };
 
     const colorBorderClasses = {
-      default: "border-light-tabIconDefault dark:border-dark-tabIconDefault",
+      default: "border-tabIconDefault border-tabIconDefault",
       primary: "border-blue-500",
       secondary: "border-purple-500",
       success: "border-green-500",
@@ -127,9 +127,9 @@ const Input = forwardRef<TextInput, InputProps>(
 
     // Variant classes
     const variantClasses = {
-      flat: `bg-light-muted dark:bg-dark-muted border-0`,
+      flat: ` bg-background border-0`,
       bordered: `bg-transparent border ${isInvalid ? "border-red-500" : isFocused ? colorFocusClasses[color] : colorBorderClasses[color]}`,
-      faded: `bg-light-background dark:bg-dark-background border ${isInvalid ? "border-red-500" : isFocused ? colorFocusClasses[color] : "border-transparent"}`,
+      faded: ` bg-background border ${isInvalid ? "border-red-500" : isFocused ? colorFocusClasses[color] : "border-transparent"}`,
       underlined: `bg-transparent border-0 border-b-2 rounded-none ${isInvalid ? "border-red-500" : isFocused ? colorFocusClasses[color] : colorBorderClasses[color]}`,
     };
 
@@ -137,13 +137,13 @@ const Input = forwardRef<TextInput, InputProps>(
     const baseClasses = `mb-1 ${fullWidth ? "w-full" : ""} ${className}`;
 
     // Label classes
-    const baseLabelClasses = `font-medium mb-1.5 text-light-text dark:text-dark-text ${labelSizeClasses[size]} ${isInvalid ? "text-red-500" : ""} ${labelClassName}`;
+    const baseLabelClasses = `font-medium mb-1.5 text-text ${labelSizeClasses[size]} ${isInvalid ? "text-red-500" : ""} ${labelClassName}`;
 
     // Wrapper classes
     const baseWrapperClasses = `flex-row items-center ${sizeClasses[size]} ${variantClasses[variant]} ${variant !== "underlined" ? radiusClasses[radius] : ""} ${isDisabled ? "opacity-50" : ""} ${wrapperClassName}`;
 
     // Input classes
-    const baseInputClasses = `flex-1 h-full py-0 text-light-text dark:text-dark-text ${inputClassName} ${startContent ? "pl-2" : ""} ${endContent ? "pr-2" : ""}`;
+    const baseInputClasses = `flex-1 h-full py-0 text-text ${inputClassName} ${startContent ? "pl-2" : ""} ${endContent ? "pr-2" : ""}`;
 
     const handleChangeText = (text: string) => {
       onChangeText?.(text);
@@ -158,7 +158,6 @@ const Input = forwardRef<TextInput, InputProps>(
             {isRequired && <Text className="text-red-500"> *</Text>}
           </Text>
         )}
-
         <View className={baseWrapperClasses} style={classNames?.inputWrapper}>
           {startContent && (
             <View className="pl-3 justify-center">{startContent}</View>
@@ -188,16 +187,15 @@ const Input = forwardRef<TextInput, InputProps>(
             <View className="pr-3 justify-center">{endContent}</View>
           )}
         </View>
-
+        i
         {description && !errorMessage && (
           <Text
-            className="text-xs mt-1 text-light-tabIconDefault dark:text-dark-tabIconDefault opacity-70"
+            className="text-xs mt-1 text-light-tabIconDefault text-tabIconDefault opacity-70"
             style={classNames?.description}
           >
             {description}
           </Text>
         )}
-
         {errorMessage && (
           <Text
             className="text-xs text-red-500 mt-1"

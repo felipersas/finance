@@ -1,7 +1,7 @@
-import { Notification } from '@/types/notification';
-import React from 'react';
-import { FlatList, StyleSheet, Text, View } from 'react-native';
-import { NotificationItem } from './NotificationItem';
+import { Notification } from "@/types/notification";
+import React from "react";
+import { FlatList, Text, View } from "react-native";
+import { NotificationItem } from "./NotificationItem";
 
 interface Props {
   data: Notification[];
@@ -9,18 +9,24 @@ interface Props {
   onLongPressItem?: (item: Notification) => void;
 }
 
-export const NotificationList: React.FC<Props> = ({ data, onPressItem, onLongPressItem }) => {
+export const NotificationList: React.FC<Props> = ({
+  data,
+  onPressItem,
+  onLongPressItem,
+}) => {
   if (!data.length) {
     return (
-      <View style={styles.emptyBox}>
-        <Text style={styles.emptyText}>Nenhum alerta ou lembrete encontrado.</Text>
+      <View className="flex-1 items-center justify-center py-12 px-4 bg-background rounded-xl">
+        <Text className="text-textSecondary text-center font-medium">
+          Nenhum alerta ou lembrete encontrado.
+        </Text>
       </View>
     );
   }
   return (
     <FlatList
       data={data}
-      keyExtractor={item => item.id}
+      keyExtractor={(item) => item.id}
       renderItem={({ item }) => (
         <NotificationItem
           notification={item}
@@ -28,21 +34,7 @@ export const NotificationList: React.FC<Props> = ({ data, onPressItem, onLongPre
           onLongPress={() => onLongPressItem?.(item)}
         />
       )}
-      contentContainerStyle={{ paddingBottom: 24 }}
+      contentContainerStyle={{ paddingBottom: 32 }}
     />
   );
 };
-
-const styles = StyleSheet.create({
-  emptyBox: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 32,
-  },
-  emptyText: {
-    fontSize: 16,
-    textAlign: 'center',
-    color: '#888',
-    opacity: 0.7,
-  },
-});

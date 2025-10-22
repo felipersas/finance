@@ -17,14 +17,12 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
     <View className={`my-1 px-4 ${isUser ? "items-end" : "items-start"}`}>
       <View
         className={`max-w-[80%] rounded-[18px] px-4 py-2.5 ${
-          isUser
-            ? "bg-[#007AFF] dark:bg-tint rounded-br-[4px]"
-            : "bg-[#F2F2F7] dark:bg-[#2C2C2E] rounded-bl-[4px]"
+          isUser ? "bg-tint rounded-br-[4px]" : "bg-[#2C2C2E] rounded-bl-[4px]"
         }`}
       >
         <ThemedText
           className={`text-base leading-5 ${
-            isUser ? "text-white" : "text-light-text dark:text-dark-text"
+            isUser ? "text-white" : "text-text"
           }`}
         >
           {message}
@@ -32,7 +30,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
         {timestamp && (
           <ThemedText
             className={`text-xs mt-1 opacity-70 ${
-              isUser ? "text-white" : "text-light-text dark:text-dark-text"
+              isUser ? "text-white" : "text-text"
             }`}
           >
             {timestamp.toLocaleTimeString([], {

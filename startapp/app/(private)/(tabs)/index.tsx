@@ -56,9 +56,9 @@ export default function Home() {
         contentContainerStyle={{ gap: 24 }}
       >
         {/* Card de saldo total com empresa e pessoal lado a lado */}
-        <View className="bg-light-card dark:bg-dark-card rounded-2xl p-5 mb-3 shadow-sm min-w-[280px]">
+        <View className="bg-light-card bg-card rounded-2xl p-5 mb-3 shadow-sm min-w-[280px]">
           <View className="flex-row items-center mb-2">
-            <Text className="flex-1 text-base text-light-text dark:text-dark-text opacity-70">
+            <Text className="flex-1 text-base text-light-text text-text opacity-70">
               Saldo total
             </Text>
             {/* Ícone de carteira */}
@@ -78,7 +78,7 @@ export default function Home() {
           <View className="flex-row items-center justify-between">
             {/* Empresa */}
             <View className="flex-1 items-center">
-              <Text className="text-sm text-light-text dark:text-dark-text opacity-70 mb-0.5">
+              <Text className="text-sm text-light-text text-text opacity-70 mb-0.5">
                 Empresa
               </Text>
               <Text className="text-base font-bold text-tint">
@@ -88,10 +88,10 @@ export default function Home() {
               </Text>
             </View>
             {/* Linha vertical separadora */}
-            <View className="w-px h-8 bg-light-muted dark:bg-dark-muted mx-3 opacity-40" />
+            <View className="w-px h-8 bg-light-muted bg-muted mx-3 opacity-40" />
             {/* Pessoal */}
             <View className="flex-1 items-center">
-              <Text className="text-sm text-light-text dark:text-dark-text opacity-70 mb-0.5">
+              <Text className="text-sm text-light-text text-text opacity-70 mb-0.5">
                 Pessoal
               </Text>
               <Text className="text-base font-bold text-tint">
@@ -103,8 +103,8 @@ export default function Home() {
           </View>
         </View>
 
-        <View className="bg-light-card dark:bg-dark-card rounded-2xl p-5 pl-0 pr-0 mb-3 shadow-sm items-center">
-          <Text className="text-lg font-semibold mb-2 text-light-text dark:text-dark-text">
+        <View className="bg-light-card bg-card rounded-2xl p-5 pl-0 pr-0 mb-3 shadow-sm items-center">
+          <Text className="text-lg font-semibold mb-2 text-light-text text-text">
             Gastos últimos 7 dias
           </Text>
           <View className="flex-row justify-center mb-3">
@@ -112,7 +112,7 @@ export default function Home() {
               className={`mx-2 ${
                 chartType === "total"
                   ? "text-tint font-bold underline"
-                  : "text-light-text dark:text-dark-text"
+                  : "text-light-text text-text"
               }`}
               onPress={() => setChartType("total")}
             >
@@ -122,7 +122,7 @@ export default function Home() {
               className={`mx-2 ${
                 chartType === "empresa"
                   ? "text-tint font-bold underline"
-                  : "text-light-text dark:text-dark-text"
+                  : "text-light-text text-text"
               }`}
               onPress={() => setChartType("empresa")}
             >
@@ -132,7 +132,7 @@ export default function Home() {
               className={`mx-2 ${
                 chartType === "pessoal"
                   ? "text-tint font-bold underline"
-                  : "text-light-text dark:text-dark-text"
+                  : "text-light-text text-text"
               }`}
               onPress={() => setChartType("pessoal")}
             >
@@ -194,8 +194,8 @@ export default function Home() {
               pointerLabelComponent: (items: any[]) => {
                 const item = items[0];
                 return (
-                  <View className="absolute top-2.5 left-0 right-0 self-center h-[60px] w-[110px] bg-light-card dark:bg-dark-card rounded-lg shadow-md border border-light-muted dark:border-dark-muted z-10 -ml-10 -mt-7.5">
-                    <Text className="text-light-text dark:text-dark-text text-xs opacity-70 text-center">
+                  <View className="absolute top-2.5 left-0 right-0 self-center h-[60px] w-[110px] bg-light-card bg-card rounded-lg shadow-md border border-light-muted border-muted z-10 -ml-10 -mt-7.5">
+                    <Text className="text-light-texttext-text text-xs opacity-70 text-center">
                       {item?.label}
                     </Text>
                     <Text className="text-tint font-bold text-base text-center">

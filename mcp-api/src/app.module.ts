@@ -9,6 +9,7 @@ import { ConfigModule } from '@nestjs/config';
 import { UserModule } from './modules/user/user.module';
 import { ExtractsModule } from './modules/extracts/extracts.module';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
+import { NotificationModule } from './modules/notification/notification.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { AnalyticsModule } from './modules/analytics/analytics.module';
     UserModule,
     ExtractsModule,
     AnalyticsModule,
+    NotificationModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],
