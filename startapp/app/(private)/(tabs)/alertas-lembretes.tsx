@@ -14,6 +14,7 @@ import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";
 import { TextInput, TouchableOpacity, View, Text } from "react-native";
 import { ReminderFormData } from "@/validators/notifications/remider-schema";
+import { Input } from "@/components";
 
 const tipos = [
   { label: "Todos", value: "all" },
@@ -80,12 +81,11 @@ export default function AlertasLembretesScreen() {
     <View className="flex-1 px-4 bg-background">
       {/* Top Bar */}
       <View className="flex-row items-center justify-between pt-5 pb-3">
-        <TextInput
-          className="flex-1 rounded-xl px-4 py-3 text-text bg-card mr-3"
+        <Input
+          className="flex-1 rounded-xl mr-3"
           placeholder="Pesquisar..."
           value={search}
           onChangeText={setSearch}
-          placeholderTextColor={Colors[theme].muted}
         />
         <TouchableOpacity
           className="w-11 h-11 rounded-full bg-tint items-center justify-center shadow-lg"
