@@ -12,9 +12,9 @@ import { useTheme } from "@/hooks/useTheme";
 import { NotificationType } from "@/types/notification";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";
-import { TextInput, TouchableOpacity, View, Text } from "react-native";
+import { TouchableOpacity, View, Text } from "react-native";
 import { ReminderFormData } from "@/validators/notifications/remider-schema";
-import { Input } from "@/components";
+import { Input } from "@/components/ui/input";
 
 const tipos = [
   { label: "Todos", value: "all" },
@@ -88,7 +88,7 @@ export default function AlertasLembretesScreen() {
           onChangeText={setSearch}
         />
         <TouchableOpacity
-          className="w-11 h-11 rounded-full bg-tint items-center justify-center shadow-lg"
+          className="w-11 h-11 rounded-full bg-primary items-center justify-center shadow-lg"
           onPress={handleOpenForm}
           activeOpacity={0.85}
         >
@@ -101,9 +101,9 @@ export default function AlertasLembretesScreen() {
           <TouchableOpacity
             key={t.value}
             className={[
-              "py-2 px-5 rounded-full border mr-2 mb-2",
+              "py-2 px-3 rounded-full border mr-2 mb-2",
               tipo === t.value
-                ? "bg-tint/20 border-tint"
+                ? "bg-tint/20 border-primary"
                 : "bg-card border-text/20 ",
             ].join(" ")}
             onPress={() => setTipo(t.value)}
@@ -112,7 +112,9 @@ export default function AlertasLembretesScreen() {
             <Text
               className={[
                 "text-base",
-                tipo === t.value ? "text-tint font-bold" : "text-text",
+                tipo === t.value
+                  ? "text-primary font-bold"
+                  : "text-textSecondary",
               ].join(" ")}
             >
               {t.label}

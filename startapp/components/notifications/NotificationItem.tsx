@@ -36,7 +36,7 @@ export const NotificationItem: React.FC<Props> = ({
     <TouchableOpacity
       className={[
         "flex-row items-center px-4 py-3 rounded-xl mb-3 shadow-sm",
-        notification.read ? "bg-card" : "bg-card border border-tint",
+        notification.read ? "bg-card" : "bg-card border border-primary",
         isReminder ? "border-l-4" : "",
       ].join(" ")}
       style={isReminder ? { borderLeftColor: Colors[theme].tint } : undefined}
@@ -67,7 +67,7 @@ export const NotificationItem: React.FC<Props> = ({
         </Text>
       </View>
       {!notification.read && (
-        <View className="w-3 h-3 rounded-full bg-tint ml-2" />
+        <View className="w-3 h-3 rounded-3xl bg-primary ml-2" />
       )}
     </TouchableOpacity>
   );

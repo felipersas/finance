@@ -1,14 +1,16 @@
-import { KeyboardAvoidingView, Platform } from "react-native";
+import { KeyboardAvoidingView, Platform, View, ScrollView } from "react-native";
+import { Text } from "@/components/ui/text";
 
-import { AppButton, ThemedText, ThemedView } from "@/components/common";
+import { ThemedText } from "@/components/common";
 import { SignInData, SignInSchema } from "@/validators/auth/sign-in";
-import { Input } from "@/components/ui";
+import { Input } from "@/components/ui/input";
 import { strings } from "@/constants/Strings";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, FormProvider, useForm } from "react-hook-form";
 import { useSession } from "@/providers/SessionProvider";
 import { useRouter } from "expo-router";
 import { AuthGuard } from "@/components/auth";
+import { Button } from "@/components/ui/button";
 
 export default function SignInScreen() {
   const { signIn } = useSession();
@@ -35,79 +37,99 @@ export default function SignInScreen() {
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
       >
-        <ThemedView className="flex-1">
-          <ThemedView className="flex-1 justify-center px-8 max-w-[400px] self-center w-full">
-            <ThemedView className="items-center mb-8">
-              <ThemedText type="title" className="text-[28px] font-bold mb-2">
-                {strings.auth.welcomeBack}
-              </ThemedText>
-              <ThemedText className="text-base">
-                {strings.auth.signInToContinue}
-              </ThemedText>
-            </ThemedView>
+        <ScrollView
+          contentContainerStyle={{ flexGrow: 1 }}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          <View className="flex-1">
+            <View className="flex-1 justify-center px-8 max-w-[400px] self-center w-full">
+              <View className="items-center mb-8">
+                <Text className="text-[28px] font-bold mb-2 text-text">
+                  {strings.auth.welcomeBack}
+                </Text>
+                <Text className="text-textSecondary">
+                  {strings.auth.signInToContinue}
+                </Text>
+              </View>
 
-            <ThemedView className="gap-3">
-              <FormProvider {...methods}>
-                <Controller
-                  control={control}
-                  name="email"
-                  render={({
-                    field: { onChange, onBlur, value },
-                    fieldState: { error },
-                  }) => (
-                    <Input
-                      label={strings.auth.email}
-                      placeholder={strings.auth.enterYourEmail}
-                      value={value}
-                      onValueChange={onChange}
-                      onBlur={onBlur}
-                      keyboardType="email-address"
-                      autoCapitalize="none"
-                      isRequired={true}
-                      isInvalid={!!error}
-                      errorMessage={error?.message}
-                    />
-                  )}
-                />
-                <Controller
-                  control={control}
-                  name="password"
-                  render={({
-                    field: { onChange, onBlur, value },
-                    fieldState: { error },
-                  }) => (
-                    <Input
-                      label={strings.auth.password}
-                      placeholder={strings.auth.enterYourPassword}
-                      secureTextEntry
-                      value={value}
-                      onValueChange={onChange}
-                      onBlur={onBlur}
-                      isRequired={true}
-                      isInvalid={!!error}
-                      errorMessage={error?.message}
-                    />
-                  )}
-                />
-                <AppButton
-                  title={strings.auth.signIn}
-                  onPress={handleSubmit(onSubmit)}
-                  className="mt-4 py-4 rounded-xl bg-tint"
-                  textClassName="text-onyx"
-                />
-                <ThemedText className="text-center mt-4">
-                  Não tem uma conta?{" "}
-                  <ThemedText
-                    onPress={() => router.push("/sign-up")}
-                    className="font-semibold text-tint"
+              <View className="gap-3">
+                <FormProvider {...methods}>
+                  <Controller
+                    control={control}
+                    name="email"
+                    render={({
+                      field: { onChange, onBlur, value },
+                      fieldState: { error },
+                    }) => (
+                      <>
+                        <Text className="mb-1 text-base text-text font-medium">
+                          {strings.auth.email}
+                        </Text>
+                        <Input
+                          placeholder={strings.auth.enterYourEmail}
+                          value={value}
+                          onChangeText={onChange}
+                          onBlur={onBlur}
+                          keyboardType="email-address"
+                          autoCapitalize="none"
+                          aria-invalid={!!error}
+                        />
+                        {error?.message && (
+                          <Text className="text-xs text-red-500 mt-1">
+                            {error.message}
+                          </Text>
+                        )}
+                      </>
+                    )}
+                  />
+                  <Controller
+                    control={control}
+                    name="password"
+                    render={({
+                      field: { onChange, onBlur, value },
+                      fieldState: { error },
+                    }) => (
+                      <>
+                        <Text className="mb-1 text-base text-text font-medium">
+                          {strings.auth.password}
+                        </Text>
+                        <Input
+                          placeholder={strings.auth.enterYourPassword}
+                          secureTextEntry
+                          value={value}
+                          onChangeText={onChange}
+                          onBlur={onBlur}
+                          aria-invalid={!!error}
+                        />
+                        {error?.message && (
+                          <ThemedText className="text-xs text-red-500 mt-1">
+                            {error.message}
+                          </ThemedText>
+                        )}
+                      </>
+                    )}
+                  />
+                  <Button
+                    onPress={handleSubmit(onSubmit)}
+                    className=" rounded-xl bg-primary"
                   >
-                    Criar Conta
-                  </ThemedText>
-                </ThemedText>
-              </FormProvider>
-            </ThemedView>
-          </ThemedView>
-        </ThemedView>
+                    <Text>Entrar</Text>
+                  </Button>
+                  <Text className="text-center text-text mt-4">
+                    Não tem uma conta?{" "}
+                    <Text
+                      onPress={() => router.push("/sign-up")}
+                      className="font-semibold text-primary"
+                    >
+                      Criar Conta
+                    </Text>
+                  </Text>
+                </FormProvider>
+              </View>
+            </View>
+          </View>
+        </ScrollView>
       </KeyboardAvoidingView>
     </AuthGuard>
   );

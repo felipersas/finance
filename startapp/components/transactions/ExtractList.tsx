@@ -19,6 +19,7 @@ import Swipeable from "react-native-gesture-handler/Swipeable";
 import { SwipeAction } from "./SwipeAction";
 import { ThemedView } from "../common/ThemedView";
 import { UploadCsvButton } from "./UploadCsvButton";
+import { Skeleton } from "../ui/skeleton";
 
 type OrderDirection = "asc" | "desc";
 
@@ -149,14 +150,14 @@ export const ExtractList = () => {
   const SKELETON_COUNT = 4;
   const renderSkeleton = () =>
     Array.from({ length: SKELETON_COUNT }).map((_, idx) => (
-      <View style={[styles.modernItemContainer, styles.skeletonItem]} key={idx}>
+      <View style={styles.modernItemContainer} key={idx}>
         <View style={styles.modernItemLeft}>
-          <View style={styles.skeletonTitle} />
-          <View style={styles.skeletonSubtitle} />
+          <Skeleton className="mb-2" style={{ width: "60%", height: 18 }} />
+          <Skeleton style={{ width: "40%", height: 12 }} />
         </View>
         <View style={styles.modernItemRight}>
-          <View style={styles.skeletonValue} />
-          <View style={styles.skeletonIcon} />
+          <Skeleton style={{ width: 48, height: 18, marginBottom: 8 }} />
+          <Skeleton style={{ width: 22, height: 22 }} />
         </View>
       </View>
     ));

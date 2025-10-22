@@ -1,13 +1,24 @@
-import { Controller, Get, Query, Patch, Param, Body } from '@nestjs/common';
-import { ExtractsService } from '../../domain/services/extracts.service';
+import {
+  Controller,
+  Get,
+  Query,
+  Patch,
+  Param,
+  Body,
+  Inject,
+} from '@nestjs/common';
 import { PaginatedParamsDto } from 'src/common/dtos/paginated-params.dto';
 import type { JwtUser } from 'src/modules/auth/strategies/jwt.strategy';
 import { CurrentUser } from 'src/modules/auth/decorators/current-user.decorator';
 import { UpdateTipoDto } from '../../dtos/update-tipo';
+import type { ExtractsServicePort } from '../../domain/ports/extracts-service.port';
 
 @Controller('extracts')
 export class ExtractsController {
-  constructor(private readonly extractsService: ExtractsService) {}
+  constructor(
+    @Inject('ExtractsServicePort')
+    private readonly extractsService: ExtractsServicePort,
+  ) {}
 
   @Get()
   async findAll(

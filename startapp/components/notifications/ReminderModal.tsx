@@ -1,9 +1,4 @@
-import { AppButton } from "@/components/common/AppButton";
-import { ThemedText } from "@/components/common/ThemedText";
-import { ThemedView } from "@/components/common/ThemedView";
 import { DatePicker } from "@/components/ui/DatePicker";
-import Input from "@/components/ui/Input";
-import { Colors } from "@/constants/Colors";
 import { strings } from "@/constants/Strings";
 import {
   ReminderFormData,
@@ -14,6 +9,18 @@ import React from "react";
 import { Controller, FormProvider, useForm } from "react-hook-form";
 import { ActivityIndicator, View } from "react-native";
 import { z } from "zod";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogClose,
+} from "@/components/ui/dialog";
+import { Text } from "@/components/ui/text";
+import { Input } from "@/components/ui/input";
+import { Button } from "../ui/button";
 
 interface ReminderModalProps {
   visible: boolean;
@@ -29,14 +36,11 @@ interface ReminderModalProps {
 
 export const ReminderModal: React.FC<ReminderModalProps> = ({
   visible,
-  editReminder,
   onSave,
-  onDelete,
   onCancel,
   theme,
   initialValues,
   isSaving = false,
-  isDeleting = false,
 }) => {
   const defaultValues = React.useMemo(
     () =>
@@ -60,19 +64,23 @@ export const ReminderModal: React.FC<ReminderModalProps> = ({
     reset(defaultValues);
   }, [visible, initialValues, defaultValues, reset]);
 
-  if (!visible) return null;
-  const isEdit = !!editReminder;
   return (
-    <View className="absolute top-0 left-0 right-0 bottom-0 justify-center items-center z-10  bg-black/70">
-      <View className="bg-card rounded-2xl px-6 py-7 max-w-[380px] w-[95%] items-stretch shadow-lg">
-        <ThemedText
-          type="subtitle"
-          className="font-semibold text-xl mb-5 text-text text-left"
-        >
-          {isEdit ? strings.common.edit + " lembrete" : "Criar lembrete"}
-        </ThemedText>
-        <FormProvider {...methods}>
-          <View className="w-full mb-6">
+    <Dialog open={visible} onOpenChange={(open) => !open && onCancel()}>
+      <DialogContent className="w-full px-6 py-7 rounded-2xl min-h-[550px] max-h-[80vh]">
+        <DialogHeader>
+          <DialogTitle>
+            <Text className="font-semibold text-xl text-text text-left">
+              Criar lembrete
+            </Text>
+          </DialogTitle>
+          <DialogDescription>
+            <Text className="text-textSecondary">
+              Preencha os campos para criar um novo lembrete.
+            </Text>
+          </DialogDescription>
+        </DialogHeader>
+        <View className="flex flex-col gap-4">
+          <FormProvider {...methods}>
             <Controller
               control={control}
               name="title"
@@ -80,18 +88,21 @@ export const ReminderModal: React.FC<ReminderModalProps> = ({
                 field: { onChange, onBlur, value },
                 fieldState: { error },
               }) => (
-                <Input
-                  label="Título"
-                  placeholder="Título"
-                  size="lg"
-                  value={value}
-                  onValueChange={onChange}
-                  onBlur={onBlur}
-                  isRequired={true}
-                  isInvalid={!!error}
-                  className="mb-3"
-                  errorMessage={error?.message}
-                />
+                <>
+                  <Input
+                    placeholder="Título"
+                    value={value}
+                    onChangeText={onChange}
+                    onBlur={onBlur}
+                    aria-invalid={!!error}
+                    className="w-full"
+                  />
+                  {error?.message && (
+                    <Text className="text-xs text-red-500 mt-1">
+                      {error.message}
+                    </Text>
+                  )}
+                </>
               )}
             />
             <Controller
@@ -101,16 +112,21 @@ export const ReminderModal: React.FC<ReminderModalProps> = ({
                 field: { onChange, onBlur, value },
                 fieldState: { error },
               }) => (
-                <Input
-                  label="Descrição"
-                  size="lg"
-                  placeholder="Descrição"
-                  value={value}
-                  onValueChange={onChange}
-                  onBlur={onBlur}
-                  isInvalid={!!error}
-                  errorMessage={error?.message}
-                />
+                <>
+                  <Input
+                    placeholder="Descrição"
+                    value={value}
+                    onChangeText={onChange}
+                    onBlur={onBlur}
+                    aria-invalid={!!error}
+                    className="w-full"
+                  />
+                  {error?.message && (
+                    <Text className="text-xs text-red-500 mt-1">
+                      {error.message}
+                    </Text>
+                  )}
+                </>
               )}
             />
             <Controller
@@ -138,82 +154,58 @@ export const ReminderModal: React.FC<ReminderModalProps> = ({
                 field: { onChange, onBlur, value },
                 fieldState: { error },
               }) => (
-                <Input
-                  label="Horário"
-                  size="lg"
-                  placeholder="HH:mm"
-                  value={value}
-                  onValueChange={onChange}
-                  onBlur={onBlur}
-                  isInvalid={!!error}
-                  errorMessage={error?.message}
-                  keyboardType="numbers-and-punctuation"
-                />
+                <>
+                  <Input
+                    placeholder="HH:mm"
+                    value={value}
+                    onChangeText={onChange}
+                    onBlur={onBlur}
+                    aria-invalid={!!error}
+                    keyboardType="numbers-and-punctuation"
+                    className="w-full"
+                  />
+                  {error?.message && (
+                    <Text className="text-xs text-red-500 mt-1">
+                      {error.message}
+                    </Text>
+                  )}
+                </>
               )}
             />
-          </View>
-          <View
-            className={
-              isEdit
-                ? "flex-row space-x-3 justify-end items-center w-full mt-1"
-                : "flex-col space-y-3 w-full mt-1 items-stretch"
-            }
-          >
-            <View className="relative">
-              <AppButton
-                title={isSaving ? "" : isEdit ? strings.common.save : "Criar"}
-                onPress={handleSubmit(onSave)}
-                disabled={isSaving}
-                className={
-                  isEdit
-                    ? "rounded-xl py-3 px-6 bg-success min-w-[100px] flex-row justify-center items-center"
-                    : "rounded-xl py-4 bg-success mb-1 flex-row justify-center items-center"
-                }
-                textClassName={
-                  isEdit
-                    ? "text-white font-semibold text-base"
-                    : "text-white font-bold text-lg"
-                }
-              />
-              {isSaving && (
-                <View className="absolute left-0 right-0 top-0 bottom-0 flex-row justify-center items-center">
-                  <ActivityIndicator size="small" color="#fff" />
-                </View>
-              )}
-            </View>
-            {isEdit && (
-              <View className="relative">
-                <AppButton
-                  title={isDeleting ? "" : strings.common.delete}
-                  onPress={onDelete}
-                  disabled={isDeleting}
-                  className="rounded-xl py-3 px-6 bg-error min-w-[100px] flex-row justify-center items-center"
-                  textClassName="text-white font-semibold text-base"
-                />
-                {isDeleting && (
-                  <View className="absolute left-0 right-0 top-0 bottom-0 flex-row justify-center items-center">
-                    <ActivityIndicator size="small" color="#fff" />
-                  </View>
-                )}
+            <DialogFooter className="flex-col gap-3 mt-4">
+              <DialogClose asChild>
+                <Button onPressIn={onCancel} className="bg-muted">
+                  <Text>{strings.common.cancel}</Text>
+                </Button>
+              </DialogClose>
+              <View className="relative flex-1">
+                <Button
+                  onPress={handleSubmit(onSave)}
+                  disabled={isSaving}
+                  className="rounded-xl bg-success mb-1 flex-row justify-center items-center bg-primary"
+                >
+                  {isSaving ? (
+                    <ActivityIndicator
+                      size="small"
+                      color="#fff"
+                      style={{
+                        position: "absolute",
+                        left: 0,
+                        right: 0,
+                        top: 0,
+                        bottom: 0,
+                        alignSelf: "center",
+                      }}
+                    />
+                  ) : (
+                    <Text>{strings.common.confirm}</Text>
+                  )}
+                </Button>
               </View>
-            )}
-            <AppButton
-              title={strings.common.cancel}
-              onPress={onCancel}
-              className={
-                isEdit
-                  ? "rounded-xl py-3 px-6 bg-card border border-muted min-w-[100px]"
-                  : "rounded-xl py-4 bg-muted"
-              }
-              textClassName={
-                isEdit ? "text-base text-text" : "text-lg text-text"
-              }
-            />
-          </View>
-        </FormProvider>
-      </View>
-    </View>
+            </DialogFooter>
+          </FormProvider>
+        </View>
+      </DialogContent>
+    </Dialog>
   );
 };
-
-/* NativeWind migration: StyleSheet removed */

@@ -1,4 +1,4 @@
-import "../globals.css";
+import "../global.css";
 import {
   DarkTheme,
   DefaultTheme,
@@ -23,6 +23,7 @@ import { LogLevel, OneSignal } from "react-native-onesignal";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { Toast } from "react-native-toast-message/lib/src/Toast";
 import { SplashScreenController } from "./splash";
+import { PortalHost } from "@rn-primitives/portal";
 
 function RootNavigator() {
   const { session, isLoading } = useSession();
@@ -122,6 +123,7 @@ export default function RootLayout() {
           <ThemeProvider
             value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
           >
+            <PortalHost />;
             <SplashScreenController />
             <GestureHandlerRootView>
               <RootNavigator />

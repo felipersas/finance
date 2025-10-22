@@ -9,7 +9,7 @@ interface ChatFABProps {
 }
 
 export const ChatFAB: React.FC<ChatFABProps> = ({
-  bottom = 100,
+  bottom = 150,
   right = 20,
 }) => {
   const [isChatVisible, setIsChatVisible] = useState(false);
@@ -25,7 +25,7 @@ export const ChatFAB: React.FC<ChatFABProps> = ({
   return (
     <>
       <TouchableOpacity
-        className="absolute w-14 h-14 rounded-full bg-tint shadow-lg z-[1000]"
+        className="absolute w-14 h-14 rounded-full bg-primary shadow-lg z-[1000]"
         style={{ bottom, right }}
         onPress={openChat}
         activeOpacity={0.8}

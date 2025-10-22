@@ -3,6 +3,8 @@ import type { ExtractsRepositoryPort } from '../../domain/ports/extracts-reposit
 import { PrismaService } from 'src/prisma.service';
 import type { ExtratoType, ExtratoRecord } from '@prisma/client';
 import paginatedResponse from 'src/common/utils/paginated-response';
+import { PaginatedResponse } from 'src/common/types/paginated-response';
+import { ExtractItem } from 'src/common/types/extract-item';
 
 @Injectable()
 export class ExtractsRepository implements ExtractsRepositoryPort {
@@ -13,7 +15,7 @@ export class ExtractsRepository implements ExtractsRepositoryPort {
     perPage: number | undefined,
     orderDirection: 'asc' | 'desc' = 'desc',
     userId: string,
-  ): Promise<any> {
+  ): Promise<PaginatedResponse<ExtractItem>> {
     const skip = page && perPage ? (page - 1) * perPage : undefined;
     const take = perPage ? perPage : undefined;
 

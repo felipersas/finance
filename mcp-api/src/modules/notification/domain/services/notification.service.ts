@@ -5,6 +5,8 @@ import { ConfigService } from '@nestjs/config';
 import type { NotificationServicePort } from '../ports/notification-service.port';
 import type { NotificationRepositoryPort } from '../ports/notification-repository.port';
 import { InternalServerError } from 'src/common/errors/internal-server-error';
+import { PaginatedParamsDto } from 'src/common/dtos/paginated-params.dto';
+import { PaginatedResponse } from 'src/common/types/paginated-response';
 import type { Notification, Prisma } from '@prisma/client';
 
 @Injectable()
@@ -15,6 +17,18 @@ export class NotificationService implements NotificationServicePort {
     private readonly httpService: HttpService,
     private readonly configService: ConfigService,
   ) {}
+
+  async findAll(
+    params: PaginatedParamsDto,
+    userId: string,
+  ): Promise<PaginatedResponse<Notification>> {
+    return this.notificationRepository.findAll(
+      params.page,
+      params.perPage,
+      params.orderDirection ?? 'desc',
+      userId,
+    );
+  }
 
   async findMany(userId?: string): Promise<Notification[]> {
     return await this.notificationRepository.findMany(

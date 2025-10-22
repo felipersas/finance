@@ -24,7 +24,7 @@ export const useListExtract = (params: PaginatedParams) => {
     isFetching
   } = useQuery<ApiResponse<PaginatedResponse<ListExtractItem>>>(
     {
-  staleTime: 0,
+      staleTime: 0,
       queryKey: ["list-extracts", params.page, params.perPage, params.orderDirection],
       queryFn: () => getListExtract(params),
       refetchInterval: 45000

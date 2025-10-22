@@ -7,6 +7,7 @@ import {
   Patch,
   Body,
   Param,
+  Query,
   UseGuards,
   Inject,
 } from '@nestjs/common';
@@ -15,6 +16,7 @@ import type { Notification, Prisma } from '@prisma/client';
 import { JwtAuthGuard } from 'src/modules/auth/guards/jwt-auth.guard';
 import { CurrentUser } from 'src/modules/auth/decorators/current-user.decorator';
 import type { JwtUser } from 'src/modules/auth/strategies/jwt.strategy';
+import { PaginatedParamsDto } from 'src/common/dtos/paginated-params.dto';
 
 @Controller('notifications')
 @UseGuards(JwtAuthGuard)
@@ -25,8 +27,15 @@ export class NotificationController {
   ) {}
 
   @Get()
-  async findAll(@CurrentUser() user: JwtUser): Promise<Notification[]> {
-    return await this.notificationService.findMany(user.userId);
+  async findAll(
+    @Query() params: PaginatedParamsDto,
+    @CurrentUser() user: JwtUser,
+  ) {
+    const data = await this.notificationService.findAll(params, user.userId);
+    return {
+      data,
+      message: 'Notificações carregadas com sucesso',
+    };
   }
 
   @Post()
