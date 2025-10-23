@@ -1,4 +1,5 @@
 import { AppSidebar } from "@/components/app-sidebar";
+import { SiteHeader } from "@/components/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { authClient } from "@/lib/auth-client";
 import { headers } from "next/headers";
@@ -38,6 +39,7 @@ export default async function ProtectedLayout({
     >
       <AppSidebar variant="inset" session={session} customerState={customerState} />
       <SidebarInset>
+        <SiteHeader />
         {children}
       </SidebarInset>
     </SidebarProvider>

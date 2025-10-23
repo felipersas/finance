@@ -33,6 +33,7 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 import { authClient } from "@/lib/auth-client"
+import { Button } from "./ui/button";
 
 const data = {
   navMain: [
@@ -163,6 +164,7 @@ export function AppSidebar({
   ...props
 }: AppSidebarProps) {
 
+  const hasSubscription = customerState.activeSubscriptions?.length > 0;
 
   return (
     <Sidebar collapsible="offcanvas" {...props}>
@@ -193,8 +195,20 @@ export function AppSidebar({
           className="mt-auto"
         />
       </SidebarContent>
-      <SidebarFooter>
 
+      <SidebarFooter>
+        {hasSubscription ? (
+          <Button onClick={async () => await authClient.customer.portal()} className="w-full" variant={"outline"}>
+            Gerenciar Assinatura
+          </Button>
+        ) : (
+          <Button onClick={async () => await authClient.checkout({
+            products: ["9181aaae-d6e5-4db6-98b7-5c610f48559a"],
+            slug: "plano-pro"
+          })} className="w-full bg-primary">
+            Assinar Plano Pro
+          </Button>
+        )}
       {session?.user && <NavUser user={session.user} />}
       </SidebarFooter>
     </Sidebar>

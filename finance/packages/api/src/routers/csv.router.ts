@@ -3,10 +3,7 @@ import { parse } from "csv-parse/sync";
 import prisma from "@finance/db"
 import { z } from "zod";
 
-
-
-
-  function extractFieldsFromDescricao(descricao: string) {
+function extractFieldsFromDescricao(descricao: string) {
     let tipoOperacao = null;
     let remetenteDestinatario = null;
     let documento = null;

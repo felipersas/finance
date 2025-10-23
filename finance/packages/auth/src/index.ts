@@ -28,8 +28,8 @@ export const auth = betterAuth<BetterAuthOptions>({
 				checkout({
 					products: [
 						{
-							productId: "your-product-id",
-							slug: "pro",
+							productId: "9181aaae-d6e5-4db6-98b7-5c610f48559a",
+							slug: "plano-pro",
 						},
 					],
 					successUrl: process.env.POLAR_SUCCESS_URL,

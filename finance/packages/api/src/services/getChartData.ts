@@ -8,12 +8,6 @@ import prisma from "@finance/db"
  * @param userId - The ID of the user whose data will be fetched.
  * @returns An array of objects, each representing a day with its date, total entries, and total exits.
  *
- * Each object in the result has the following structure:
- *   {
- *     date: string;      // Date in "YYYY-MM-DD" format
- *     entrada: number;   // Total entry value for the day (always positive)
- *     saida: number;     // Total exit value for the day (always positive)
- *   }
  *
  * Days with no records will have entrada and saida as 0.
  */
