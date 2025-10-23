@@ -26,13 +26,10 @@ function getQueryClient() {
 }
 
 function getUrl() {
-  const base = (() => {
-    if (typeof window !== 'undefined') return '';
-    if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
-    return process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000';
-  })();
-  return `${base}/trpc`;
+  // Sempre use o endereço do backend
+  return `${process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'}/trpc`;
 }
+
 
 export function TRPCReactProvider(
   props: Readonly<{

@@ -1,8 +1,6 @@
-import { QueryCache, QueryClient } from "@tanstack/react-query";
 import { createTRPCClient, httpBatchLink, httpLink, isNonJsonSerializable, splitLink } from "@trpc/client";
 import { createTRPCOptionsProxy } from "@trpc/tanstack-react-query";
 import type { AppRouter } from "@finance/api/routers/index";
-import { toast } from "sonner";
 import { makeQueryClient } from "./query-client";
 
 const url =`${process.env.NEXT_PUBLIC_SERVER_URL}/trpc`

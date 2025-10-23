@@ -3,10 +3,10 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useTRPC } from "@/utils/trpc-client";
 
-export const useTotalRevenue = () => {
+export const useSectionCards = () => {
   const trpc = useTRPC();
   const { data: response } = useSuspenseQuery(
-    trpc.analytics.totalRevenue.queryOptions()
+    trpc.dashboard.sectionCards.queryOptions()
   );
 
   // Com useSuspenseQuery, data sempre existe (nunca undefined)
