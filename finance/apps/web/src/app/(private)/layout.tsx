@@ -1,3 +1,5 @@
+import { AppSidebar } from "@/components/app-sidebar";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { authClient } from "@/lib/auth-client";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
@@ -19,10 +21,26 @@ export default async function ProtectedLayout({
 		redirect("/login");
 	}
 
+	const { data: customerState } = await authClient.customer.state({
+    fetchOptions:{
+      headers: await headers(),
+    }
+  });
+
 	return (
-	<div>
-	{children}
-	</div>
+    <SidebarProvider
+      style={
+        {
+          "--sidebar-width": "calc(var(--spacing) * 72)",
+          "--header-height": "calc(var(--spacing) * 12)",
+        } as React.CSSProperties
+      }
+    >
+      <AppSidebar variant="inset" session={session} customerState={customerState} />
+      <SidebarInset>
+        {children}
+      </SidebarInset>
+    </SidebarProvider>
 
 	);
 }

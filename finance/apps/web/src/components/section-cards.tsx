@@ -10,6 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { useTotalRevenue } from "@/hooks/use-analytics"
+import { formatMoneyView } from "@/utils/formatters/format-money-brl"
 
 export function SectionCards() {
 
@@ -22,21 +23,33 @@ export function SectionCards() {
         <CardHeader>
           <CardDescription>Faturamento Total</CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            ${response ?? '0.00'}
+            {formatMoneyView(String(response.total) ?? '0.00')}
           </CardTitle>
           <CardAction>
             <Badge variant="outline">
-              <IconTrendingUp />
-              +12.5%
+              { response.percent > 0 ? (
+                <IconTrendingUp />
+              ) : (
+                <IconTrendingDown />
+              )}
+              {Math.abs(response.percent).toFixed(1)}%
             </Badge>
           </CardAction>
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
           <div className="line-clamp-1 flex gap-2 font-medium">
-            Trending up this month <IconTrendingUp className="size-4" />
+            {response.percent > 0 ? (
+              <>
+                Em alta este mês <IconTrendingUp className="size-4" />
+              </>
+            ) : (
+              <>
+                Em queda este mês <IconTrendingDown className="size-4" />
+              </>
+            )}
           </div>
           <div className="text-muted-foreground">
-            Visitors for the last 6 months
+            Faturalmento do mês atual
           </div>
         </CardFooter>
       </Card>

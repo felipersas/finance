@@ -1,3 +1,5 @@
+"use client";
+
 import * as React from "react"
 import {
   IconCamera,
@@ -33,15 +35,10 @@ import {
 import { authClient } from "@/lib/auth-client"
 
 const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
   navMain: [
     {
       title: "Dashboard",
-      url: "#",
+      url: "/dashboard",
       icon: IconDashboard,
     },
     {
@@ -149,9 +146,23 @@ const data = {
   ],
 }
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
+  companyName?: string;
+  companyLogo?: string;
+  showSearch?: boolean;
+  session: typeof authClient.$Infer.Session;
+  customerState: ReturnType<typeof authClient.customer.state>;
+}
 
-  const session = authClient.useSession();
+export function AppSidebar({
+  companyName = "Acme Inc.",
+  companyLogo,
+  session,
+  customerState,
+  showSearch = true,
+  ...props
+}: AppSidebarProps) {
+
 
   return (
     <Sidebar collapsible="offcanvas" {...props}>
@@ -163,8 +174,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               className="data-[slot=sidebar-menu-button]:!p-1.5"
             >
               <a href="#">
-                <IconInnerShadowTop className="!size-5" />
-                <span className="text-base font-semibold">Acme Inc.</span>
+                {companyLogo ? (
+                  <img src={companyLogo} alt={companyName} className="size-5" />
+                ) : (
+                  <IconInnerShadowTop className="!size-5" />
+                )}
+                <span className="text-base font-semibold">{companyName}</span>
               </a>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -173,10 +188,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarContent>
         <NavMain items={data.navMain} />
         <NavDocuments items={data.documents} />
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
+        <NavSecondary
+          items={showSearch ? data.navSecondary : data.navSecondary.filter(item => item.title !== 'Search')}
+          className="mt-auto"
+        />
       </SidebarContent>
       <SidebarFooter>
-        {session.data?.user && <NavUser user={session.data.user} />}
+
+      {session?.user && <NavUser user={session.user} />}
       </SidebarFooter>
     </Sidebar>
   )
