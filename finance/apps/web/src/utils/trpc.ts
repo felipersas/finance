@@ -3,21 +3,7 @@ import { createTRPCClient, httpBatchLink, httpLink, isNonJsonSerializable, split
 import { createTRPCOptionsProxy } from "@trpc/tanstack-react-query";
 import type { AppRouter } from "@finance/api/routers/index";
 import { toast } from "sonner";
-
-export const queryClient = new QueryClient({
-	queryCache: new QueryCache({
-		onError: (error) => {
-			toast.error(error.message, {
-				action: {
-					label: "retry",
-					onClick: () => {
-						queryClient.invalidateQueries();
-					},
-				},
-			});
-		},
-	}),
-});
+import { makeQueryClient } from "./query-client";
 
 const url =`${process.env.NEXT_PUBLIC_SERVER_URL}/trpc`
 
@@ -50,5 +36,5 @@ const trpcClient = createTRPCClient<AppRouter>({
 
 export const trpc = createTRPCOptionsProxy<AppRouter>({
 	client: trpcClient,
-	queryClient,
+	queryClient: makeQueryClient(),
 });

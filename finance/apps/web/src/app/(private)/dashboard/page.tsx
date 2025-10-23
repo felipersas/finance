@@ -1,27 +1,14 @@
-import { redirect } from "next/navigation";
 import Dashboard from "./dashboard";
-import { headers } from "next/headers";
-import { authClient } from "@/lib/auth-client";
+import { HydrateClient, prefetch, trpc } from '@/utils/trpc-server';
 
-export default async function DashboardPage() {
-	const session = await authClient.getSession({
-		fetchOptions: {
-			headers: await headers(),
-			throw: true,
-		},
-	});
+export default async function Page(){
 
-	const { data: customerState } = await authClient.customer.state({
-		fetchOptions: {
-			headers: await headers(),
-		},
-	});
+  // Prefetch - não precisa passar queryKey, o tRPC gera automaticamente
+  prefetch(trpc.analytics.totalRevenue.queryOptions());
 
-	return (
-		<div>
-			<h1>Dashboard</h1>
-			<p>Welcome {session?.user.name}</p>
-			<Dashboard session={session!} customerState={customerState} />
-		</div>
-	);
+  return (
+    <HydrateClient>
+      <Dashboard />
+    </HydrateClient>
+  )
 }

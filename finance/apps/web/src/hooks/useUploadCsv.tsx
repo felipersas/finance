@@ -1,4 +1,4 @@
-import { trpc } from "@/utils/trpc"
+import { trpc } from "@/utils/server"
 import { useMutation } from "@tanstack/react-query"
 import { toast } from "sonner"
 
