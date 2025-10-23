@@ -51,7 +51,8 @@ export const ModelName = {
   User: 'User',
   Session: 'Session',
   Account: 'Account',
-  Verification: 'Verification'
+  Verification: 'Verification',
+  ExtratoRecord: 'ExtratoRecord'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -126,6 +127,27 @@ export const VerificationScalarFieldEnum = {
 } as const
 
 export type VerificationScalarFieldEnum = (typeof VerificationScalarFieldEnum)[keyof typeof VerificationScalarFieldEnum]
+
+
+export const ExtratoRecordScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  data: 'data',
+  valor: 'valor',
+  identificador: 'identificador',
+  descricao: 'descricao',
+  tipoOperacao: 'tipoOperacao',
+  remetenteDestinatario: 'remetenteDestinatario',
+  documento: 'documento',
+  instituicaoFinanceira: 'instituicaoFinanceira',
+  codigoBanco: 'codigoBanco',
+  agencia: 'agencia',
+  conta: 'conta',
+  tipo: 'tipo',
+  createdAt: 'createdAt'
+} as const
+
+export type ExtratoRecordScalarFieldEnum = (typeof ExtratoRecordScalarFieldEnum)[keyof typeof ExtratoRecordScalarFieldEnum]
 
 
 export const SortOrder = {

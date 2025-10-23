@@ -11,10 +11,6 @@ export default async function DashboardPage() {
 		},
 	});
 
-	if (!session?.user) {
-		redirect("/login");
-	}
-
 	const { data: customerState } = await authClient.customer.state({
 		fetchOptions: {
 			headers: await headers(),
@@ -24,8 +20,8 @@ export default async function DashboardPage() {
 	return (
 		<div>
 			<h1>Dashboard</h1>
-			<p>Welcome {session.user.name}</p>
-			<Dashboard session={session} customerState={customerState} />
+			<p>Welcome {session?.user.name}</p>
+			<Dashboard session={session!} customerState={customerState} />
 		</div>
 	);
 }

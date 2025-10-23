@@ -8,7 +8,9 @@
 * 🟢 You can import this file directly.
 */
 
+export const ExtratoType = {
+  Empresa: 'Empresa',
+  Pessoal: 'Pessoal'
+} as const
 
-
-// This file is empty because there are no enums in the schema.
-export {}
+export type ExtratoType = (typeof ExtratoType)[keyof typeof ExtratoType]

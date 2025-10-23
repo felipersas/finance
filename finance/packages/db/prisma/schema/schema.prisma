@@ -9,3 +9,34 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+enum ExtratoType {
+  Empresa
+  Pessoal
+}
+
+model ExtratoRecord {
+  id                    String                 @id @default(uuid())
+  userId                String?                @map("user_id")
+  data                  DateTime
+  valor                 Decimal                @db.Decimal(15, 2)
+  identificador         String                 @unique @db.VarChar(255)
+  descricao             String?
+  tipoOperacao          String?                @map("tipo_operacao") @db.VarChar(100)
+  remetenteDestinatario String?                @map("remetente_destinatario") @db.VarChar(255)
+  documento             String?                @db.VarChar(50)
+  instituicaoFinanceira String?                @map("instituicao_financeira") @db.VarChar(255)
+  codigoBanco           String?                @map("codigo_banco") @db.VarChar(10)
+  agencia               String?                @db.VarChar(20)
+  conta                 String?                @db.VarChar(50)
+  tipo                  ExtratoType?
+  createdAt             DateTime               @default(now()) @map("created_at")
+  user                  User?                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([data], map: "idx_data")
+  @@index([identificador], map: "idx_identificador")
+  @@index([tipoOperacao], map: "idx_tipo_operacao")
+  @@index([documento], map: "idx_documento")
+  @@index([codigoBanco], map: "idx_codigo_banco")
+  @@map("extrato_records")
+}

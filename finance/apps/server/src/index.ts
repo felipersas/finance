@@ -7,6 +7,7 @@ import { createContext } from "@finance/api/context";
 import { appRouter } from "@finance/api/routers/index";
 import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
 import { auth } from "@finance/auth";
+import { betterAuth } from "./auth-guard";
 
 const app = new Elysia()
 	.use(
@@ -44,6 +45,10 @@ const app = new Elysia()
 		return result.toUIMessageStreamResponse();
 	})
 	.get("/", () => "OK")
+	.use(betterAuth)
+  .get("/user", ({ user }) => user, {
+    auth: true,
+  })
 	.listen(3000, () => {
 		console.log("Server is running on http://localhost:3000");
 	});

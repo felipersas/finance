@@ -55,7 +55,7 @@ export default function SignUpForm({
 
 	return (
 		<div className="mx-auto w-full mt-10 max-w-md p-6">
-			<h1 className="mb-6 text-center text-3xl font-bold">Create Account</h1>
+			<h1 className="mb-6 text-center text-3xl font-bold">Criar Conta</h1>
 
 			<form
 				onSubmit={(e) => {
@@ -69,7 +69,7 @@ export default function SignUpForm({
 					<form.Field name="name">
 						{(field) => (
 							<div className="space-y-2">
-								<Label htmlFor={field.name}>Name</Label>
+								<Label htmlFor={field.name}>Nome</Label>
 								<Input
 									id={field.name}
 									name={field.name}
@@ -114,7 +114,7 @@ export default function SignUpForm({
 					<form.Field name="password">
 						{(field) => (
 							<div className="space-y-2">
-								<Label htmlFor={field.name}>Password</Label>
+								<Label htmlFor={field.name}>Senha</Label>
 								<Input
 									id={field.name}
 									name={field.name}
@@ -140,7 +140,7 @@ export default function SignUpForm({
 							className="w-full"
 							disabled={!state.canSubmit || state.isSubmitting}
 						>
-							{state.isSubmitting ? "Submitting..." : "Sign Up"}
+							{state.isSubmitting ? "Criando..." : "Criar Conta"}
 						</Button>
 					)}
 				</form.Subscribe>
@@ -150,9 +150,9 @@ export default function SignUpForm({
 				<Button
 					variant="link"
 					onClick={onSwitchToSignIn}
-					className="text-indigo-600 hover:text-indigo-800"
+					className="text-primary hover:text-primary/70"
 				>
-					Already have an account? Sign In
+					Já possui uma conta? Entre agora
 				</Button>
 			</div>
 		</div>

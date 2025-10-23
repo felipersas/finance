@@ -392,7 +392,8 @@ export const ModelName = {
   User: 'User',
   Session: 'Session',
   Account: 'Account',
-  Verification: 'Verification'
+  Verification: 'Verification',
+  ExtratoRecord: 'ExtratoRecord'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -408,7 +409,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "session" | "account" | "verification"
+    modelProps: "user" | "session" | "account" | "verification" | "extratoRecord"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -708,6 +709,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    ExtratoRecord: {
+      payload: Prisma.$ExtratoRecordPayload<ExtArgs>
+      fields: Prisma.ExtratoRecordFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ExtratoRecordFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExtratoRecordPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ExtratoRecordFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExtratoRecordPayload>
+        }
+        findFirst: {
+          args: Prisma.ExtratoRecordFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExtratoRecordPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ExtratoRecordFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExtratoRecordPayload>
+        }
+        findMany: {
+          args: Prisma.ExtratoRecordFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExtratoRecordPayload>[]
+        }
+        create: {
+          args: Prisma.ExtratoRecordCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExtratoRecordPayload>
+        }
+        createMany: {
+          args: Prisma.ExtratoRecordCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ExtratoRecordCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExtratoRecordPayload>[]
+        }
+        delete: {
+          args: Prisma.ExtratoRecordDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExtratoRecordPayload>
+        }
+        update: {
+          args: Prisma.ExtratoRecordUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExtratoRecordPayload>
+        }
+        deleteMany: {
+          args: Prisma.ExtratoRecordDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ExtratoRecordUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ExtratoRecordUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExtratoRecordPayload>[]
+        }
+        upsert: {
+          args: Prisma.ExtratoRecordUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExtratoRecordPayload>
+        }
+        aggregate: {
+          args: Prisma.ExtratoRecordAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateExtratoRecord>
+        }
+        groupBy: {
+          args: Prisma.ExtratoRecordGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ExtratoRecordGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ExtratoRecordCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ExtratoRecordCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -805,6 +880,27 @@ export const VerificationScalarFieldEnum = {
 export type VerificationScalarFieldEnum = (typeof VerificationScalarFieldEnum)[keyof typeof VerificationScalarFieldEnum]
 
 
+export const ExtratoRecordScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  data: 'data',
+  valor: 'valor',
+  identificador: 'identificador',
+  descricao: 'descricao',
+  tipoOperacao: 'tipoOperacao',
+  remetenteDestinatario: 'remetenteDestinatario',
+  documento: 'documento',
+  instituicaoFinanceira: 'instituicaoFinanceira',
+  codigoBanco: 'codigoBanco',
+  agencia: 'agencia',
+  conta: 'conta',
+  tipo: 'tipo',
+  createdAt: 'createdAt'
+} as const
+
+export type ExtratoRecordScalarFieldEnum = (typeof ExtratoRecordScalarFieldEnum)[keyof typeof ExtratoRecordScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -867,6 +963,34 @@ export type DateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel
  * Reference to a field of type 'DateTime[]'
  */
 export type ListDateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime[]'>
+    
+
+
+/**
+ * Reference to a field of type 'Decimal'
+ */
+export type DecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Decimal'>
+    
+
+
+/**
+ * Reference to a field of type 'Decimal[]'
+ */
+export type ListDecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Decimal[]'>
+    
+
+
+/**
+ * Reference to a field of type 'ExtratoType'
+ */
+export type EnumExtratoTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ExtratoType'>
+    
+
+
+/**
+ * Reference to a field of type 'ExtratoType[]'
+ */
+export type ListEnumExtratoTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ExtratoType[]'>
     
 
 
@@ -974,6 +1098,7 @@ export type GlobalOmitConfig = {
   session?: Prisma.SessionOmit
   account?: Prisma.AccountOmit
   verification?: Prisma.VerificationOmit
+  extratoRecord?: Prisma.ExtratoRecordOmit
 }
 
 /* Types for Logging */

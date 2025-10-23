@@ -1,6 +1,12 @@
 import { protectedProcedure, publicProcedure, router } from "../index";
+import { productsRouter } from "./products.router";
+import { usersRouter } from "./users.router";
+import { csvRouter } from "./csv.router";
 
 export const appRouter = router({
+  users: usersRouter,
+  products: productsRouter,
+  csv: csvRouter,
 	healthCheck: publicProcedure.query(() => {
 		return "OK";
 	}),
