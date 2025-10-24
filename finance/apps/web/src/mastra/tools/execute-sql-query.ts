@@ -20,9 +20,9 @@ export const executeSqlQueryTool = createTool({
 
     try {
       // Get authenticated user
-      const user: User = runtimeContext.get('user');
+      const userId: string= runtimeContext.get('userId');
 
-      if (!user || !user.sub) {
+      if (!userId) {
         throw new Error('User authentication required');
       }
 
@@ -58,13 +58,13 @@ export const executeSqlQueryTool = createTool({
 
       // Security: Enforce user_id filter
       // Check if user_id filter exists in the query
-      if (!cleanedQuery.includes(user.sub)) {
+      if (!cleanedQuery.includes(userId)) {
         // Inject user_id filter if missing
         if (lowerQuery.includes('where')) {
           // Add to existing WHERE clause
           cleanedQuery = cleanedQuery.replace(
             /WHERE/i,
-            `WHERE user_id = '${user.sub}' AND`
+            `WHERE user_id = '${userId}' AND`
           );
         } else {
           // Add new WHERE clause
@@ -73,7 +73,7 @@ export const executeSqlQueryTool = createTool({
             const tableName = fromMatch[1];
             cleanedQuery = cleanedQuery.replace(
               new RegExp(`FROM\\s+${tableName}`, 'i'),
-              `FROM ${tableName} WHERE user_id = '${user.sub}'`
+              `FROM ${tableName} WHERE user_id = '${userId}'`
             );
           } else {
             throw new Error('Could not parse FROM clause to add user_id filter');

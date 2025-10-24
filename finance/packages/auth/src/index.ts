@@ -3,6 +3,7 @@ import { prismaAdapter } from "better-auth/adapters/prisma";
 import { polar, checkout, portal } from "@polar-sh/better-auth";
 import { polarClient } from "./lib/payments";
 import prisma from "@finance/db";
+import { RuntimeContext } from "@mastra/core/runtime-context";
 
 export const auth = betterAuth<BetterAuthOptions>({
 	database: prismaAdapter(prisma, {
@@ -40,3 +41,5 @@ export const auth = betterAuth<BetterAuthOptions>({
 		}),
 	],
 });
+
+export default RuntimeContext;
