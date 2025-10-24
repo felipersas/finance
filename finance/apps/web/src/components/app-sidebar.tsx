@@ -1,6 +1,6 @@
 "use client";
 
-import * as React from "react"
+import * as React from "react";
 import {
   IconCamera,
   IconChartBar,
@@ -12,17 +12,17 @@ import {
   IconFolder,
   IconHelp,
   IconInnerShadowTop,
-  IconListDetails,
   IconReport,
+  IconBrandOpenai,
   IconSearch,
   IconSettings,
   IconUsers,
-} from "@tabler/icons-react"
+} from "@tabler/icons-react";
 
-import { NavDocuments } from "@/components/nav-documents"
-import { NavMain } from "@/components/nav-main"
-import { NavSecondary } from "@/components/nav-secondary"
-import { NavUser } from "@/components/nav-user"
+import { NavDocuments } from "@/components/nav-documents";
+import { NavMain } from "@/components/nav-main";
+import { NavSecondary } from "@/components/nav-secondary";
+import { NavUser } from "@/components/nav-user";
 import {
   Sidebar,
   SidebarContent,
@@ -31,8 +31,8 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/components/ui/sidebar"
-import { authClient } from "@/lib/auth-client"
+} from "@/components/ui/sidebar";
+import { authClient } from "@/lib/auth-client";
 import { Button } from "./ui/button";
 
 const data = {
@@ -43,9 +43,9 @@ const data = {
       icon: IconDashboard,
     },
     {
-      title: "Lifecycle",
-      url: "#",
-      icon: IconListDetails,
+      title: "Assistente IA",
+      url: "/ai",
+      icon: IconBrandOpenai,
     },
     {
       title: "Analytics",
@@ -145,7 +145,7 @@ const data = {
       icon: IconFileWord,
     },
   ],
-}
+};
 
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
   companyName?: string;
@@ -163,7 +163,6 @@ export function AppSidebar({
   showSearch = true,
   ...props
 }: AppSidebarProps) {
-
   const hasSubscription = customerState.activeSubscriptions?.length > 0;
 
   return (
@@ -191,26 +190,39 @@ export function AppSidebar({
         <NavMain items={data.navMain} />
         <NavDocuments items={data.documents} />
         <NavSecondary
-          items={showSearch ? data.navSecondary : data.navSecondary.filter(item => item.title !== 'Search')}
+          items={
+            showSearch
+              ? data.navSecondary
+              : data.navSecondary.filter((item) => item.title !== "Search")
+          }
           className="mt-auto"
         />
       </SidebarContent>
 
       <SidebarFooter>
         {hasSubscription ? (
-          <Button onClick={async () => await authClient.customer.portal()} className="w-full" variant={"outline"}>
+          <Button
+            onClick={async () => await authClient.customer.portal()}
+            className="w-full"
+            variant={"outline"}
+          >
             Gerenciar Assinatura
           </Button>
         ) : (
-          <Button onClick={async () => await authClient.checkout({
-            products: ["9181aaae-d6e5-4db6-98b7-5c610f48559a"],
-            slug: "plano-pro"
-          })} className="w-full bg-primary">
+          <Button
+            onClick={async () =>
+              await authClient.checkout({
+                products: ["9181aaae-d6e5-4db6-98b7-5c610f48559a"],
+                slug: "plano-pro",
+              })
+            }
+            className="w-full bg-primary"
+          >
             Assinar Plano Pro
           </Button>
         )}
-      {session?.user && <NavUser user={session.user} />}
+        {session?.user && <NavUser user={session.user} />}
       </SidebarFooter>
     </Sidebar>
-  )
+  );
 }
