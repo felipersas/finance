@@ -128,17 +128,6 @@ interface TransactionsTableProps {
   initialSearch?: string;
 }
 
-/**
- * Componente de tabela para exibir transações financeiras.
- *
- * Este componente utiliza o hook `useTransactions` para buscar dados paginados
- * e filtrados de transações. Inclui funcionalidades de busca, paginação,
- * estados de loading e error, e formatação adequada dos dados.
- *
- * @param initialPage - Página inicial para carregamento (padrão: 1)
- * @param initialSearch - Texto inicial de busca (padrão: "")
- * @returns JSX.Element - A tabela renderizada com transações
- */
 export function TransactionsTable({
   initialPage = 1,
   initialSearch = "",

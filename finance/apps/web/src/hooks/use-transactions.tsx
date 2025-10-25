@@ -14,31 +14,18 @@ export const useTransactions = ({
 }: UseTransactionsParams = {}) => {
   const trpc = useTRPC();
 
-  // Garante que page é sempre número e search é sempre string
-  const safePage = typeof page === "string" ? parseInt(page, 10) || 1 : page;
-  const safeSearch = typeof search === "string" ? search : "";
-
   const { data, error, isLoading, refetch, isFetching } = useQuery(
     trpc.transactions.getTransactions.queryOptions({
-      page: safePage,
-      search: safeSearch,
+      page,
+      search,
     }),
   );
-
-  // Estrutura esperada do retorno do backend via buildPaginatedResponse:
-  // {
-  //   items: Transaction[],
-  //   count: number,
-  //   page: number,
-  //   perPage: number,
-  //   totalPages: number
-  // }
 
   return {
     data: {
       items: data?.items ?? [],
       count: data?.count ?? 0,
-      page: data?.page ?? safePage,
+      page: data?.page ?? page,
       perPage: data?.perPage ?? 10,
       totalPages: data?.totalPages ?? 1,
     },
