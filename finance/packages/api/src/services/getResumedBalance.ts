@@ -1,7 +1,7 @@
 import prisma from "@finance/db";
 
 export const getResumedBalance = async (userId: string) => {
-  const now = new Date("2025-02-27");
+  const now = new Date();
   const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
   const currentMonthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
   const prevMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);

@@ -135,30 +135,19 @@ const columns: ColumnDef<Transaction>[] = [
   },
 ];
 
-interface TransactionsTableProps {
-  initialPage?: number;
-  initialSearch?: string;
-  initialMonth?: string;
-}
-
 const transactionParsers = {
   page: parseAsInteger.withDefault(1),
   search: parseAsString.withDefault(""),
   month: parseAsString.withDefault(""),
 };
 
-export function TransactionsTable({
-  initialPage = 1,
-  initialSearch = "",
-  initialMonth = "",
-}: TransactionsTableProps) {
+export function TransactionsTable() {
   const [{ page, search, month }, setQueryStates] =
     useQueryStates(transactionParsers);
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
 
-  // Debounce a busca para evitar requisições excessivas
-  const debouncedSearch = useDebounce(search, 300);
+  const debouncedSearch = useDebounce(search, 400);
 
   const { data, isLoading, isError, error, refetch } = useTransactions({
     page,
@@ -197,7 +186,7 @@ export function TransactionsTable({
 
   const handleSearchChange = React.useCallback(
     (value: string) => {
-      setQueryStates({ search: value, page: 1 }); // Reset to first page on search
+      setQueryStates({ search: value, page: 1 });
     },
     [setQueryStates],
   );

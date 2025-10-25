@@ -1,18 +1,7 @@
 import prisma from "@finance/db"
 
-/**
- * Retrieves daily chart data for a user, aggregating entries (entrada) and exits (saida)
- * for the specified time range.
- *
- * @param range - The period to aggregate data for ("7d", "30d", or "90d").
- * @param userId - The ID of the user whose data will be fetched.
- * @returns An array of objects, each representing a day with its date, total entries, and total exits.
- *
- *
- * Days with no records will have entrada and saida as 0.
- */
 export const getCharData = async (range: "30d" | "7d" | "90d", userId: string) => {
-  const referenceDate = new Date("2025-03-15");
+  const referenceDate = new Date();
   referenceDate.setUTCHours(0, 0, 0, 0);
 
   let daysToSubtract = 90;

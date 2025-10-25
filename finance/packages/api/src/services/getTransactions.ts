@@ -1,6 +1,5 @@
 import prisma from "@finance/db";
 
-
 export interface Transaction {
   id: string;
   userId?: string;
@@ -27,16 +26,6 @@ export interface GetTransactionsResult {
   totalPages: number;
 }
 
-/**
- * Busca transações paginadas e filtradas por descrição e mês para um usuário.
- * @param params - Parâmetros de busca
- * @param params.userId - ID do usuário
- * @param params.page - Página atual (default: 1)
- * @param params.perPage - Itens por página (default: 10)
- * @param params.search - Texto de busca na descrição (opcional)
- * @param params.month - Mês no formato YYYY-MM para filtrar (opcional)
- * @returns { transactions, count, page, perPage, totalPages }
- */
 export async function getTransactions({
   userId,
   page = 1,
