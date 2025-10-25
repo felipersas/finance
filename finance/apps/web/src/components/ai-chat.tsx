@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { PromptSuggestions } from "@/components/ui/prompt-suggestions";
-import { chatWithAgent } from "./agent-action";
+import { chatWithAgent } from "@/actions/agent-action";
 import { authClient } from "@/lib/auth-client";
 import { MessageList } from "@/components/ui/message-list";
 import { MessageInput } from "@/components/ui/message-input";
@@ -35,7 +35,6 @@ export function AIChat() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Adiciona mensagem do usuário e chama o agente
   const appendUserMessage = (message: { role: "user"; content: string }) => {
     const userMessage = {
       id: `${Date.now()}-user`,
@@ -47,7 +46,6 @@ export function AIChat() {
     handleAgentResponse(message.content);
   };
 
-  // Chama a server action e adiciona resposta do agente
   const handleAgentResponse = async (text: string) => {
     setLoading(true);
     try {
@@ -72,7 +70,6 @@ export function AIChat() {
     }
   };
 
-  // Envia mensagem do usuário pelo formulário
   const handleSubmit = async (e?: React.FormEvent<HTMLFormElement>) => {
     if (e) e.preventDefault();
     const text = input.trim();
@@ -82,7 +79,7 @@ export function AIChat() {
   };
 
   return (
-    <div className="h-screen grid grid-rows-[auto_1fr_auto] overflow-hidden w-full mx-auto p-4 bg-background">
+    <div className="h-full grid grid-rows-[auto_1fr_auto] overflow-hidden w-full mx-auto p-4 bg-background">
       <div className="mb-12 mt-20">
         {messages.length === 0 && (
           <PromptSuggestions
@@ -108,7 +105,7 @@ export function AIChat() {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           isGenerating={loading}
-          placeholder="Type your message..."
+          placeholder="Digite sua mensagem..."
         />
       </form>
     </div>

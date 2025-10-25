@@ -1,12 +1,18 @@
-import 'server-only';
+import "server-only";
 
-import { createTRPCOptionsProxy } from '@trpc/tanstack-react-query';
-import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
-import { cache } from 'react';
-import { createTRPCClient, httpBatchLink, httpLink, isNonJsonSerializable, splitLink } from '@trpc/client';
-import type { AppRouter } from '@finance/api/routers/index';
-import { makeQueryClient } from './query-client';
-import { headers } from 'next/headers';
+import { createTRPCOptionsProxy } from "@trpc/tanstack-react-query";
+import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
+import { cache } from "react";
+import {
+  createTRPCClient,
+  httpBatchLink,
+  httpLink,
+  isNonJsonSerializable,
+  splitLink,
+} from "@trpc/client";
+import type { AppRouter } from "@finance/api/routers/index";
+import { makeQueryClient } from "../query-client";
+import { headers } from "next/headers";
 
 // IMPORTANT: Create a stable getter for the query client that
 // will return the same client during the same request.
@@ -15,7 +21,7 @@ export const getQueryClient = cache(makeQueryClient);
 function getUrl() {
   const base = (() => {
     if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
-    return process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000';
+    return process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:3000";
   })();
   return `${base}/trpc`;
 }
@@ -31,7 +37,7 @@ const trpcClient = createTRPCClient<AppRouter>({
           const headersList = await headers();
           // Forward cookies for session authentication
           return {
-            cookie: headersList.get('cookie') ?? '',
+            cookie: headersList.get("cookie") ?? "",
           };
         },
       }),
@@ -41,7 +47,7 @@ const trpcClient = createTRPCClient<AppRouter>({
           const headersList = await headers();
           // Forward cookies for session authentication
           return {
-            cookie: headersList.get('cookie') ?? '',
+            cookie: headersList.get("cookie") ?? "",
           };
         },
       }),
@@ -70,7 +76,7 @@ export function prefetch(queryOptions: any) {
   const queryClient = getQueryClient();
 
   // Check if it's an infinite query or regular query
-  if (queryOptions.queryKey?.[1]?.type === 'infinite') {
+  if (queryOptions.queryKey?.[1]?.type === "infinite") {
     void queryClient.prefetchInfiniteQuery(queryOptions);
   } else {
     void queryClient.prefetchQuery(queryOptions);

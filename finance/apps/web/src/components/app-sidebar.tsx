@@ -44,7 +44,7 @@ const data = {
     },
     {
       title: "Assistente IA",
-      url: "/ai",
+      url: "/ia",
       icon: IconBrandOpenai,
     },
     {
@@ -53,8 +53,8 @@ const data = {
       icon: IconChartBar,
     },
     {
-      title: "Projects",
-      url: "#",
+      title: "Transações",
+      url: "/transacoes",
       icon: IconFolder,
     },
     {
@@ -163,7 +163,7 @@ export function AppSidebar({
   showSearch = true,
   ...props
 }: AppSidebarProps) {
-  const hasSubscription = customerState.activeSubscriptions?.length > 0;
+  const hasSubscription = customerState?.activeSubscriptions?.length > 0;
 
   return (
     <Sidebar collapsible="offcanvas" {...props}>

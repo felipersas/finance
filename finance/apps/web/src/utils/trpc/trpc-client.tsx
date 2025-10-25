@@ -1,19 +1,25 @@
-'use client';
+"use client";
 
-import type { QueryClient } from '@tanstack/react-query';
-import { QueryClientProvider } from '@tanstack/react-query';
-import { createTRPCClient, httpBatchLink, httpLink, isNonJsonSerializable, splitLink } from '@trpc/client';
-import { createTRPCContext } from '@trpc/tanstack-react-query';
-import { useState } from 'react';
-import { makeQueryClient } from './query-client';
-import type { AppRouter } from '@finance/api/routers/index';
+import type { QueryClient } from "@tanstack/react-query";
+import { QueryClientProvider } from "@tanstack/react-query";
+import {
+  createTRPCClient,
+  httpBatchLink,
+  httpLink,
+  isNonJsonSerializable,
+  splitLink,
+} from "@trpc/client";
+import { createTRPCContext } from "@trpc/tanstack-react-query";
+import { useState } from "react";
+import { makeQueryClient } from "../query-client";
+import type { AppRouter } from "@finance/api/routers/index";
 
 export const { TRPCProvider, useTRPC } = createTRPCContext<AppRouter>();
 
 let browserQueryClient: QueryClient;
 
 function getQueryClient() {
-  if (typeof window === 'undefined') {
+  if (typeof window === "undefined") {
     // Server: always make a new query client
     return makeQueryClient();
   }
@@ -27,9 +33,8 @@ function getQueryClient() {
 
 function getUrl() {
   // Sempre use o endereço do backend
-  return `${process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'}/trpc`;
+  return `${process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:3000"}/trpc`;
 }
-
 
 export function TRPCReactProvider(
   props: Readonly<{
@@ -47,7 +52,7 @@ export function TRPCReactProvider(
             fetch(url, options) {
               return fetch(url, {
                 ...options,
-                credentials: 'include',
+                credentials: "include",
               });
             },
           }),
@@ -56,7 +61,7 @@ export function TRPCReactProvider(
             fetch(url, options) {
               return fetch(url, {
                 ...options,
-                credentials: 'include',
+                credentials: "include",
               });
             },
           }),

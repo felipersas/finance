@@ -1,6 +1,6 @@
 "use client";
 
-import { AIChat } from "./ai-chat";
+import { AIChat } from "@/components/ai-chat";
 
 export default function AIPage() {
   return <AIChat />;
