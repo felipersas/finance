@@ -28,12 +28,13 @@ export interface GetTransactionsResult {
 }
 
 /**
- * Busca transações paginadas e filtradas por descrição para um usuário.
+ * Busca transações paginadas e filtradas por descrição e mês para um usuário.
  * @param params - Parâmetros de busca
  * @param params.userId - ID do usuário
  * @param params.page - Página atual (default: 1)
  * @param params.perPage - Itens por página (default: 10)
  * @param params.search - Texto de busca na descrição (opcional)
+ * @param params.month - Mês no formato YYYY-MM para filtrar (opcional)
  * @returns { transactions, count, page, perPage, totalPages }
  */
 export async function getTransactions({
@@ -41,11 +42,13 @@ export async function getTransactions({
   page = 1,
   perPage = 10,
   search = "",
+  month,
 }: {
   userId: string;
   page?: number;
   perPage?: number;
   search?: string;
+  month?: string;
 }): Promise<{
   transactions: Transaction[];
   count: number;
@@ -60,12 +63,31 @@ export async function getTransactions({
       mode: "insensitive",
     };
   }
+  if (month) {
+    const parts = month.split("-");
+    if (parts.length === 2) {
+      const [yearStr, monthStr] = parts;
+      const year = parseInt(yearStr!, 10);
+      const monthNum = parseInt(monthStr!, 10);
+      if (!isNaN(year) && !isNaN(monthNum) && monthNum >= 1 && monthNum <= 12) {
+        const startDate = new Date(year, monthNum - 1, 1);
+        const endDate = new Date(year, monthNum, 1);
+        where.data = {
+          gte: startDate,
+          lt: endDate,
+        };
+      }
+    }
+  }
 
   const [transactionsRaw, count] = await Promise.all([
     prisma.extratoRecord.findMany({
       where,
       skip: (page - 1) * perPage,
       take: perPage,
+      orderBy: {
+        data: "desc",
+      },
     }),
     prisma.extratoRecord.count({
       where,

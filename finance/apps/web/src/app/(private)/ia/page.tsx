@@ -1,5 +1,3 @@
-"use client";
-
 import { AIChat } from "@/components/ai-chat";
 
 export default function AIPage() {

@@ -43,7 +43,7 @@ export async function chatWithAgent(message: string, userId: string) {
   let responseText = "";
   if (stream.textStream && typeof stream.textStream[Symbol.asyncIterator] === "function") {
     for await (const chunk of stream.textStream) {
-      responseText += typeof chunk === "string" ? chunk : chunk.text ?? "";
+      responseText += typeof chunk === "string" ? chunk : (chunk as any).text ?? "";
     }
   } else if (typeof stream === "string") {
     responseText = stream;

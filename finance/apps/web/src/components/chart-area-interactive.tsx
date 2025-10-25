@@ -1,12 +1,10 @@
-"use client"
+"use client";
 
+import * as React from "react";
+import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
 
-
-import * as React from "react"
-import { Area, AreaChart, CartesianGrid, XAxis } from "recharts"
-
-import { useIsMobile } from "@/hooks/use-mobile"
-import { useAreaChartData } from "@/hooks/use-area-chart-data"
+import { useIsMobile } from "@/hooks/use-mobile";
+import { useAreaChartData } from "@/hooks/use-area-chart-data";
 import {
   Card,
   CardAction,
@@ -14,27 +12,24 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
+} from "@/components/ui/card";
+import type { ChartConfig } from "@/components/ui/chart";
 import {
-  ChartConfig,
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-} from "@/components/ui/chart"
-import { formatMoneyView } from "@/utils/formatters/format-money-brl"
+} from "@/components/ui/chart";
+import { formatMoneyView } from "@/utils/formatters/format-money-brl";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import {
-  ToggleGroup,
-  ToggleGroupItem,
-} from "@/components/ui/toggle-group"
+} from "@/components/ui/select";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
-export const description = "An interactive area chart"
+export const description = "An interactive area chart";
 
 /**
  * Os dados do gráfico agora vêm do backend via hook useAreaChartData.
@@ -53,22 +48,24 @@ const chartConfig = {
     label: "Mobile",
     color: "var(--primary)",
   },
-} satisfies ChartConfig
+} satisfies ChartConfig;
 
 export function ChartAreaInteractive() {
-  const isMobile = useIsMobile()
-  const [timeRange, setTimeRange] = React.useState("30d")
+  const isMobile = useIsMobile();
+  const [timeRange, setTimeRange] = React.useState("30d");
 
   React.useEffect(() => {
     if (isMobile) {
-      setTimeRange("7d")
+      setTimeRange("7d");
     }
-  }, [isMobile])
+  }, [isMobile]);
 
   // O filtro de período agora envia o range correto para o hook
-  const { data: areaChartData, isLoading } = useAreaChartData(timeRange as "7d" | "30d" | "90d");
+  const { data: areaChartData, isLoading } = useAreaChartData(
+    timeRange as "7d" | "30d" | "90d",
+  );
 
-  console.log(areaChartData)
+  console.log(areaChartData);
 
   // Os dados já vêm filtrados do backend conforme o período selecionado
   const filteredData = (areaChartData ?? []).map((item) => ({
@@ -84,7 +81,9 @@ export function ChartAreaInteractive() {
           <CardTitle>Total Visitors</CardTitle>
         </CardHeader>
         <CardContent className="flex items-center justify-center h-[250px]">
-          <span className="text-muted-foreground text-lg">Carregando gráfico...</span>
+          <span className="text-muted-foreground text-lg">
+            Carregando gráfico...
+          </span>
         </CardContent>
       </Card>
     );
@@ -168,9 +167,9 @@ export function ChartAreaInteractive() {
               tickMargin={8}
               minTickGap={32}
               tickFormatter={(value) => {
-                const date = new Date(value)
+                const date = new Date(value);
                 // Evita hydration mismatch: formato fixo no SSR
-                return `${date.getDate().toString().padStart(2, "0")}/${(date.getMonth()+1).toString().padStart(2, "0")}`;
+                return `${date.getDate().toString().padStart(2, "0")}/${(date.getMonth() + 1).toString().padStart(2, "0")}`;
               }}
             />
             <ChartTooltip
@@ -179,8 +178,10 @@ export function ChartAreaInteractive() {
                 // Custom tooltip content
                 ({ active, payload, label }) => {
                   if (!active || !payload || !payload.length) return null;
-                  const entrada = payload.find(p => p.dataKey === "entrada")?.value ?? 0;
-                  const saida = payload.find(p => p.dataKey === "saida")?.value ?? 0;
+                  const entrada =
+                    payload.find((p) => p.dataKey === "entrada")?.value ?? 0;
+                  const saida =
+                    payload.find((p) => p.dataKey === "saida")?.value ?? 0;
                   return (
                     <div
                       className="rounded-xl bg-popover p-4 shadow-lg"
@@ -197,14 +198,24 @@ export function ChartAreaInteractive() {
                       </div>
                       <div className="flex flex-col gap-1">
                         <span>
-                          <span className="inline-block w-3 h-3 rounded-full mr-2 align-middle" style={{ background: "var(--color-mobile)" }} />
+                          <span
+                            className="inline-block w-3 h-3 rounded-full mr-2 align-middle"
+                            style={{ background: "var(--color-mobile)" }}
+                          />
                           <span className="font-medium">Entradas:</span>{" "}
-                          <span className="font-mono">{formatMoneyView(String(entrada))}</span>
+                          <span className="font-mono">
+                            {formatMoneyView(String(entrada))}
+                          </span>
                         </span>
                         <span>
-                          <span className="inline-block w-3 h-3 rounded-full mr-2 align-middle" style={{ background: "var(--color-saida)" }} />
+                          <span
+                            className="inline-block w-3 h-3 rounded-full mr-2 align-middle"
+                            style={{ background: "var(--color-saida)" }}
+                          />
                           <span className="font-medium">Saídas:</span>{" "}
-                          <span className="font-mono">{formatMoneyView(String(saida))}</span>
+                          <span className="font-mono">
+                            {formatMoneyView(String(saida))}
+                          </span>
                         </span>
                       </div>
                     </div>
@@ -230,5 +241,5 @@ export function ChartAreaInteractive() {
         </ChartContainer>
       </CardContent>
     </Card>
-  )
+  );
 }

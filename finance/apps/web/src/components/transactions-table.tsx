@@ -20,7 +20,9 @@ import {
   ChevronRight,
   Upload,
   FileText,
+  Calendar,
 } from "lucide-react";
+import { useQueryStates, parseAsInteger, parseAsString } from "nuqs";
 
 import { useTransactions } from "@/hooks/use-transactions";
 import { useDebounce } from "@/hooks/use-debounce";
@@ -38,6 +40,13 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export interface Transaction {
   id: string;
@@ -80,8 +89,9 @@ const columns: ColumnDef<Transaction>[] = [
   {
     accessorKey: "descricao",
     header: "Descrição",
+    size: 400,
     cell: ({ row }: CellContext<Transaction, any>) => (
-      <div className="max-w-[200px] truncate">
+      <div className="max-w-[200px] md:max-w-[300px] lg:max-w-none lg:whitespace-normal truncate">
         {(row.getValue("descricao") as string) || "-"}
       </div>
     ),
@@ -99,7 +109,7 @@ const columns: ColumnDef<Transaction>[] = [
     accessorKey: "remetenteDestinatario",
     header: "Remetente/Destinatário",
     cell: ({ row }: CellContext<Transaction, any>) => (
-      <div className="max-w-[150px] truncate">
+      <div className="max-w-[300px] truncate">
         {(row.getValue("remetenteDestinatario") as string) || "-"}
       </div>
     ),
@@ -107,13 +117,15 @@ const columns: ColumnDef<Transaction>[] = [
   {
     accessorKey: "valor",
     header: ({ column }: HeaderContext<Transaction, any>) => (
-      <Button
-        variant="ghost"
-        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-      >
-        Valor
-        <ArrowUpDown />
-      </Button>
+      <div className="flex justify-end">
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Valor
+          <ArrowUpDown />
+        </Button>
+      </div>
     ),
     cell: ({ row }: CellContext<Transaction, any>) => {
       const valor = row.getValue("valor") as number | string;
@@ -126,14 +138,22 @@ const columns: ColumnDef<Transaction>[] = [
 interface TransactionsTableProps {
   initialPage?: number;
   initialSearch?: string;
+  initialMonth?: string;
 }
+
+const transactionParsers = {
+  page: parseAsInteger.withDefault(1),
+  search: parseAsString.withDefault(""),
+  month: parseAsString.withDefault(""),
+};
 
 export function TransactionsTable({
   initialPage = 1,
   initialSearch = "",
+  initialMonth = "",
 }: TransactionsTableProps) {
-  const [page, setPage] = React.useState(initialPage);
-  const [search, setSearch] = React.useState(initialSearch);
+  const [{ page, search, month }, setQueryStates] =
+    useQueryStates(transactionParsers);
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
 
@@ -143,6 +163,7 @@ export function TransactionsTable({
   const { data, isLoading, isError, error, refetch } = useTransactions({
     page,
     search: debouncedSearch,
+    month: month || undefined,
   });
 
   const { mutate: uploadCsv, isPending: isUploading } = useUploadCsvMutation();
@@ -169,14 +190,38 @@ export function TransactionsTable({
           pageIndex: data.page - 1,
           pageSize: data.perPage,
         });
-        setPage(newState.pageIndex + 1);
+        setQueryStates({ page: newState.pageIndex + 1 });
       }
     },
   });
 
-  const handleSearchChange = React.useCallback((value: string) => {
-    setSearch(value);
-    setPage(1); // Reset to first page on search
+  const handleSearchChange = React.useCallback(
+    (value: string) => {
+      setQueryStates({ search: value, page: 1 }); // Reset to first page on search
+    },
+    [setQueryStates],
+  );
+
+  const handleMonthChange = React.useCallback(
+    (value: string) => {
+      setQueryStates({ month: value, page: 1 }); // Reset to first page on month change
+    },
+    [setQueryStates],
+  );
+
+  const generateMonthOptions = React.useCallback(() => {
+    const options = [];
+    const now = new Date();
+    for (let i = 0; i < 12; i++) {
+      const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const value = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+      const label = date.toLocaleDateString("pt-BR", {
+        year: "numeric",
+        month: "long",
+      });
+      options.push({ value, label });
+    }
+    return options;
   }, []);
 
   const renderTableRows = React.useCallback(() => {
@@ -278,12 +323,28 @@ export function TransactionsTable({
   return (
     <div className="w-full space-y-4">
       <div className="flex items-center justify-between">
-        <Input
-          placeholder="Buscar por descrição..."
-          value={search}
-          onChange={(e) => handleSearchChange(e.target.value)}
-          className="max-w-sm"
-        />
+        <div className="flex items-center gap-4">
+          <Input
+            placeholder="Buscar por descrição..."
+            value={search}
+            onChange={(e) => handleSearchChange(e.target.value)}
+            className="max-w-sm"
+          />
+
+          <Select value={month} onValueChange={handleMonthChange}>
+            <SelectTrigger className="w-[200px]">
+              <Calendar className="h-4 w-4" />
+              <SelectValue placeholder="Todos os meses" />
+            </SelectTrigger>
+            <SelectContent>
+              {generateMonthOptions().map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
 
         <Button
           variant="default"
@@ -408,7 +469,7 @@ export function TransactionsTable({
           <Button
             variant="outline"
             size="sm"
-            onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+            onClick={() => setQueryStates({ page: Math.max(page - 1, 1) })}
             disabled={data.page <= 1}
           >
             <ChevronLeft className="h-4 w-4" />
@@ -421,7 +482,7 @@ export function TransactionsTable({
             variant="outline"
             size="sm"
             onClick={() =>
-              setPage((prev) => Math.min(prev + 1, data.totalPages))
+              setQueryStates({ page: Math.min(page + 1, data.totalPages) })
             }
             disabled={data.page >= data.totalPages}
           >

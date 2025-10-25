@@ -1,7 +1,6 @@
 import { createTool } from '@mastra/core/tools';
 import { z } from 'zod';
 import { pool } from '../db';
-import { User } from '../types/user';
 
 export const executeSqlQueryTool = createTool({
   id: 'execute-sql-query',

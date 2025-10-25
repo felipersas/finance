@@ -11,10 +11,6 @@ export interface AreaChartDataItem {
   saida: number;
 }
 
-/**
- * Hook para buscar dados do gráfico de área (entradas/saídas por dia)
- * @param range - período ("7d", "30d", "90d")
- */
 export const useAreaChartData = (range: RangeType = "90d") => {
   const trpc = useTRPC();
   const { data: response, isLoading } = useQuery(

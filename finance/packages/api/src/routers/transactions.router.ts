@@ -8,18 +8,21 @@ export const transactionsRouter = router({
     .input(z.object({
       page: z.number().min(1).default(1),
       search: z.string().optional(),
+      month: z.string().optional(),
     }))
     .query(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
       const perPage = 10;
       const page = input.page;
       const search = input.search ?? "";
+      const month = input.month;
 
       const result = await getTransactions({
         userId,
         page,
         perPage,
         search,
+        month,
       });
 
       return buildPaginatedResponse(result.transactions, result.count, result.page, result.perPage);

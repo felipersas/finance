@@ -1,6 +1,6 @@
 import { betterAuth, type BetterAuthOptions } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
-import { polar, checkout, portal } from "@polar-sh/better-auth";
+import { polar, checkout, portal, usage } from "@polar-sh/better-auth";
 import { polarClient } from "./lib/payments";
 import prisma from "@finance/db";
 import { RuntimeContext } from "@mastra/core/runtime-context";
@@ -22,6 +22,7 @@ export const auth = betterAuth<BetterAuthOptions>({
 	},
 	plugins: [
 		polar({
+		  // @ts-ignore
 			client: polarClient,
 			createCustomerOnSignUp: true,
 			enableCustomerPortal: true,
@@ -37,6 +38,7 @@ export const auth = betterAuth<BetterAuthOptions>({
 					authenticatedUsersOnly: true,
 				}),
 				portal(),
+				usage(),
 			],
 		}),
 	],

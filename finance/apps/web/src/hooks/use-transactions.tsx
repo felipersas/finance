@@ -6,11 +6,13 @@ import { useTRPC } from "@/utils/trpc/trpc-client";
 export interface UseTransactionsParams {
   page?: number;
   search?: string;
+  month?: string;
 }
 
 export const useTransactions = ({
   page = 1,
   search = "",
+  month,
 }: UseTransactionsParams = {}) => {
   const trpc = useTRPC();
 
@@ -18,6 +20,7 @@ export const useTransactions = ({
     trpc.transactions.getTransactions.queryOptions({
       page,
       search,
+      month,
     }),
   );
 

@@ -37,7 +37,7 @@ export function NavMain({
                     : ""
                 }
               >
-                <Link href={item.url}>
+                <Link href={item.url as any}>
                   {item.icon && <item.icon />}
                   <span>{item.title}</span>
                 </Link>

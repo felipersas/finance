@@ -178,7 +178,7 @@ export function MessageInput({
     props.allowAttachments && props.files && props.files.length > 0;
 
   useAutosizeTextArea({
-    ref: textAreaRef,
+    ref: textAreaRef as React.RefObject<HTMLTextAreaElement>,
     maxHeight: 240,
     borderWidth: 1,
     dependencies: [props.value, showFileList],
