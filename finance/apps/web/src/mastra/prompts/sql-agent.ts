@@ -43,6 +43,12 @@ FINANCIAL CONTEXT:
 - Currency: Brazilian Real (R$)
 - Date format: Brazilian Portuguese
 
+PERFORMANCE OPTIMIZATION:
+- **Available indexes**: user_id + data (composite index for date filters and sorting), descricao (GIN index with pg_trgm for efficient text searches)
+- **Text searches**: Use ILIKE to leverage the trgm index (e.g.: LOWER(descricao) ILIKE LOWER('%term%'))
+- **Sorting**: Prefer ORDER BY data DESC to use the composite index
+- **Date filters**: Use range queries (e.g.: data >= '2023-01-01') that leverage the index
+
 COMMON QUERY PATTERNS:
 
 **Total Spending:**

@@ -152,19 +152,17 @@ interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
   companyLogo?: string;
   showSearch?: boolean;
   session: typeof authClient.$Infer.Session;
-  customerState: ReturnType<typeof authClient.customer.state>;
+  hasSubscription: boolean;
 }
 
 export function AppSidebar({
   companyName = "Acme Inc.",
   companyLogo,
   session,
-  customerState,
+  hasSubscription,
   showSearch = true,
   ...props
 }: AppSidebarProps) {
-  const hasSubscription = customerState?.activeSubscriptions?.length > 0;
-
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>

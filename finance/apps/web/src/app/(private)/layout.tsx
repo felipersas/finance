@@ -6,29 +6,34 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 export default async function ProtectedLayout({
-	children,
+  children,
 }: Readonly<{
-	children: React.ReactNode;
+  children: React.ReactNode;
 }>) {
-
   const session = await authClient.getSession({
-		fetchOptions: {
-			headers: await headers(),
-			throw: true,
-		},
-	});
-
-	if (!session?.user) {
-		redirect("/login");
-	}
-
-	const { data: customerState } = await authClient.customer.state({
-    fetchOptions:{
+    fetchOptions: {
       headers: await headers(),
-    }
+      throw: true,
+    },
   });
 
-	return (
+  if (!session?.user) {
+    redirect("/login");
+  }
+
+  const subscriptionsData = await authClient.customer.subscriptions.list({
+    query: {
+      active: true,
+    },
+    fetchOptions: {
+      headers: await headers(),
+    },
+  });
+
+  const hasSubscription =
+    (subscriptionsData.data?.result?.items?.length ?? 0) > 0;
+
+  return (
     <SidebarProvider
       style={
         {
@@ -37,12 +42,15 @@ export default async function ProtectedLayout({
         } as React.CSSProperties
       }
     >
-      <AppSidebar variant="inset" session={session} customerState={customerState} />
+      <AppSidebar
+        variant="inset"
+        session={session}
+        hasSubscription={hasSubscription}
+      />
       <SidebarInset>
         <SiteHeader />
         {children}
       </SidebarInset>
     </SidebarProvider>
-
-	);
+  );
 }
