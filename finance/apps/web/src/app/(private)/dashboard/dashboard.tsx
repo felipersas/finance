@@ -1,37 +1,31 @@
 "use client";
 
-import { ChartAreaInteractive } from "@/components/chart-area-interactive"
-import { ClientOnly } from "@/components/ClientOnly"
-import { DataTable } from "@/components/data-table"
-import { SectionCards } from "@/components/section-cards"
-import { SiteHeader } from "@/components/site-header"
-import {
-  SidebarInset,
-  SidebarProvider,
-} from "@/components/ui/sidebar"
-import { Card, CardHeader, CardDescription, CardTitle } from "@/components/ui/card"
-import { ErrorBoundary } from "@/components/error-boundary"
-
-import data from "./data.json"
+import { ChartAreaInteractive } from "@/components/chart-area-interactive";
+import { ClientOnly } from "@/components/ClientOnly";
+import { SectionCards } from "@/components/section-cards";
+import { ErrorBoundary } from "@/components/error-boundary";
+import { LastTransactionsCard } from "@/components/last-transactions-card";
 
 export default function Dashboard() {
   return (
     <>
-        <ErrorBoundary>
+      <ErrorBoundary>
         <div className="flex flex-1 flex-col">
           <div className="@container/main flex flex-1 flex-col gap-2">
             <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-                  <SectionCards />
+              <SectionCards />
+              <div className="px-4 lg:px-6">
+                <LastTransactionsCard />
+              </div>
               <div className="px-4 lg:px-6">
                 <ClientOnly>
                   <ChartAreaInteractive />
                 </ClientOnly>
               </div>
-              <DataTable data={data} />
             </div>
           </div>
         </div>
-        </ErrorBoundary>
+      </ErrorBoundary>
     </>
-  )
+  );
 }

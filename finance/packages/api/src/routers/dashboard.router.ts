@@ -2,6 +2,7 @@ import { protectedProcedure, router } from "../index";
 import { z } from "zod";
 import { getResumedBalance } from "../services/getResumedBalance";
 import { getCharData } from "../services/getChartData";
+import { getTransactions } from "../services/getTransactions";
 
 export const dashboardRouter = router({
   sectionCards: protectedProcedure
@@ -15,5 +16,19 @@ export const dashboardRouter = router({
     }))
     .query(async ({ ctx, input }) => {
       return await getCharData(input.range, ctx.session.user.id);
+    }),
+  lastTransactions: protectedProcedure
+    .query(async ({ ctx }) => {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = now.getMonth() + 1;
+      const monthStr = `${year}-${month.toString().padStart(2, "0")}`;
+      const { transactions } = await getTransactions({
+        userId: ctx.session.user.id,
+        page: 1,
+        perPage: 5,
+        month: monthStr,
+      });
+      return transactions;
     }),
 });

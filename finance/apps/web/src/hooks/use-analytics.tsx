@@ -14,3 +14,16 @@ export const useSectionCards = () => {
     response,
   };
 };
+
+export const useLastTransactions = () => {
+  const trpc = useTRPC();
+
+  const { data: transactions } = useSuspenseQuery(
+    trpc.dashboard.lastTransactions.queryOptions(),
+  );
+
+  // Com suspense, transactions sempre existe
+  return {
+    transactions,
+  };
+};

@@ -1,6 +1,6 @@
-import { IconTrendingDown, IconTrendingUp } from "@tabler/icons-react"
+import { IconTrendingDown, IconTrendingUp } from "@tabler/icons-react";
 
-import { Badge } from "@/components/ui/badge"
+import { Badge } from "@/components/ui/badge";
 import {
   Card,
   CardAction,
@@ -8,15 +8,15 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
-import { formatMoneyView } from "@/utils/formatters/format-money-brl"
+} from "@/components/ui/card";
+import { formatMoneyView } from "@/utils/formatters/format-money-brl";
 
 interface MetricCardProps {
-  description: string
-  value: number
-  percent: number
-  footerTrendingText: string
-  footerDescription: string
+  description: string;
+  value: number;
+  percent: number;
+  footerTrendingText: string;
+  footerDescription: string;
 }
 
 export function MetricCard({
@@ -26,31 +26,46 @@ export function MetricCard({
   footerTrendingText,
   footerDescription,
 }: MetricCardProps) {
-  const isPositive = percent > 0
-  const Icon = isPositive ? IconTrendingUp : IconTrendingDown
+  const isPositive = percent > 0;
+  const Icon = isPositive ? IconTrendingUp : IconTrendingDown;
 
   return (
-    <Card className="@container/card">
-      <CardHeader>
-        <CardDescription>{description}</CardDescription>
-        <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-          {formatMoneyView(String(value) ?? '0.00')}
-        </CardTitle>
-        <CardAction>
-          <Badge variant="outline">
-            <Icon />
-            {Math.abs(percent).toFixed(1)}%
-          </Badge>
-        </CardAction>
-      </CardHeader>
-      <CardFooter className="flex-col items-start gap-1.5 text-sm">
-        <div className="line-clamp-1 flex gap-2 font-medium">
-          {footerTrendingText} <Icon className="size-4" />
-        </div>
-        <div className="text-muted-foreground">
-          {footerDescription}
-        </div>
-      </CardFooter>
+    <Card className="@container/card relative overflow-hidden">
+      {/* Gradient background layer usando variáveis do tema */}
+      <div
+        className="absolute inset-0 z-0 pointer-events-none opacity-20"
+        style={{
+          background: `
+            linear-gradient(
+              135deg,
+              var(--color-primary) 0%,
+              var(--color-accent) 60%,
+              var(--color-muted) 100%
+            )
+          `,
+        }}
+        aria-hidden="true"
+      />
+      <div className="relative z-10">
+        <CardHeader>
+          <CardDescription>{description}</CardDescription>
+          <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
+            {formatMoneyView(String(value) ?? "0.00")}
+          </CardTitle>
+          <CardAction>
+            <Badge variant="outline">
+              <Icon />
+              {Math.abs(percent).toFixed(1)}%
+            </Badge>
+          </CardAction>
+        </CardHeader>
+        <CardFooter className="flex-col items-start gap-1.5 text-sm">
+          <div className="line-clamp-1 flex gap-2 font-medium">
+            {footerTrendingText} <Icon className="size-4" />
+          </div>
+          <div className="text-muted-foreground">{footerDescription}</div>
+        </CardFooter>
+      </div>
     </Card>
-  )
+  );
 }

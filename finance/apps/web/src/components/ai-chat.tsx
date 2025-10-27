@@ -6,10 +6,9 @@ import { chatWithAgent } from "@/actions/agent-action";
 import { authClient } from "@/lib/auth-client";
 import { MessageList } from "@/components/ui/message-list";
 import { MessageInput } from "@/components/ui/message-input";
-import { auth } from "@finance/auth";
 import { useBalanceCheck } from "@/hooks/use-balance-check";
+import { useRouter } from "next/navigation";
 
-// Sugestões iniciais para o chat
 const SUGGESTIONS = [
   "Quais são meus gastos este mês?",
   "Me mostre um resumo das minhas receitas.",
@@ -28,13 +27,18 @@ export function AIChat() {
     }[]
   >([]);
   const [loading, setLoading] = useState(false);
+  const [sessionBlocked, setSessionBlocked] = useState(false);
 
   const { data } = authClient.useSession();
 
-  const { blocked: balanceBlocked, loading: balanceLoading } =
-    useBalanceCheck();
+  const {
+    blocked: balanceBlocked,
+    loading: balanceLoading,
+    checkBalance,
+  } = useBalanceCheck();
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -50,14 +54,7 @@ export function AIChat() {
       content: message.content,
       createdAt: new Date(),
     };
-    const { data: ingested } = await authClient.usage.ingest({
-      event: "total_prompts",
-      metadata: {
-        total_prompts: 1,
-      },
-    });
 
-    console.log(ingested);
     setMessages((prev) => [...prev, userMessage]);
     handleAgentResponse(message.content);
   };
@@ -86,29 +83,63 @@ export function AIChat() {
     }
   };
 
+  const appendHardcodedMessage = () => {
+    const hardcodedMessage = {
+      id: `${Date.now()}-assistant`,
+      role: "assistant" as const,
+      content:
+        "Seus créditos acabaram. Recarregue sua conta para continuar conversando com a IA.",
+      createdAt: new Date(),
+    };
+    setMessages((prev) => [...prev, hardcodedMessage]);
+  };
+
   const handleSubmit = async (e?: React.FormEvent<HTMLFormElement>) => {
     if (e) e.preventDefault();
     const text = input.trim();
-    if (!text || loading || balanceBlocked) return;
+    if (!text || loading || sessionBlocked) return;
+    const isBlocked = await checkBalance();
+    if (isBlocked) {
+      setSessionBlocked(true);
+      return;
+    }
     appendUserMessage({ role: "user", content: text });
     setInput("");
   };
 
+  if (!balanceLoading && balanceBlocked) {
+    return (
+      <div className="h-full flex flex-col items-center justify-center w-full mx-auto p-4 bg-background">
+        <div className="max-w-md text-center space-y-6">
+          <div className="text-lg font-semibold text-destructive">
+            Seus créditos acabaram. 😢
+          </div>
+          <div className="text-muted-foreground">
+            Para continuar conversando com a IA, aguarde até a renovação do seu
+            plano ou recarregue sua conta.
+          </div>
+          <button
+            className="px-6 py-2 rounded-md bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition"
+            onClick={() => router.push("/")}
+            type="button"
+          >
+            Comprar créditos
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="h-full grid grid-rows-[auto_1fr_auto] overflow-hidden w-full mx-auto p-4 bg-background relative">
-      {balanceBlocked && (
-        <div className="absolute inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
-          <div className="text-center p-6 max-w-md">
-            <div className="text-2xl mb-2">💰</div>
-            <h3 className="text-lg font-semibold mb-2">Créditos Esgotados</h3>
-            <p className="text-muted-foreground">
-              Seus créditos acabaram. Recarregue sua conta para continuar
-              conversando com a IA.
-            </p>
+      {sessionBlocked && (
+        <div className="w-full flex items-center justify-center mb-4">
+          <div className="bg-destructive/10 border border-destructive px-4 py-2 rounded text-destructive font-medium text-center max-w-md">
+            Seus créditos acabaram durante a conversa. Recarregue sua conta para
+            continuar usando a IA.
           </div>
         </div>
       )}
-
       <div className="mb-12 mt-20">
         {messages.length === 0 && !balanceBlocked && (
           <PromptSuggestions
@@ -134,10 +165,8 @@ export function AIChat() {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           isGenerating={loading}
-          placeholder={
-            balanceBlocked ? "Créditos esgotados..." : "Digite sua mensagem..."
-          }
-          disabled={balanceBlocked}
+          placeholder="Digite sua mensagem..."
+          disabled={balanceBlocked || sessionBlocked || loading}
         />
       </form>
     </div>
