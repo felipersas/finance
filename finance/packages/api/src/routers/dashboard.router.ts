@@ -3,6 +3,9 @@ import { z } from "zod";
 import { getResumedBalance } from "../services/getResumedBalance";
 import { getCharData } from "../services/getChartData";
 import { getTransactions } from "../services/getTransactions";
+import { getDasDueDays } from "../services/das/das-due-days";
+
+
 
 export const dashboardRouter = router({
   sectionCards: protectedProcedure
@@ -30,5 +33,11 @@ export const dashboardRouter = router({
         month: monthStr,
       });
       return transactions;
+    }),
+
+  dasDueDays: protectedProcedure
+    .query(async () => {
+      // Não depende de usuário, apenas da data atual
+      return getDasDueDays();
     }),
 });

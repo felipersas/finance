@@ -15,6 +15,18 @@ export const useSectionCards = () => {
   };
 };
 
+export const useDasDueDays = () => {
+  const trpc = useTRPC();
+  const { data: dasDue } = useSuspenseQuery(
+    trpc.dashboard.dasDueDays.queryOptions(),
+  );
+
+  // Com suspense, dasDue sempre existe
+  return {
+    dasDue,
+  };
+};
+
 export const useLastTransactions = () => {
   const trpc = useTRPC();
 
