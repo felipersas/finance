@@ -25,6 +25,6 @@ export const transactionsRouter = router({
         month,
       });
 
-      return buildPaginatedResponse(result.transactions, result.count, result.page, result.perPage);
+      return result;
     }),
 })

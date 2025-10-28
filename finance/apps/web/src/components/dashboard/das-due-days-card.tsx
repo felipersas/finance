@@ -6,15 +6,39 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CalendarDays, AlertCircle } from "lucide-react";
-import { useDasDueDays } from "@/hooks/use-analytics";
+import { useDasDueDays, useMarkDasAsPaid } from "@/hooks/use-analytics";
 import Link from "next/link";
 import { CardGradient } from "@/components/ui/card-gradient";
 import { toDayWithoutHour } from "@/utils/formatters/format-date-br";
+import { useState } from "react";
+import { toast } from "sonner";
 
 export function DasDueDaysCard() {
   const { dasDue } = useDasDueDays();
+  const { mutate, isPending } = useMarkDasAsPaid();
+  const [justPaid, setJustPaid] = useState(false);
+
+  const paymentStatus = dasDue?.paymentStatus;
+  const isPaid = paymentStatus?.paid || justPaid;
 
   const status = dasDue.daysLeft < 0 ? "expired" : "ok";
+
+  const handleMarkPaid = () => {
+    const currentMonth = dasDue?.month;
+    if (!currentMonth) return;
+    mutate(
+      { month: currentMonth },
+      {
+        onSuccess: () => {
+          setJustPaid(true);
+          toast.success("DAS marcado como pago!");
+        },
+        onError: () => {
+          toast.error("Erro ao marcar DAS como pago.");
+        },
+      },
+    );
+  };
 
   return (
     <CardGradient
@@ -45,17 +69,51 @@ export function DasDueDaysCard() {
             <div className="text-xl text-muted-foreground text-center">
               para o vencimento ({toDayWithoutHour(dasDue.dueDate)})
             </div>
-            <Link
-              href="https://www8.receita.fazenda.gov.br/SimplesNacional/Aplicacoes/ATSPO/pgmei.app/Identificacao"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-4 w-full flex justify-center"
-              aria-label="Ir para página de pagamento do DAS"
-            >
-              <Button size="lg" className="font-semibold" asChild>
-                <span>Pagar DAS</span>
-              </Button>
-            </Link>
+            <div className="mt-4 w-full flex justify-center gap-2">
+              {isPaid ? (
+                <Link
+                  href="https://www8.receita.fazenda.gov.br/SimplesNacional/Aplicacoes/ATSPO/pgmei.app/Identificacao"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Ir para página de pagamento do DAS"
+                  className=""
+                >
+                  <Button size="lg" className="font-semibold" asChild>
+                    <span>Pagar DAS</span>
+                  </Button>
+                </Link>
+              ) : (
+                <>
+                  <Link
+                    href="https://www8.receita.fazenda.gov.br/SimplesNacional/Aplicacoes/ATSPO/pgmei.app/Identificacao"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="Ir para página de pagamento do DAS"
+                    className=""
+                  >
+                    <Button size="lg" className="font-semibold" asChild>
+                      <span>Pagar DAS</span>
+                    </Button>
+                  </Link>
+                  <Button
+                    size="lg"
+                    className="font-semibold"
+                    variant="outline"
+                    disabled={isPending}
+                    onClick={handleMarkPaid}
+                    aria-label="Marcar DAS como pago"
+                  >
+                    Já paguei <span className="ml-1">👍</span>
+                  </Button>
+                </>
+              )}
+            </div>
+            {isPaid && (
+              <div className="text-green-600 text-base font-semibold mt-2 flex items-center gap-2">
+                <span>DAS deste mês já foi marcado como pago!</span>
+                <span>👍</span>
+              </div>
+            )}
           </div>
         ) : (
           <div className="flex flex-col gap-4 items-center justify-center py-8 h-full min-h-[320px]">
@@ -70,17 +128,51 @@ export function DasDueDaysCard() {
               Você pode pagar mesmo após o vencimento, mas haverá cobrança de
               juros e multa.
             </div>
-            <Link
-              href="https://www8.receita.fazenda.gov.br/SimplesNacional/Aplicacoes/ATSPO/pgmei.app/Identificacao"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-4 w-full flex justify-center"
-              aria-label="Ir para página de pagamento do DAS"
-            >
-              <Button size="lg" className="font-semibold" asChild>
-                <span>Pagar DAS</span>
-              </Button>
-            </Link>
+            <div className="mt-4 w-full flex justify-center gap-2">
+              {isPaid ? (
+                <Link
+                  href="https://www8.receita.fazenda.gov.br/SimplesNacional/Aplicacoes/ATSPO/pgmei.app/Identificacao"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Ir para página de pagamento do DAS"
+                  className=""
+                >
+                  <Button size="lg" className="font-semibold" asChild>
+                    <span>Pagar DAS</span>
+                  </Button>
+                </Link>
+              ) : (
+                <>
+                  <Link
+                    href="https://www8.receita.fazenda.gov.br/SimplesNacional/Aplicacoes/ATSPO/pgmei.app/Identificacao"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="Ir para página de pagamento do DAS"
+                    className=""
+                  >
+                    <Button size="lg" className="font-semibold" asChild>
+                      <span>Pagar DAS</span>
+                    </Button>
+                  </Link>
+                  <Button
+                    size="lg"
+                    className="font-semibold"
+                    variant="outline"
+                    disabled={isPending}
+                    onClick={handleMarkPaid}
+                    aria-label="Marcar DAS como pago"
+                  >
+                    Já paguei <span className="ml-1">🟩</span>
+                  </Button>
+                </>
+              )}
+            </div>
+            {isPaid && (
+              <div className="text-green-600 text-base font-semibold mt-2 flex items-center gap-2">
+                <span>DAS deste mês já foi marcado como pago!</span>
+                <span>🟩</span>
+              </div>
+            )}
           </div>
         )}
       </CardContent>

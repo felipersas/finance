@@ -200,6 +200,7 @@ export type UserWhereInput = {
   sessions?: Prisma.SessionListRelationFilter
   accounts?: Prisma.AccountListRelationFilter
   ExtratoRecords?: Prisma.ExtratoRecordListRelationFilter
+  DasPayments?: Prisma.DasPaymentListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
@@ -213,6 +214,7 @@ export type UserOrderByWithRelationInput = {
   sessions?: Prisma.SessionOrderByRelationAggregateInput
   accounts?: Prisma.AccountOrderByRelationAggregateInput
   ExtratoRecords?: Prisma.ExtratoRecordOrderByRelationAggregateInput
+  DasPayments?: Prisma.DasPaymentOrderByRelationAggregateInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -229,6 +231,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   sessions?: Prisma.SessionListRelationFilter
   accounts?: Prisma.AccountListRelationFilter
   ExtratoRecords?: Prisma.ExtratoRecordListRelationFilter
+  DasPayments?: Prisma.DasPaymentListRelationFilter
 }, "id" | "email">
 
 export type UserOrderByWithAggregationInput = {
@@ -268,6 +271,7 @@ export type UserCreateInput = {
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   ExtratoRecords?: Prisma.ExtratoRecordCreateNestedManyWithoutUserInput
+  DasPayments?: Prisma.DasPaymentCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -281,6 +285,7 @@ export type UserUncheckedCreateInput = {
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   ExtratoRecords?: Prisma.ExtratoRecordUncheckedCreateNestedManyWithoutUserInput
+  DasPayments?: Prisma.DasPaymentUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserUpdateInput = {
@@ -294,6 +299,7 @@ export type UserUpdateInput = {
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   ExtratoRecords?: Prisma.ExtratoRecordUpdateManyWithoutUserNestedInput
+  DasPayments?: Prisma.DasPaymentUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -307,6 +313,7 @@ export type UserUncheckedUpdateInput = {
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   ExtratoRecords?: Prisma.ExtratoRecordUncheckedUpdateManyWithoutUserNestedInput
+  DasPayments?: Prisma.DasPaymentUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -423,6 +430,20 @@ export type UserUpdateOneRequiredWithoutAccountsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutAccountsInput, Prisma.UserUpdateWithoutAccountsInput>, Prisma.UserUncheckedUpdateWithoutAccountsInput>
 }
 
+export type UserCreateNestedOneWithoutDasPaymentsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutDasPaymentsInput, Prisma.UserUncheckedCreateWithoutDasPaymentsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutDasPaymentsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutDasPaymentsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutDasPaymentsInput, Prisma.UserUncheckedCreateWithoutDasPaymentsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutDasPaymentsInput
+  upsert?: Prisma.UserUpsertWithoutDasPaymentsInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutDasPaymentsInput, Prisma.UserUpdateWithoutDasPaymentsInput>, Prisma.UserUncheckedUpdateWithoutDasPaymentsInput>
+}
+
 export type UserCreateNestedOneWithoutExtratoRecordsInput = {
   create?: Prisma.XOR<Prisma.UserCreateWithoutExtratoRecordsInput, Prisma.UserUncheckedCreateWithoutExtratoRecordsInput>
   connectOrCreate?: Prisma.UserCreateOrConnectWithoutExtratoRecordsInput
@@ -449,6 +470,7 @@ export type UserCreateWithoutSessionsInput = {
   updatedAt: Date | string
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   ExtratoRecords?: Prisma.ExtratoRecordCreateNestedManyWithoutUserInput
+  DasPayments?: Prisma.DasPaymentCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutSessionsInput = {
@@ -461,6 +483,7 @@ export type UserUncheckedCreateWithoutSessionsInput = {
   updatedAt: Date | string
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   ExtratoRecords?: Prisma.ExtratoRecordUncheckedCreateNestedManyWithoutUserInput
+  DasPayments?: Prisma.DasPaymentUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutSessionsInput = {
@@ -489,6 +512,7 @@ export type UserUpdateWithoutSessionsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   ExtratoRecords?: Prisma.ExtratoRecordUpdateManyWithoutUserNestedInput
+  DasPayments?: Prisma.DasPaymentUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutSessionsInput = {
@@ -501,6 +525,7 @@ export type UserUncheckedUpdateWithoutSessionsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   ExtratoRecords?: Prisma.ExtratoRecordUncheckedUpdateManyWithoutUserNestedInput
+  DasPayments?: Prisma.DasPaymentUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutAccountsInput = {
@@ -513,6 +538,7 @@ export type UserCreateWithoutAccountsInput = {
   updatedAt: Date | string
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   ExtratoRecords?: Prisma.ExtratoRecordCreateNestedManyWithoutUserInput
+  DasPayments?: Prisma.DasPaymentCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutAccountsInput = {
@@ -525,6 +551,7 @@ export type UserUncheckedCreateWithoutAccountsInput = {
   updatedAt: Date | string
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   ExtratoRecords?: Prisma.ExtratoRecordUncheckedCreateNestedManyWithoutUserInput
+  DasPayments?: Prisma.DasPaymentUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutAccountsInput = {
@@ -553,6 +580,7 @@ export type UserUpdateWithoutAccountsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   ExtratoRecords?: Prisma.ExtratoRecordUpdateManyWithoutUserNestedInput
+  DasPayments?: Prisma.DasPaymentUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAccountsInput = {
@@ -564,6 +592,75 @@ export type UserUncheckedUpdateWithoutAccountsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  ExtratoRecords?: Prisma.ExtratoRecordUncheckedUpdateManyWithoutUserNestedInput
+  DasPayments?: Prisma.DasPaymentUncheckedUpdateManyWithoutUserNestedInput
+}
+
+export type UserCreateWithoutDasPaymentsInput = {
+  id: string
+  name: string
+  email: string
+  emailVerified: boolean
+  image?: string | null
+  createdAt: Date | string
+  updatedAt: Date | string
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  ExtratoRecords?: Prisma.ExtratoRecordCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutDasPaymentsInput = {
+  id: string
+  name: string
+  email: string
+  emailVerified: boolean
+  image?: string | null
+  createdAt: Date | string
+  updatedAt: Date | string
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  ExtratoRecords?: Prisma.ExtratoRecordUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutDasPaymentsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutDasPaymentsInput, Prisma.UserUncheckedCreateWithoutDasPaymentsInput>
+}
+
+export type UserUpsertWithoutDasPaymentsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutDasPaymentsInput, Prisma.UserUncheckedUpdateWithoutDasPaymentsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutDasPaymentsInput, Prisma.UserUncheckedCreateWithoutDasPaymentsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutDasPaymentsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutDasPaymentsInput, Prisma.UserUncheckedUpdateWithoutDasPaymentsInput>
+}
+
+export type UserUpdateWithoutDasPaymentsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  ExtratoRecords?: Prisma.ExtratoRecordUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutDasPaymentsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   ExtratoRecords?: Prisma.ExtratoRecordUncheckedUpdateManyWithoutUserNestedInput
 }
 
@@ -577,6 +674,7 @@ export type UserCreateWithoutExtratoRecordsInput = {
   updatedAt: Date | string
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  DasPayments?: Prisma.DasPaymentCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutExtratoRecordsInput = {
@@ -589,6 +687,7 @@ export type UserUncheckedCreateWithoutExtratoRecordsInput = {
   updatedAt: Date | string
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  DasPayments?: Prisma.DasPaymentUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutExtratoRecordsInput = {
@@ -617,6 +716,7 @@ export type UserUpdateWithoutExtratoRecordsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  DasPayments?: Prisma.DasPaymentUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutExtratoRecordsInput = {
@@ -629,6 +729,7 @@ export type UserUncheckedUpdateWithoutExtratoRecordsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  DasPayments?: Prisma.DasPaymentUncheckedUpdateManyWithoutUserNestedInput
 }
 
 
@@ -640,12 +741,14 @@ export type UserCountOutputType = {
   sessions: number
   accounts: number
   ExtratoRecords: number
+  DasPayments: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   sessions?: boolean | UserCountOutputTypeCountSessionsArgs
   accounts?: boolean | UserCountOutputTypeCountAccountsArgs
   ExtratoRecords?: boolean | UserCountOutputTypeCountExtratoRecordsArgs
+  DasPayments?: boolean | UserCountOutputTypeCountDasPaymentsArgs
 }
 
 /**
@@ -679,6 +782,13 @@ export type UserCountOutputTypeCountExtratoRecordsArgs<ExtArgs extends runtime.T
   where?: Prisma.ExtratoRecordWhereInput
 }
 
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountDasPaymentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.DasPaymentWhereInput
+}
+
 
 export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -691,6 +801,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   sessions?: boolean | Prisma.User$sessionsArgs<ExtArgs>
   accounts?: boolean | Prisma.User$accountsArgs<ExtArgs>
   ExtratoRecords?: boolean | Prisma.User$ExtratoRecordsArgs<ExtArgs>
+  DasPayments?: boolean | Prisma.User$DasPaymentsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -729,6 +840,7 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   sessions?: boolean | Prisma.User$sessionsArgs<ExtArgs>
   accounts?: boolean | Prisma.User$accountsArgs<ExtArgs>
   ExtratoRecords?: boolean | Prisma.User$ExtratoRecordsArgs<ExtArgs>
+  DasPayments?: boolean | Prisma.User$DasPaymentsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -740,6 +852,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     sessions: Prisma.$SessionPayload<ExtArgs>[]
     accounts: Prisma.$AccountPayload<ExtArgs>[]
     ExtratoRecords: Prisma.$ExtratoRecordPayload<ExtArgs>[]
+    DasPayments: Prisma.$DasPaymentPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1146,6 +1259,7 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   sessions<T extends Prisma.User$sessionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$sessionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   accounts<T extends Prisma.User$accountsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$accountsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AccountPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   ExtratoRecords<T extends Prisma.User$ExtratoRecordsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$ExtratoRecordsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ExtratoRecordPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  DasPayments<T extends Prisma.User$DasPaymentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$DasPaymentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DasPaymentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1639,6 +1753,30 @@ export type User$ExtratoRecordsArgs<ExtArgs extends runtime.Types.Extensions.Int
   take?: number
   skip?: number
   distinct?: Prisma.ExtratoRecordScalarFieldEnum | Prisma.ExtratoRecordScalarFieldEnum[]
+}
+
+/**
+ * User.DasPayments
+ */
+export type User$DasPaymentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the DasPayment
+   */
+  select?: Prisma.DasPaymentSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the DasPayment
+   */
+  omit?: Prisma.DasPaymentOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.DasPaymentInclude<ExtArgs> | null
+  where?: Prisma.DasPaymentWhereInput
+  orderBy?: Prisma.DasPaymentOrderByWithRelationInput | Prisma.DasPaymentOrderByWithRelationInput[]
+  cursor?: Prisma.DasPaymentWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.DasPaymentScalarFieldEnum | Prisma.DasPaymentScalarFieldEnum[]
 }
 
 /**

@@ -52,6 +52,7 @@ export const ModelName = {
   Session: 'Session',
   Account: 'Account',
   Verification: 'Verification',
+  DasPayment: 'DasPayment',
   ExtratoRecord: 'ExtratoRecord'
 } as const
 
@@ -127,6 +128,17 @@ export const VerificationScalarFieldEnum = {
 } as const
 
 export type VerificationScalarFieldEnum = (typeof VerificationScalarFieldEnum)[keyof typeof VerificationScalarFieldEnum]
+
+
+export const DasPaymentScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  month: 'month',
+  paid: 'paid',
+  paidAt: 'paidAt'
+} as const
+
+export type DasPaymentScalarFieldEnum = (typeof DasPaymentScalarFieldEnum)[keyof typeof DasPaymentScalarFieldEnum]
 
 
 export const ExtratoRecordScalarFieldEnum = {

@@ -1,5 +1,17 @@
 import prisma from "@finance/db";
 
+/**
+ * Obtém o resumo financeiro do usuário para o mês atual e anterior.
+ *
+ * Calcula receitas, despesas e saldo líquido, além da variação percentual em relação ao mês anterior.
+ *
+ * @param {string} userId - ID do usuário para consulta
+ * @returns {Promise<{ revenue: { total: number, percent: number }, expenses: { total: number, percent: number }, net: { total: number, percent: number } }>}
+ *
+ * @example
+ * const resumo = await getResumedBalance("user-123");
+ * console.log(resumo.revenue.total, resumo.expenses.total, resumo.net.total);
+ */
 export const getResumedBalance = async (userId: string) => {
   const now = new Date();
   const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);

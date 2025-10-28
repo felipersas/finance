@@ -4,6 +4,7 @@ import { getResumedBalance } from "../services/getResumedBalance";
 import { getCharData } from "../services/getChartData";
 import { getTransactions } from "../services/getTransactions";
 import { getDasDueDays } from "../services/das/das-due-days";
+import { getDasPaymentStatus, markDasAsPaid } from "../services/das/das-payment";
 
 
 
@@ -26,18 +27,42 @@ export const dashboardRouter = router({
       const year = now.getFullYear();
       const month = now.getMonth() + 1;
       const monthStr = `${year}-${month.toString().padStart(2, "0")}`;
-      const { transactions } = await getTransactions({
+      const { items } = await getTransactions({
         userId: ctx.session.user.id,
         page: 1,
         perPage: 5,
         month: monthStr,
       });
-      return transactions;
+      return items;
     }),
 
   dasDueDays: protectedProcedure
-    .query(async () => {
-      // Não depende de usuário, apenas da data atual
-      return getDasDueDays();
+    .query(async ({ ctx }) => {
+      // Retorna dias restantes + status de pagamento do DAS do mês corrente
+      const dasDue = getDasDueDays();
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = now.getMonth() + (now.getDate() > 20 ? 1 : 0);
+      const monthStr = `${year}-${month.toString().padStart(2, "0")}`;
+      const paymentStatus = await getDasPaymentStatus(ctx.session.user.id, monthStr);
+
+      return {
+        ...dasDue,
+        paymentStatus,
+        month: monthStr,
+      };
+    }),
+
+  markDasAsPaid: protectedProcedure
+    .input(z.object({
+      month: z.string().regex(/^\d{4}-\d{2}$/),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      // Marca o DAS como pago para o mês informado
+      const payment = await markDasAsPaid(ctx.session.user.id, input.month);
+      return {
+        success: true,
+        payment,
+      };
     }),
 });

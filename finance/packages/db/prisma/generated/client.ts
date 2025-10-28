@@ -64,6 +64,11 @@ export type Account = Prisma.AccountModel
  */
 export type Verification = Prisma.VerificationModel
 /**
+ * Model DasPayment
+ * 
+ */
+export type DasPayment = Prisma.DasPaymentModel
+/**
  * Model ExtratoRecord
  * 
  */

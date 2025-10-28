@@ -15,6 +15,18 @@ enum ExtratoType {
   Pessoal
 }
 
+model DasPayment {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  month     String   @db.VarChar(7) // formato "YYYY-MM"
+  paid      Boolean  @default(false)
+  paidAt    DateTime?
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, month])
+  @@map("das_payments")
+}
+
 model ExtratoRecord {
   id                    String                 @id @default(uuid())
   userId                String?                @map("user_id")

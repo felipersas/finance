@@ -10,6 +10,7 @@ model User {
   accounts      Account[]
 
   ExtratoRecords ExtratoRecord[]
+  DasPayments    DasPayment[]
 
   @@unique([email])
   @@map("user")

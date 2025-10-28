@@ -1,6 +1,7 @@
 "use client";
 
 import { useSuspenseQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { useTRPC } from "@/utils/trpc/trpc-client";
 
 export const useSectionCards = () => {
@@ -9,7 +10,6 @@ export const useSectionCards = () => {
     trpc.dashboard.sectionCards.queryOptions(),
   );
 
-  // Com useSuspenseQuery, data sempre existe (nunca undefined)
   return {
     response,
   };
@@ -21,21 +21,25 @@ export const useDasDueDays = () => {
     trpc.dashboard.dasDueDays.queryOptions(),
   );
 
-  // Com suspense, dasDue sempre existe
   return {
     dasDue,
   };
 };
 
+export const useMarkDasAsPaid = () => {
+  const trpc = useTRPC();
+
+  return useMutation(trpc.dashboard.markDasAsPaid.mutationOptions());
+};
+
 export const useLastTransactions = () => {
   const trpc = useTRPC();
 
-  const { data: transactions } = useSuspenseQuery(
+  const { data } = useSuspenseQuery(
     trpc.dashboard.lastTransactions.queryOptions(),
   );
 
-  // Com suspense, transactions sempre existe
   return {
-    transactions,
+    transactions: data ?? [],
   };
 };

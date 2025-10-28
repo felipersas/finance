@@ -393,6 +393,7 @@ export const ModelName = {
   Session: 'Session',
   Account: 'Account',
   Verification: 'Verification',
+  DasPayment: 'DasPayment',
   ExtratoRecord: 'ExtratoRecord'
 } as const
 
@@ -409,7 +410,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "session" | "account" | "verification" | "extratoRecord"
+    modelProps: "user" | "session" | "account" | "verification" | "dasPayment" | "extratoRecord"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -709,6 +710,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    DasPayment: {
+      payload: Prisma.$DasPaymentPayload<ExtArgs>
+      fields: Prisma.DasPaymentFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.DasPaymentFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DasPaymentPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.DasPaymentFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DasPaymentPayload>
+        }
+        findFirst: {
+          args: Prisma.DasPaymentFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DasPaymentPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.DasPaymentFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DasPaymentPayload>
+        }
+        findMany: {
+          args: Prisma.DasPaymentFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DasPaymentPayload>[]
+        }
+        create: {
+          args: Prisma.DasPaymentCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DasPaymentPayload>
+        }
+        createMany: {
+          args: Prisma.DasPaymentCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.DasPaymentCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DasPaymentPayload>[]
+        }
+        delete: {
+          args: Prisma.DasPaymentDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DasPaymentPayload>
+        }
+        update: {
+          args: Prisma.DasPaymentUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DasPaymentPayload>
+        }
+        deleteMany: {
+          args: Prisma.DasPaymentDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.DasPaymentUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.DasPaymentUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DasPaymentPayload>[]
+        }
+        upsert: {
+          args: Prisma.DasPaymentUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DasPaymentPayload>
+        }
+        aggregate: {
+          args: Prisma.DasPaymentAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateDasPayment>
+        }
+        groupBy: {
+          args: Prisma.DasPaymentGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DasPaymentGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.DasPaymentCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DasPaymentCountAggregateOutputType> | number
+        }
+      }
+    }
     ExtratoRecord: {
       payload: Prisma.$ExtratoRecordPayload<ExtArgs>
       fields: Prisma.ExtratoRecordFieldRefs
@@ -878,6 +953,17 @@ export const VerificationScalarFieldEnum = {
 } as const
 
 export type VerificationScalarFieldEnum = (typeof VerificationScalarFieldEnum)[keyof typeof VerificationScalarFieldEnum]
+
+
+export const DasPaymentScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  month: 'month',
+  paid: 'paid',
+  paidAt: 'paidAt'
+} as const
+
+export type DasPaymentScalarFieldEnum = (typeof DasPaymentScalarFieldEnum)[keyof typeof DasPaymentScalarFieldEnum]
 
 
 export const ExtratoRecordScalarFieldEnum = {
@@ -1098,6 +1184,7 @@ export type GlobalOmitConfig = {
   session?: Prisma.SessionOmit
   account?: Prisma.AccountOmit
   verification?: Prisma.VerificationOmit
+  dasPayment?: Prisma.DasPaymentOmit
   extratoRecord?: Prisma.ExtratoRecordOmit
 }
 

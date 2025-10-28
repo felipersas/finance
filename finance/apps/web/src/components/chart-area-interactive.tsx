@@ -65,9 +65,8 @@ export function ChartAreaInteractive() {
     timeRange as "7d" | "30d" | "90d",
   );
 
-  console.log(areaChartData);
 
-  // Os dados já vêm filtrados do backend conforme o período selecionado
+
   const filteredData = (areaChartData ?? []).map((item) => ({
     date: item.date,
     entrada: item.entrada,

@@ -10,7 +10,6 @@ export const betterAuth = new Elysia({ name: "better-auth" })
           headers,
         });
 
-        console.log(session)
         if (!session) return status(401);
 
         return {

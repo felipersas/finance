@@ -1,5 +1,16 @@
 import prisma from "@finance/db"
 
+/**
+ * Busca dados agregados de entradas e saídas diárias para o gráfico do dashboard.
+ *
+ * @param range - Intervalo de dias para o gráfico ("7d", "30d" ou "90d")
+ * @param userId - ID do usuário para filtrar os registros
+ * @returns Array de objetos contendo data, entrada (receita) e saída (despesa) por dia
+ *
+ * @example
+ * const data = await getCharData("30d", "user-123");
+ * // data: [{ date: "2024-06-01", entrada: 1000, saida: 500 }, ...]
+ */
 export const getCharData = async (range: "30d" | "7d" | "90d", userId: string) => {
   const referenceDate = new Date();
   referenceDate.setUTCHours(0, 0, 0, 0);
