@@ -6,6 +6,7 @@ export default async function Page() {
   prefetch(trpc.dashboard.areaChartData.queryOptions({ range: "30d" }));
   prefetch(trpc.dashboard.lastTransactions.queryOptions());
   prefetch(trpc.dashboard.dasDueDays.queryOptions());
+  prefetch(trpc.dashboard.lastDasPayments.queryOptions());
 
   return (
     <HydrateClient>

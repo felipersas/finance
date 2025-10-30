@@ -43,3 +43,15 @@ export const useLastTransactions = () => {
     transactions: data ?? [],
   };
 };
+
+export const useLastDasPayments = () => {
+  const trpc = useTRPC();
+
+  const { data } = useSuspenseQuery(
+    trpc.dashboard.lastDasPayments.queryOptions(),
+  );
+
+  return {
+    dasPayments: data ?? [],
+  };
+};

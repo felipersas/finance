@@ -1,6 +1,5 @@
 import { protectedProcedure, router } from "../index";
 import { z } from "zod";
-import { buildPaginatedResponse } from "../utils/build-paginated-response";
 import { getTransactions } from "../services/getTransactions";
 
 export const transactionsRouter = router({

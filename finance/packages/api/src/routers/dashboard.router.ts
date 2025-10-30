@@ -5,6 +5,7 @@ import { getCharData } from "../services/getChartData";
 import { getTransactions } from "../services/getTransactions";
 import { getDasDueDays } from "../services/das/das-due-days";
 import { getDasPaymentStatus, markDasAsPaid } from "../services/das/das-payment";
+import { getLastDasPayments } from "../services/das/get-last-payments";
 
 
 
@@ -64,5 +65,10 @@ export const dashboardRouter = router({
         success: true,
         payment,
       };
+    }),
+  lastDasPayments: protectedProcedure
+    .query(async ({ ctx }) => {
+      // Retorna os 5 últimos pagamentos de DAS do usuário
+      return await getLastDasPayments(ctx.session.user.id);
     }),
 });
