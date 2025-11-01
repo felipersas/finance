@@ -1,8 +1,6 @@
-name: finance
-
 services:
   postgres:
-    image: postgres
+    image: postgres:latest
     container_name: finance-postgres
     environment:
       POSTGRES_DB: finance
@@ -10,8 +8,9 @@ services:
       POSTGRES_PASSWORD: password
     ports:
       - "5432:5432"
+    # Montamos o diretório raiz do cluster para ser compatível com Postgres 18+
     volumes:
-      - finance_postgres_data:/var/lib/postgresql/data
+      - finance_postgres_data:/var/lib/postgresql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
@@ -20,4 +19,5 @@ services:
     restart: unless-stopped
 
 volumes:
+  # volume nomeado; será inicializado vazio na primeira subida
   finance_postgres_data:

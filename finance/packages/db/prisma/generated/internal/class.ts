@@ -22,23 +22,23 @@ const config: runtime.GetPrismaClientConfig = {
       "value": "prisma-client"
     },
     "output": {
-      "value": "/home/felipe/Documents/mcp/finance/packages/db/prisma/generated",
+      "value": "/Users/felipersas/Documents/Projects/finance/finance/packages/db/prisma/generated",
       "fromEnvVar": null
     },
     "config": {
-      "moduleFormat": "esm",
       "runtime": "bun",
+      "moduleFormat": "esm",
       "engineType": "library"
     },
     "binaryTargets": [
       {
         "fromEnvVar": null,
-        "value": "debian-openssl-3.0.x",
+        "value": "darwin-arm64",
         "native": true
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "/home/felipe/Documents/mcp/finance/packages/db/prisma/schema/schema.prisma",
+    "sourceFilePath": "/Users/felipersas/Documents/Projects/finance/finance/packages/db/prisma/schema/schema.prisma",
     "isCustomOutput": true
   },
   "relativePath": "../schema",
@@ -48,7 +48,6 @@ const config: runtime.GetPrismaClientConfig = {
     "db"
   ],
   "activeProvider": "postgresql",
-  "postinstall": false,
   "inlineDatasources": {
     "db": {
       "url": {
