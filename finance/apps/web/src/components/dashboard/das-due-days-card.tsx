@@ -16,6 +16,7 @@ import { CardGradient } from "@/components/ui/card-gradient";
 import { toDayWithoutHour } from "@/utils/formatters/format-date-br";
 import { useState } from "react";
 import { toast } from "sonner";
+import { formatMonth } from "@/utils/formatters/format-month";
 
 export function DasDueDaysCard() {
   const { dasDue } = useDasDueDays();
@@ -47,7 +48,7 @@ export function DasDueDaysCard() {
 
   return (
     <CardGradient
-      className="@container/card min-h-[320px]"
+      className="@container/card min-h-80"
       opacity={0.2}
       data-slot="card"
     >
@@ -61,23 +62,25 @@ export function DasDueDaysCard() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="flex flex-row gap-4 w-full min-h-[320px]">
+        <div
+          className="flex flex-col md:flex-row gap-6 md:gap-4 w-full min-h-80"
+        >
           {/* Lado esquerdo: conteúdo existente */}
           <div className="w-full md:w-1/2 flex flex-col justify-center">
             {status === "ok" ? (
-              <div className="flex flex-col gap-4 items-center justify-center py-8 h-full min-h-[320px]">
+              <div className="flex flex-col gap-4 items-center justify-center py-8 h-full min-h-80">
                 <div className="flex flex-col items-center justify-center">
-                  <div className="text-7xl font-bold tabular-nums text-center">
+                  <div className="text-5xl md:text-7xl font-bold tabular-nums text-center">
                     {dasDue.daysLeft}
                   </div>
-                  <div className="text-2xl font-semibold text-center">
+                  <div className="text-xl md:text-2xl font-semibold text-center">
                     {dasDue.daysLeft === 1 ? "dia" : "dias"}
                   </div>
                 </div>
-                <div className="text-xl text-muted-foreground text-center">
+                <div className="text-lg md:text-xl text-muted-foreground text-center">
                   para o vencimento ({toDayWithoutHour(dasDue.dueDate)})
                 </div>
-                <div className="mt-4 w-full flex justify-center gap-2">
+                <div className="mt-4 w-full flex flex-col sm:flex-row justify-center gap-2">
                   {isPaid ? (
                     <Link
                       href="https://www8.receita.fazenda.gov.br/SimplesNacional/Aplicacoes/ATSPO/pgmei.app/Identificacao"
@@ -86,7 +89,7 @@ export function DasDueDaysCard() {
                       aria-label="Ir para página de pagamento do DAS"
                       className=""
                     >
-                      <Button size="lg" className="font-semibold" asChild>
+                      <Button size="lg" className="font-semibold w-full sm:w-auto" asChild>
                         <span>Pagar DAS</span>
                       </Button>
                     </Link>
@@ -99,13 +102,13 @@ export function DasDueDaysCard() {
                         aria-label="Ir para página de pagamento do DAS"
                         className=""
                       >
-                        <Button size="lg" className="font-semibold" asChild>
+                        <Button size="lg" className="font-semibold w-full sm:w-auto" asChild>
                           <span>Pagar DAS</span>
                         </Button>
                       </Link>
                       <Button
                         size="lg"
-                        className="font-semibold"
+                        className="font-semibold w-full sm:w-auto"
                         variant="outline"
                         disabled={isPending}
                         onClick={handleMarkPaid}
@@ -117,26 +120,25 @@ export function DasDueDaysCard() {
                   )}
                 </div>
                 {isPaid && (
-                  <div className="text-green-600 text-base font-semibold mt-2 flex items-center gap-2">
+                  <div className="text-green-600 text-base font-semibold mt-2 flex items-center gap-2 text-center">
                     <span>DAS deste mês já foi marcado como pago!</span>
-                    <span>👍</span>
                   </div>
                 )}
               </div>
             ) : (
-              <div className="flex flex-col gap-4 items-center justify-center py-8 h-full min-h-[320px]">
+              <div className="flex flex-col gap-4 items-center justify-center py-8 h-full min-h-80">
                 <div className="flex items-center gap-2 text-destructive font-semibold text-center">
                   <AlertCircle className="w-5 h-5" />
                   Vencido!
                 </div>
-                <div className="text-lg text-muted-foreground text-center">
+                <div className="text-base md:text-lg text-muted-foreground text-center">
                   O DAS venceu em {toDayWithoutHour(dasDue.dueDate)}.
                 </div>
-                <div className="text-base text-warning text-center font-semibold">
+                <div className="text-sm md:text-base text-warning text-center font-semibold">
                   Você pode pagar mesmo após o vencimento, mas haverá cobrança
                   de juros e multa.
                 </div>
-                <div className="mt-4 w-full flex justify-center gap-2">
+                <div className="mt-4 w-full flex flex-col sm:flex-row justify-center gap-2">
                   {isPaid ? (
                     <Link
                       href="https://www8.receita.fazenda.gov.br/SimplesNacional/Aplicacoes/ATSPO/pgmei.app/Identificacao"
@@ -145,7 +147,7 @@ export function DasDueDaysCard() {
                       aria-label="Ir para página de pagamento do DAS"
                       className=""
                     >
-                      <Button size="lg" className="font-semibold" asChild>
+                      <Button size="lg" className="font-semibold w-full sm:w-auto" asChild>
                         <span>Pagar DAS</span>
                       </Button>
                     </Link>
@@ -158,34 +160,33 @@ export function DasDueDaysCard() {
                         aria-label="Ir para página de pagamento do DAS"
                         className=""
                       >
-                        <Button size="lg" className="font-semibold" asChild>
+                        <Button size="lg" className="font-semibold w-full sm:w-auto" asChild>
                           <span>Pagar DAS</span>
                         </Button>
                       </Link>
                       <Button
                         size="lg"
-                        className="font-semibold"
+                        className="font-semibold w-full sm:w-auto"
                         variant="outline"
                         disabled={isPending}
                         onClick={handleMarkPaid}
                         aria-label="Marcar DAS como pago"
                       >
-                        Já paguei <span className="ml-1">🟩</span>
+                        Já paguei
                       </Button>
                     </>
                   )}
                 </div>
                 {isPaid && (
-                  <div className="text-green-600 text-base font-semibold mt-2 flex items-center gap-2">
+                  <div className="text-green-600 text-base font-semibold mt-2 flex items-center gap-2 text-center">
                     <span>DAS deste mês já foi marcado como pago!</span>
-                    <span>🟩</span>
                   </div>
                 )}
               </div>
             )}
           </div>
           {/* Lado direito: listagem dos últimos pagamentos de DAS */}
-          <div className="w-full md:w-1/2 flex flex-col justify-center border-l border-muted pl-4">
+          <div className="w-full md:w-1/2 flex flex-col justify-center border-t md:border-t-0 md:border-l border-muted pt-4 md:pt-0 md:pl-4">
             <div className="mb-2 flex items-center gap-2">
               <CheckCircle className="w-5 h-5 text-primary" />
               <span className="font-semibold text-base">
@@ -205,7 +206,7 @@ export function DasDueDaysCard() {
                   >
                     <div className="flex flex-col">
                       <span className="font-medium text-sm">
-                        {payment.month}
+                        {formatMonth(payment.month)}
                       </span>
                       <span className="text-xs text-muted-foreground">
                         {payment.paidAt
