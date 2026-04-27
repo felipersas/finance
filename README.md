@@ -1,8 +1,8 @@
 # Finance
 
-Plataforma completa de gestao financeira pessoal com inteligencia artificial. Permite importar extratos bancarios via CSV, categorizar transacoes automaticamente, visualizar analytics e interagir com um chatbot financeiro via SSE streaming.
+Plataforma completa de gestão financeira pessoal com inteligência artificial. Permite importar extratos bancários via CSV, categorizar transações automaticamente, visualizar analytics e interagir com um chatbot financeiro via SSE streaming.
 
-## Visao Geral da Arquitetura
+## Visão Geral da Arquitetura
 
 ```
 finance/
@@ -14,10 +14,10 @@ finance/
 │   │   └── server/   # Server-side app
 │   └── packages/
 │       ├── db/       # Pacote compartilhado Prisma ORM
-│       ├── auth/     # Pacote compartilhado de autenticacao (better-auth)
+│       ├── auth/     # Pacote compartilhado de autenticação (better-auth)
 │       └── api/      # Cliente tRPC compartilhado
-├── docs/             # Documentacao de deploy e infraestrutura
-├── scripts/          # Scripts de setup e automacao
+├── docs/             # Documentação de deploy e infraestrutura
+├── scripts/          # Scripts de setup e automação
 └── docker-compose*.yml
 ```
 
@@ -29,16 +29,16 @@ finance/
 | **NestJS** | Framework HTTP principal |
 | **Prisma ORM** | Mapeamento objeto-relacional e migrations |
 | **PostgreSQL** | Banco de dados relacional |
-| **JWT** | Autenticacao stateless |
+| **JWT** | Autenticação stateless |
 | **SSE** | Streaming de respostas do chatbot |
-| **Docker** | Containerizacao |
+| **Docker** | Containerização |
 
 ### Mobile (startapp)
 | Tecnologia | Uso |
 |---|---|
 | **Expo SDK 52** | Framework mobile multiplataforma |
 | **React Native** | UI nativa iOS/Android |
-| **Expo Router** | Navegacao file-based |
+| **Expo Router** | Navegação file-based |
 | **NativeWind v4** | Tailwind CSS para React Native |
 | **React Query** | Gerenciamento de estado servidor |
 | **EAS Build** | Build e deploy na nuvem |
@@ -51,39 +51,39 @@ finance/
 | **Bun** | Runtime e gerenciador de pacotes |
 | **tRPC** | API type-safe cliente/servidor |
 | **shadcn/ui** | Componentes UI |
-| **Tailwind CSS** | Estilizacao |
-| **better-auth** | Autenticacao |
+| **Tailwind CSS** | Estilização |
+| **better-auth** | Autenticação |
 
 ### Infraestrutura
 | Tecnologia | Uso |
 |---|---|
-| **Docker Compose** | Orquestracao de containers (dev + prod) |
-| **Docker Swarm** | Orquestracao de producao |
-| **Traefik** | Reverse proxy e SSL automatico |
+| **Docker Compose** | Orquestração de containers (dev + prod) |
+| **Docker Swarm** | Orquestração de produção |
+| **Traefik** | Reverse proxy e SSL automático |
 | **GitHub Actions** | CI/CD |
 
-## Modulos da API (mcp-api)
+## Módulos da API (mcp-api)
 
-O backend segue **Arquitetura Hexagonal** (Ports & Adapters), separando dominio de infraestrutura:
+O backend segue **Arquitetura Hexagonal** (Ports & Adapters), separando domínio de infraestrutura:
 
-| Modulo | Descricao |
+| Módulo | Descrição |
 |---|---|
-| **auth** | Autenticacao JWT (login, registro, refresh token) |
-| **user** | Gerenciamento de usuarios |
-| **csv** | Upload e parse de extratos bancarios CSV |
-| **extracts** | Gestao de extratos bancarios importados |
-| **analytics** | Relatorios e dashboard financeiro |
+| **auth** | Autenticação JWT (login, registro, refresh token) |
+| **user** | Gerenciamento de usuários |
+| **csv** | Upload e parse de extratos bancários CSV |
+| **extracts** | Gestão de extratos bancários importados |
+| **analytics** | Relatórios e dashboard financeiro |
 | **chatbot** | Chatbot financeiro com IA (SSE streaming) |
-| **notification** | Notificacoes push |
+| **notification** | Notificações push |
 
-### Estrutura Hexagonal (por modulo)
+### Estrutura Hexagonal (por módulo)
 
 ```
 module/
 ├── domain/          # Entidades, interfaces de porta (business logic pura)
-├── application/     # Casos de uso, servicos de aplicacao
-├── infrastructure/  # Adaptadores: repositorios Prisma, controllers HTTP
-└── module.ts        # Definicao do modulo NestJS
+├── application/     # Casos de uso, serviços de aplicação
+├── infrastructure/  # Adaptadores: repositórios Prisma, controllers HTTP
+└── module.ts        # Definição do módulo NestJS
 ```
 
 ### Camada Common Compartilhada
@@ -93,68 +93,68 @@ common/
 ├── decorators/      # Decorators customizados
 ├── dtos/            # Data Transfer Objects
 ├── errors/          # Classes de erro
-├── exceptions/      # Filtros de excecao
-├── interceptors/    # Interceptadores de requisicao
-├── services/        # Servicos compartilhados
+├── exceptions/      # Filtros de exceção
+├── interceptors/    # Interceptadores de requisição
+├── services/        # Serviços compartilhados
 ├── types/           # Tipos TypeScript
-└── utils/           # Funcoes utilitarias
+└── utils/           # Funções utilitárias
 ```
 
 ## Schema do Banco de Dados (Prisma)
 
 O ORM Prisma gerencia as migrations e o acesso ao PostgreSQL. Principais entidades:
 
-- **User** - Usuarios da plataforma
-- **Extract** - Extratos bancarios importados
-- **Transaction** - Transacoes financeiras
-- **Category** - Categorias de transacao
+- **User** - Usuários da plataforma
+- **Extract** - Extratos bancários importados
+- **Transaction** - Transações financeiras
+- **Category** - Categorias de transação
 
 Migrations versionadas em `mcp-api/prisma/migrations/`.
 
-Otimizacao de indices disponivel em `optimize-indexes.sql`.
+Otimização de índices disponível em `optimize-indexes.sql`.
 
 ## App Mobile (startapp)
 
 ### Telas
 
-| Rota | Descricao |
+| Rota | Descrição |
 |---|---|
 | `/splash` | Tela de abertura |
 | `/sign-in` | Login |
 | `/sign-up` | Registro |
-| `/(private)/(tabs)/` | Area autenticada (tab navigation) |
+| `/(private)/(tabs)/` | Área autenticada (tab navigation) |
 | `/(private)/(tabs)/index` | Dashboard principal |
-| `/(private)/(tabs)/transacoes` | Lista de transacoes |
+| `/(private)/(tabs)/transacoes` | Lista de transações |
 | `/(private)/(tabs)/alertas-lembretes` | Alertas e lembretes financeiros |
 
 ### Componentes
 
-| Diretorio | Descricao |
+| Diretório | Descrição |
 |---|---|
-| `auth/` | Componentes de autenticacao |
+| `auth/` | Componentes de autenticação |
 | `chat/` | Interface do chatbot |
-| `transactions/` | Cards e listas de transacoes |
-| `notifications/` | Componentes de notificacao |
-| `form/` | Inputs e formularios |
-| `layout/` | Layout e navegacao |
+| `transactions/` | Cards e listas de transações |
+| `notifications/` | Componentes de notificação |
+| `form/` | Inputs e formulários |
+| `layout/` | Layout e navegação |
 | `ui/` | Componentes base (shadcn-inspired) |
 | `common/` | Componentes compartilhados |
 
 ### Hooks
 
-| Hook | Descricao |
+| Hook | Descrição |
 |---|---|
 | `useAnalytics` | Dados de dashboard/analytics |
-| `useChatApi` | Integracao com chatbot (SSE) |
+| `useChatApi` | Integração com chatbot (SSE) |
 | `useUploadCsv` | Upload de extratos CSV |
 | `useListExtract` | Listagem de extratos importados |
-| `useNotifications` | Gerenciamento de notificacoes |
+| `useNotifications` | Gerenciamento de notificações |
 | `useStorageState` | Estado persistido localmente |
 | `mutations/` | Mutations React Query |
 
 ### Providers
 
-- **SessionProvider** - Gerenciamento de sessao autenticada
+- **SessionProvider** - Gerenciamento de sessão autenticada
 - **QueryProvider** - React Query (TanStack Query) para cache e estado servidor
 
 ## Monorepo Web (finance/)
@@ -175,15 +175,15 @@ Estrutura Turborepo com apps e packages compartilhados:
 docker-compose up -d
 ```
 
-Sobe PostgreSQL + API + dependencias.
+Sobe PostgreSQL + API + dependências.
 
-### Docker Compose (Producao)
+### Docker Compose (Produção)
 
 ```bash
 docker-compose -f docker-compose.prod.yml up -d
 ```
 
-Deploy em Docker Swarm com Traefik como reverse proxy com SSL automatico.
+Deploy em Docker Swarm com Traefik como reverse proxy com SSL automático.
 
 ### CI/CD
 
@@ -191,21 +191,21 @@ Pipeline configurado via GitHub Actions (`.github/workflows/`).
 
 ### Scripts
 
-| Script | Descricao |
+| Script | Descrição |
 |---|---|
 | `deploy.sh` | Script de deploy automatizado |
 | `scripts/setup-vps.sh` | Provisionamento completo de VPS |
-| `optimize-indexes.sql` | Otimizacao de indices PostgreSQL |
+| `optimize-indexes.sql` | Otimização de índices PostgreSQL |
 
-### Documentacao de Infraestrutura
+### Documentação de Infraestrutura
 
-| Documento | Descricao |
+| Documento | Descrição |
 |---|---|
-| `docs/QUICK_START_DEPLOY.md` | Guia rapido de deploy |
+| `docs/QUICK_START_DEPLOY.md` | Guia rápido de deploy |
 | `docs/DEPLOY-SWARM-GUIDE.md` | Deploy com Docker Swarm |
-| `docs/TRAEFIK_CONFIG.md` | Configuracao do Traefik |
-| `docs/CICD_SETUP.md` | Configuracao de CI/CD |
-| `DEPLOY_OPTIMIZATION.md` | Otimizacoes de deploy |
+| `docs/TRAEFIK_CONFIG.md` | Configuração do Traefik |
+| `docs/CICD_SETUP.md` | Configuração de CI/CD |
+| `DEPLOY_OPTIMIZATION.md` | Otimizações de deploy |
 
 ## Primeiros Passos
 
@@ -216,14 +216,14 @@ Pipeline configurado via GitHub Actions (`.github/workflows/`).
 - PostgreSQL (ou usar via Docker)
 - Expo CLI (para mobile)
 
-### Configuracao
+### Configuração
 
 ```bash
-# Clone o repositorio
+# Clone o repositório
 git clone https://github.com/felipersas/finance.git
 cd finance
 
-# Copie as variaveis de ambiente
+# Copie as variáveis de ambiente
 cp .env.example .env
 
 # Suba o banco de dados
@@ -246,6 +246,6 @@ bun install
 bun run dev
 ```
 
-## Licenca
+## Licença
 
 Projeto privado. Todos os direitos reservados.
