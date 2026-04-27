@@ -1,265 +1,251 @@
-# MCP Development Environment
+# Finance
 
-This repository contains a complete development environment for the MCP (Model Context Protocol) ecosystem.
+Plataforma completa de gestao financeira pessoal com inteligencia artificial. Permite importar extratos bancarios via CSV, categorizar transacoes automaticamente, visualizar analytics e interagir com um chatbot financeiro via SSE streaming.
 
-## Services Overview
+## Visao Geral da Arquitetura
 
-### 1. **mcp-api** (Port 3000)
-- **Technology**: NestJS, Prisma ORM, PostgreSQL
-- **Purpose**: Main API with authentication, user management, CSV processing, and analytics
-- **Database**: PostgreSQL with Prisma ORM
-- **Features**: JWT authentication, file upload, RESTful APIs, vector embeddings support
+```
+finance/
+├── mcp-api/          # API REST (NestJS) - Backend principal
+├── startapp/         # App Mobile (Expo / React Native)
+├── finance/          # Monorepo Web (Turborepo / Next.js)
+│   ├── apps/
+│   │   ├── web/      # Frontend Web (Next.js + tRPC + shadcn/ui)
+│   │   └── server/   # Server-side app
+│   └── packages/
+│       ├── db/       # Pacote compartilhado Prisma ORM
+│       ├── auth/     # Pacote compartilhado de autenticacao (better-auth)
+│       └── api/      # Cliente tRPC compartilhado
+├── docs/             # Documentacao de deploy e infraestrutura
+├── scripts/          # Scripts de setup e automacao
+└── docker-compose*.yml
+```
 
-### 2. **PostgreSQL Database** (Port 5433)
-- **Technology**: PostgreSQL 18 with pgvector extension
-- **Purpose**: Main database with vector embeddings support
-- **Features**: Persistent data storage, health checks, vector similarity search
+## Tech Stack
 
-### 3. **startapp** (Ports 8081, 19000-19002)
-- **Technology**: React Native, Expo, TypeScript
-- **Purpose**: Mobile/web frontend application
-- **Features**: Cross-platform mobile app with financial tracking functionality</parameter>
+### Backend (mcp-api)
+| Tecnologia | Uso |
+|---|---|
+| **NestJS** | Framework HTTP principal |
+| **Prisma ORM** | Mapeamento objeto-relacional e migrations |
+| **PostgreSQL** | Banco de dados relacional |
+| **JWT** | Autenticacao stateless |
+| **SSE** | Streaming de respostas do chatbot |
+| **Docker** | Containerizacao |
 
-## Quick Start
+### Mobile (startapp)
+| Tecnologia | Uso |
+|---|---|
+| **Expo SDK 52** | Framework mobile multiplataforma |
+| **React Native** | UI nativa iOS/Android |
+| **Expo Router** | Navegacao file-based |
+| **NativeWind v4** | Tailwind CSS para React Native |
+| **React Query** | Gerenciamento de estado servidor |
+| **EAS Build** | Build e deploy na nuvem |
 
-### Prerequisites
-- Docker and Docker Compose
-- OpenAI API key
-- Git
+### Web (finance/)
+| Tecnologia | Uso |
+|---|---|
+| **Next.js 15** | Framework React full-stack |
+| **Turborepo** | Build system monorepo |
+| **Bun** | Runtime e gerenciador de pacotes |
+| **tRPC** | API type-safe cliente/servidor |
+| **shadcn/ui** | Componentes UI |
+| **Tailwind CSS** | Estilizacao |
+| **better-auth** | Autenticacao |
 
-### Setup Instructions
+### Infraestrutura
+| Tecnologia | Uso |
+|---|---|
+| **Docker Compose** | Orquestracao de containers (dev + prod) |
+| **Docker Swarm** | Orquestracao de producao |
+| **Traefik** | Reverse proxy e SSL automatico |
+| **GitHub Actions** | CI/CD |
 
-1. **Clone and navigate to the repository**
-   ```bash
-   cd /path/to/your/mcp/directory
-   ```
+## Modulos da API (mcp-api)
 
-2. **Create environment file**
-   ```bash
-   cp .env.example .env
-   ```
+O backend segue **Arquitetura Hexagonal** (Ports & Adapters), separando dominio de infraestrutura:
 
-3. **Edit the `.env` file with your actual values**
-   ```bash
-   # PostgreSQL Configuration
-   POSTGRES_DB=extrato_db
-   POSTGRES_USER=mcpuser
-   POSTGRES_PASSWORD=mcppassword
+| Modulo | Descricao |
+|---|---|
+| **auth** | Autenticacao JWT (login, registro, refresh token) |
+| **user** | Gerenciamento de usuarios |
+| **csv** | Upload e parse de extratos bancarios CSV |
+| **extracts** | Gestao de extratos bancarios importados |
+| **analytics** | Relatorios e dashboard financeiro |
+| **chatbot** | Chatbot financeiro com IA (SSE streaming) |
+| **notification** | Notificacoes push |
 
-   # API Configuration
-   JWT_SECRET=your-custom-jwt-secret
-   JWT_EXPIRES_IN=7d
-   INTERNAL_API_TOKEN=your-internal-api-token
-   ```</parameter>
-   ```
+### Estrutura Hexagonal (por modulo)
 
-4. **Start all services**
-   ```bash
-   docker-compose up -d
-   ```
+```
+module/
+├── domain/          # Entidades, interfaces de porta (business logic pura)
+├── application/     # Casos de uso, servicos de aplicacao
+├── infrastructure/  # Adaptadores: repositorios Prisma, controllers HTTP
+└── module.ts        # Definicao do modulo NestJS
+```
 
-5. **Check service health**
-   ```bash
-   docker-compose ps
-   docker-compose logs -f
-   ```
+### Camada Common Compartilhada
 
-## Service URLs
+```
+common/
+├── decorators/      # Decorators customizados
+├── dtos/            # Data Transfer Objects
+├── errors/          # Classes de erro
+├── exceptions/      # Filtros de excecao
+├── interceptors/    # Interceptadores de requisicao
+├── services/        # Servicos compartilhados
+├── types/           # Tipos TypeScript
+└── utils/           # Funcoes utilitarias
+```
 
-After starting with Docker Compose:
+## Schema do Banco de Dados (Prisma)
 
-- **mcp-api**: http://localhost:3000
-  - Health check: http://localhost:3000
-  - API docs: http://localhost:3000/api (if Swagger is configured)
+O ORM Prisma gerencia as migrations e o acesso ao PostgreSQL. Principais entidades:
 
-- **expo-app**:
-  - Metro bundler: http://localhost:8081
-  - Expo DevTools: http://localhost:19000
+- **User** - Usuarios da plataforma
+- **Extract** - Extratos bancarios importados
+- **Transaction** - Transacoes financeiras
+- **Category** - Categorias de transacao
 
-- **PostgreSQL**: localhost:5433
-  - User: mcpuser
-  - Password: mcppassword
-  - Database: extrato_db</parameter>
-  - Database: mcp_database
+Migrations versionadas em `mcp-api/prisma/migrations/`.
 
-## Development Workflow
+Otimizacao de indices disponivel em `optimize-indexes.sql`.
 
-### Starting Services
+## App Mobile (startapp)
+
+### Telas
+
+| Rota | Descricao |
+|---|---|
+| `/splash` | Tela de abertura |
+| `/sign-in` | Login |
+| `/sign-up` | Registro |
+| `/(private)/(tabs)/` | Area autenticada (tab navigation) |
+| `/(private)/(tabs)/index` | Dashboard principal |
+| `/(private)/(tabs)/transacoes` | Lista de transacoes |
+| `/(private)/(tabs)/alertas-lembretes` | Alertas e lembretes financeiros |
+
+### Componentes
+
+| Diretorio | Descricao |
+|---|---|
+| `auth/` | Componentes de autenticacao |
+| `chat/` | Interface do chatbot |
+| `transactions/` | Cards e listas de transacoes |
+| `notifications/` | Componentes de notificacao |
+| `form/` | Inputs e formularios |
+| `layout/` | Layout e navegacao |
+| `ui/` | Componentes base (shadcn-inspired) |
+| `common/` | Componentes compartilhados |
+
+### Hooks
+
+| Hook | Descricao |
+|---|---|
+| `useAnalytics` | Dados de dashboard/analytics |
+| `useChatApi` | Integracao com chatbot (SSE) |
+| `useUploadCsv` | Upload de extratos CSV |
+| `useListExtract` | Listagem de extratos importados |
+| `useNotifications` | Gerenciamento de notificacoes |
+| `useStorageState` | Estado persistido localmente |
+| `mutations/` | Mutations React Query |
+
+### Providers
+
+- **SessionProvider** - Gerenciamento de sessao autenticada
+- **QueryProvider** - React Query (TanStack Query) para cache e estado servidor
+
+## Monorepo Web (finance/)
+
+Estrutura Turborepo com apps e packages compartilhados:
+
+- **apps/web** - Next.js 15 com App Router, tRPC, shadcn/ui, Tailwind CSS, Mastra AI
+- **apps/server** - Server build com tsdown
+- **packages/db** - Schema Prisma compartilhado com Docker Compose para PostgreSQL local
+- **packages/auth** - better-auth compartilhado
+- **packages/api** - Cliente tRPC type-safe
+
+## Infraestrutura e Deploy
+
+### Docker Compose (Desenvolvimento)
+
 ```bash
-# Start all services
+docker-compose up -d
+```
+
+Sobe PostgreSQL + API + dependencias.
+
+### Docker Compose (Producao)
+
+```bash
+docker-compose -f docker-compose.prod.yml up -d
+```
+
+Deploy em Docker Swarm com Traefik como reverse proxy com SSL automatico.
+
+### CI/CD
+
+Pipeline configurado via GitHub Actions (`.github/workflows/`).
+
+### Scripts
+
+| Script | Descricao |
+|---|---|
+| `deploy.sh` | Script de deploy automatizado |
+| `scripts/setup-vps.sh` | Provisionamento completo de VPS |
+| `optimize-indexes.sql` | Otimizacao de indices PostgreSQL |
+
+### Documentacao de Infraestrutura
+
+| Documento | Descricao |
+|---|---|
+| `docs/QUICK_START_DEPLOY.md` | Guia rapido de deploy |
+| `docs/DEPLOY-SWARM-GUIDE.md` | Deploy com Docker Swarm |
+| `docs/TRAEFIK_CONFIG.md` | Configuracao do Traefik |
+| `docs/CICD_SETUP.md` | Configuracao de CI/CD |
+| `DEPLOY_OPTIMIZATION.md` | Otimizacoes de deploy |
+
+## Primeiros Passos
+
+### Requisitos
+
+- Node.js 18+
+- Docker e Docker Compose
+- PostgreSQL (ou usar via Docker)
+- Expo CLI (para mobile)
+
+### Configuracao
+
+```bash
+# Clone o repositorio
+git clone https://github.com/felipersas/finance.git
+cd finance
+
+# Copie as variaveis de ambiente
+cp .env.example .env
+
+# Suba o banco de dados
 docker-compose up -d
 
-# Start specific services
-docker-compose up -d mysql mcp-api
+# API (mcp-api)
+cd mcp-api
+npm install
+npx prisma migrate dev
+npm run start:dev
 
-# Start with logs
-docker-compose up
+# Mobile (startapp)
+cd ../startapp
+npm install
+npx expo start
+
+# Web (finance/)
+cd ../finance
+bun install
+bun run dev
 ```
 
-### Viewing Logs
-```bash
-# All services
-docker-compose logs -f
+## Licenca
 
-# Specific service
-docker-compose logs -f mcp-api
-```
-
-### Database Operations
-```bash
-# Run Prisma migrations
-docker-compose exec mcp-api npm run prisma:migrate:dev
-
-# Generate Prisma Client
-docker-compose exec mcp-api npm run prisma:generate
-
-# Access Prisma Studio
-docker-compose exec mcp-api npm run prisma:studio
-
-# Access PostgreSQL directly
-docker-compose exec db psql -U mcpuser -d extrato_db
-
-# View PostgreSQL tables
-docker-compose exec db psql -U mcpuser -d extrato_db -c "\dt"
-```</parameter>
-```
-
-### Development Commands
-```bash
-# Rebuild services after code changes
-docker-compose build
-docker-compose up -d
-
-# Restart specific service
-docker-compose restart mcp-api
-
-# Stop all services
-docker-compose down
-
-# Stop and remove volumes (⚠️ This will delete database data)
-docker-compose down -v
-```
-
-## Mobile Development (Expo)
-
-The React Native app runs in the `expo-app` container with Expo CLI. To develop:
-
-1. **Install Expo Go app** on your mobile device
-2. **Connect to the same network** as your Docker host
-3. **Scan the QR code** from the Expo DevTools at http://localhost:19000
-4. **For web development**, visit the web URL provided in the logs
-
-### Expo Development Notes
-- The app is configured to use tunnel mode for easy mobile device connection
-- Metro bundler runs on port 8081
-- Expo DevTools run on ports 19000-19002
-
-## API Integration
-
-### MCP API Usage</parameter>
-### MCP API Usage
-```javascript
-// Example: Authentication
-const authResponse = await fetch('http://localhost:3000/auth/signin', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({
-    email: 'user@example.com',
-    password: 'password'
-  })
-});
-```
-
-## Troubleshooting
-
-### Common Issues
-
-1. **Database Connection Errors**
-   ```
-   Error: Can't connect to PostgreSQL server
-   ```
-   **Solution**: Wait for PostgreSQL to fully start (check with `docker-compose logs db`)
-
-2. **Port Conflicts**</parameter>
-3. **Port Conflicts**
-   ```
-   Error: Port 3000 is already in use
-   ```
-   **Solution**: Stop conflicting services or change ports in `docker-compose.yml`
-
-3. **Prisma Migration Issues**
-   ```
-   Error: Migration failed
-   ```
-   **Solution**: Reset database with `docker-compose exec mcp-api npm run prisma:migrate:reset`
-
-4. **pgvector Extension Issues**
-   ```
-   Error: extension "vector" not found
-   ```
-   **Solution**: Verify extension is enabled with `docker-compose exec db psql -U mcpuser -d extrato_db -c "CREATE EXTENSION IF NOT EXISTS vector;"`</parameter>
-
-### Debugging Commands
-```bash
-# Check container status
-docker-compose ps
-
-# Access container shell
-docker-compose exec mcp-api sh
-
-# Check database connectivity
-docker-compose exec db pg_isready -U mcpuser -d extrato_db</parameter>
-
-# View service logs in real-time
-docker-compose logs -f mcp-api
-```
-
-### Performance Optimization
-- **Development**: Services use volume mounts for hot-reload
-- **Production**: Use multi-stage builds and optimized images
-- **Database**: Persistent volumes ensure data survives container restarts
-
-## Architecture Notes
-
-### Service Communication
-- **mcp-api** ↔ **PostgreSQL**: Direct database connection via Prisma ORM
-- **startapp** ↔ **mcp-api**: HTTP REST API calls
-
-### Network Configuration
-- All services run on a custom Docker network (`mcp-network`)
-- Services communicate using container names as hostnames
-- External access via mapped ports on localhost
-
-### Data Flow
-1. **Mobile App** sends requests to **mcp-api**
-2. **mcp-api** processes requests and queries **PostgreSQL** database
-3. Response flows back to the mobile app
-
-### Database Features
-- **Vector Embeddings**: pgvector extension enables similarity search
-- **Prisma ORM**: Type-safe database access with automatic migrations
-- **Health Checks**: Ensures database availability before starting dependent services</parameter>
-
-## PostgreSQL Migration
-
-This project has been migrated from MySQL to PostgreSQL with pgvector support. For detailed PostgreSQL setup instructions, see [POSTGRES_SETUP.md](./POSTGRES_SETUP.md).
-
-### Key Changes
-- Database: MySQL 8.0 → PostgreSQL 18 with pgvector
-- Port: 3306 → 5433 (dev) / 5432 (prod)
-- Vector Support: Enabled vector embeddings for AI/ML features
-
-## Contributing
-
-1. Make changes to source code in respective directories
-2. Services will automatically reload (development mode)
-3. For database schema changes, run migrations in the mcp-api container
-4. Test changes across all affected services</parameter>
-4. Test changes across all affected services
-
-## Security Notes
-
-- **Development Only**: This configuration is for development environments
-- **Production**: Use proper secrets management, environment-specific configs
-- **Database**: Change default passwords before deploying
-- **API Keys**: Never commit real API keys to version control
+Projeto privado. Todos os direitos reservados.
